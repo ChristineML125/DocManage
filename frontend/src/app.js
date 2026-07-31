@@ -1,0 +1,52 @@
+import { LitElement, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
+import { Router } from '@vaadin/router';
+
+import './pages/login.js'
+import './pages/staff-page/setting.js'
+import './pages/staff-page/dashboard.js'
+import './pages/staff-page/allDocument.js'
+import './pages/staff-page/upload.js'
+import './pages/staff-page/categories.js'
+
+import './pages/admin-page/admin-dashboard.js'
+import './pages/admin-page/admin-allDocument.js'
+import './pages/admin-page/admin-upload.js'
+import './pages/admin-page/admin-category.js'
+import './pages/admin-page/UserManagement.js'
+import './pages/admin-page/AuditLogs.js'
+import './pages/admin-page/admin-setting.js'
+
+
+class AppRoot extends LitElement {
+    render() {
+        return html`<div id="outlet"></div>`;
+    }
+
+    firstUpdated() {
+        const outlet = this.renderRoot.querySelector('#outlet')
+        const router = new Router(outlet);
+
+        router.setRoutes([
+            { path: '/', redirect: '/login' },
+            { path: '/login', component: 'login-page' },
+
+            { path: '/setting', component: 'setting-page'},
+            { path: '/dashboard', component: 'dashboard-page' },
+            { path: '/allDocument', component: 'document-page' },
+            { path: '/upload', component: 'upload-page' },
+            { path: '/categories', component: 'categories-page' },
+
+            { path: '/admin-dashboard', component: 'admin-dashboard-page'},
+            { path: '/admin-allDocument', component: 'admin-alldocument-page'},
+            { path: '/admin-upload', component: 'admin-upload-page'},
+            { path: '/admin-category', component: 'admin-category-page'},
+            { path: '/UserManagement', component: 'user-management-page'},
+            { path: '/AuditLogs', component: 'audit-logs-page'},
+            { path: '/admin-setting', component: 'admin-setting-page'},
+
+        ])
+    }
+}
+
+customElements.define('app-root', AppRoot);

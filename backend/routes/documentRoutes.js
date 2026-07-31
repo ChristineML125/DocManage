@@ -1,0 +1,415 @@
+import express from 'express';
+import { upload } from '../middleware/upload.js';
+import path from "path";
+import {
+  convertDocxToPdf,
+  convertPdfToDocx,
+  convertXlsxToPdf,
+  convertDocxToXlsx,
+  convertPdfToXlSX
+} from "../utils/convert.js";
+import { generateSummary as generateAISummary } from '../services/aiService.js';
+import {
+  uploadDocument,
+  addNewVersion,
+  deleteDocument,
+  listDocuments,
+  getDocument,
+  updateDocumentStatus,
+  previewDocument,
+  getCountDoc
+} from '../services/documentService.js';
+import { authenticate } from '../middleware/auth.js';
+import { getPool, sql } from '../config/db.js';
+
+const router = express.Router();
+
+// Document Count
+router.get("/count",async(req,res)=>{
+
+    try{
+
+        const data = await getCountDoc();
+        if (!data) throw new Error('No data returned from database');
+        console.log('Stats data:', data);
+        res.json({
+            success:true,
+            totalDocument: data.totalDocument,
+            category: data.category,
+            activeCount: data.activeCount,
+            archivedCount: data.archivedCount
+        });
+
+    }catch(err){
+
+        res.status(500).json({
+            success:false,
+            message:err.message
+        });
+
+    }
+
+});
+
+// List documents
+router.get('/list', async (req, res) => {
+  try {
+    const documents = await listDocuments({
+      keyword: req.query.keyword,
+      departmentId: req.query.departmentId,
+      categoryId: req.query.categoryId,
+      branchId: req.query.branchId
+    });
+    return res.json({ success: true, documents });
+  } catch (err) {
+    console.error('Get document list failed', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ---- Routes with sub-paths (must come before /:documentID) ----
+
+// Get AI summary
+router.get('/:documentID/summary', async (req, res) => {
+  try {
+    const documentID = parseInt(req.params.documentID, 10);
+    const pool = await getPool();
+    const result = await pool.request()
+      .input("documentID", sql.Int, documentID)
+      .query(`SELECT SummaryText, GenerateAT FROM AISummary WHERE documentID = @documentID`);
+
+    if (result.recordset.length === 0) {
+      return res.json({ success: true, summary: null });
+    }
+    return res.json({
+      success: true,
+      summary: result.recordset[0].SummaryText,
+      generateAt: result.recordset[0].GenerateAT
+    });
+  } catch (err) {
+    console.error("Get summary failed:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Generate AI summary
+router.post('/:documentID/generate-summary', authenticate, async (req, res) => {
+  try {
+    const documentID = parseInt(req.params.documentID, 10);
+    const pool = await getPool();
+    const result = await pool.request()
+      .input("documentID", sql.Int, documentID)
+      .query(`SELECT filePath FROM Document WHERE documentID = @documentID`);
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ success: false, message: "Document not found" });
+    }
+
+    const filePath = result.recordset[0].filePath;
+    const summary = await generateAISummary(filePath);
+    if (!summary) {
+      return res.status(500).json({ success: false, message: "AI generation failed" });
+    }
+
+    await pool.request()
+      .input("documentID", sql.Int, documentID)
+      .input("summaryText", sql.NVarChar(sql.MAX), summary)
+      .query(`
+        IF EXISTS(SELECT 1 FROM AISummary WHERE documentID=@documentID)
+          UPDATE AISummary SET SummaryText=@summaryText, GenerateAT=GETDATE() WHERE documentID=@documentID
+        ELSE
+          INSERT INTO AISummary (documentID, SummaryText, GenerateAT) VALUES (@documentID, @summaryText, GETDATE())
+      `);
+
+    return res.json({ success: true, summary });
+  } catch (err) {
+    console.error("Generate summary failed:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Get versions
+router.get('/:id/versions', async (req, res) => {
+  const documentID = parseInt(req.params.id, 10);
+  try {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input("documentID", sql.Int, documentID)
+      .query(`
+        SELECT dv.versionNum, dv.uploadDate, dv.filePath, dv.isLatest, dv.uploadedBy, u.UserName
+        FROM DocumentVersion dv
+        LEFT JOIN Users u ON dv.uploadedBy = u.userID
+        WHERE documentID = @documentID
+        ORDER BY versionNum DESC
+      `);
+    res.json({ success: true, versions: result.recordset });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Add new version
+router.post("/:id/version", authenticate, upload.single('file'), async (req, res) => {
+  const documentID = parseInt(req.params.id, 10);
+  if (Number.isNaN(documentID)) {
+    return res.status(400).json({ success: false, message: "Invalid document ID" });
+  }
+
+  const file = req.file;
+  if (!file) {
+    return res.status(400).json({ success: false, message: "No file uploaded" });
+  }
+
+  try {
+    await addNewVersion({
+      documentID,
+      filePath: file.filename,
+      uploadedBy: req.user.UserID
+    });
+
+    return res.json({ success: true, message: "Update version successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ---- Single document (must be after sub-paths) ----
+
+// Get single document
+router.get('/:documentID', async (req, res) => {
+  try {
+    const documentID = parseInt(req.params.documentID, 10);
+    if (isNaN(documentID)) {
+      return res.status(400).json({ success: false, message: 'Invalid ID' });
+    }
+    const doc = await getDocument(documentID);
+    if (!doc) {
+      return res.status(404).json({ success: false, message: 'Not found' });
+    }
+    // fileUrl already added by service, but we keep the original structure
+    res.json({ success: true, document: doc });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Delete document
+router.delete("/:documentID", authenticate, async (req, res) => {
+  const documentID = parseInt(req.params.documentID, 10);
+  if (Number.isNaN(documentID)) {
+    return res.status(400).json({ success: false, message: "Invalid document ID" });
+  }
+
+  try {
+    await deleteDocument(documentID, req.user.UserID);
+    return res.json({ success: true, message: "Deleted successfully" });
+  } catch (err) {
+    console.error("Delete failed:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ---- Export routes ----
+
+router.post('/export', authenticate, async (req, res) => {
+  try {
+    const { documentID } = req.body;
+    if (!documentID) {
+      return res.status(400).json({ success: false, message: "Document ID required" });
+    }
+
+    const doc = await getDocument(documentID);
+    if (!doc) return res.status(404).json({ success: false, message: "Document Not Found" });
+
+    const filename = doc.filePath;
+    const ext = path.extname(filename).toLowerCase();
+    let pdfFile;
+
+    if (ext === ".docx") {
+      pdfFile = await convertDocxToPdf(filename);
+    } else if (ext === ".xlsx") {
+      pdfFile = await convertXlsxToPdf(filename);
+    } else if (ext === ".pdf") {
+      pdfFile = filename;
+    } else {
+      return res.status(400).json({ success: false, message: "Unsupported file type" });
+    }
+
+    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${pdfFile}`;
+    return res.json({ success: true, documentName: doc.documentName, downloadUrl });
+  } catch (err) {
+    console.error("Export failed:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.post('/export-docx', authenticate, async (req, res) => {
+  try {
+    const { documentID } = req.body;
+    if (!documentID) return res.status(400).json({ success: false, message: "Document ID required" });
+
+    const doc = await getDocument(documentID);
+    if (!doc) return res.status(404).json({ success: false, message: "Document Not Found" });
+
+    const filename = doc.filePath;
+    const ext = path.extname(filename).toLowerCase();
+    let docxName;
+
+    if (ext === ".pdf") {
+      docxName = await convertPdfToDocx(filename);
+    } else if (ext === ".docx") {
+      docxName = filename;
+    } else if (ext === ".xlsx") {
+      const pdfFile = await convertXlsxToPdf(filename);
+      docxName = await convertPdfToDocx(pdfFile);
+    } else {
+      return res.status(400).json({ success: false, message: "Unsupported file type" });
+    }
+
+    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${docxName}`;
+    return res.json({ success: true, documentName: doc.documentName, downloadUrl });
+  } catch (err) {
+    console.error("Export failed:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.post('/export-xlsx', authenticate, async (req, res) => {
+  try {
+    const { documentID } = req.body;
+    if (!documentID) return res.status(400).json({ success: false, message: "Document ID required" });
+
+    const doc = await getDocument(documentID);
+    if (!doc) return res.status(404).json({ success: false, message: "Document Not Found" });
+
+    const filename = doc.filePath;
+    const ext = path.extname(filename).toLowerCase();
+    let xlsxFile;
+
+    if (ext === ".docx") {
+      xlsxFile = await convertDocxToXlsx(filename);
+    } else if (ext === ".pdf") {
+      xlsxFile = await convertPdfToXlSX(filename);
+    } else {
+      return res.status(400).json({ success: false, message: "Unsupported file type" });
+    }
+
+    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${xlsxFile}`;
+    return res.json({ success: true, documentName: doc.documentName, downloadUrl });
+  } catch (err) {
+    console.error("Export failed:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Upload new document
+router.post("/upload", authenticate, upload.single('file'), async (req, res) => {
+  try {
+    const {
+      categoryId, categoriesID,
+      departmentId, departmentID,
+      branchId, branchID
+    } = req.body;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    const parsedCategoryId = parseInt(categoryId ?? categoriesID, 10);
+    const parsedDepartmentId = parseInt(departmentId ?? departmentID, 10);
+    const parsedBranchId = parseInt(branchId ?? branchID ?? 1, 10);
+    const statusId = 1;
+
+    const result = await uploadDocument({
+      originalname: file.originalname,
+      filename: file.filename,
+      categoryId: parsedCategoryId,
+      departmentId: parsedDepartmentId,
+      branchId: parsedBranchId,
+      uploadedById: req.user.UserID,
+      statusId
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Document uploaded successfully",
+      id: result.id,
+      filePath: result.filePath
+    });
+  } catch (err) {
+    console.error('Upload failed:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Update document status
+router.put("/:id/status", authenticate, async (req, res) => {
+    try {
+
+        const documentID = Number(req.params.id);
+        const { statusName } = req.body;
+
+        const userID = req.user.UserID;
+
+        if (!statusName) {
+            return res.status(400).json({
+                success:false,
+                message:"Status required"
+            });
+        }
+
+        const result = await updateDocumentStatus(
+            documentID,
+            statusName,
+            userID
+        );
+
+
+        res.json(result);
+
+
+    } catch(err){
+
+        console.error("Update status failed:", err);
+
+        res.status(500).json({
+            success:false,
+            message:err.message
+        });
+    }
+});
+
+router.post("/:id/preview", authenticate, async(req,res)=>{
+
+    try{
+
+       console.log("PREVIEW ROUTE HIT");
+        console.log("USER:", req.user);
+
+        const documentID = Number(req.params.id);
+
+        const result = await previewDocument(
+            documentID,
+            req.user.UserID
+        );
+
+        res.json(result);
+
+
+    }catch(err){
+
+        console.error(err);
+
+        res.status(500).json({
+            success:false,
+            message:err.message
+        });
+    }
+
+});
+
+export default router;
