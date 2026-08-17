@@ -70,7 +70,7 @@ app.get("/", (req,res)=>{
 const frontendDist = path.join(__dirname, "..", "frontend", "dist");
 app.use(express.static(frontendDist));
 // SPA fallback: serve index.html for all non-API, non-file routes
-app.get('*', (req, res) => {
+app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(frontendDist, 'index.html'));
 });
 // empty route for remove warning
