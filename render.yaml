@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: docmanage-backend
+    runtime: node
+    region: oregon
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: MODEL_NAME
+        value: sshleifer/distilbart-cnn-6-6

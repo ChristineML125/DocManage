@@ -21,15 +21,12 @@ import {
   setLatestVersion
 } from '../services/documentService.js';
 import { authenticate } from '../middleware/auth.js';
-import { getPool, sql } from '../config/db.js';
+import { getPool } from '../config/db.js';
 
 const router = express.Router();
 
-// Document Count
 router.get("/count", authenticate, async(req,res)=>{
-
     try{
-
         const data = await getCountDoc();
         if (!data) throw new Error('No data returned from database');
         console.log('Stats data:', data);
@@ -40,19 +37,11 @@ router.get("/count", authenticate, async(req,res)=>{
             activeCount: data.activeCount,
             archivedCount: data.archivedCount
         });
-
     }catch(err){
-
-        res.status(500).json({
-            success:false,
-            message:err.message
-        });
-
+        res.status(500).json({ success:false, message:err.message });
     }
-
 });
 
-// List documents
 router.get('/list', authenticate, async (req, res) => {
   try {
     const documents = await listDocuments({
@@ -68,24 +57,22 @@ router.get('/list', authenticate, async (req, res) => {
   }
 });
 
-// ---- Routes with sub-paths (must come before /:documentID) ----
-
-// Get AI summary
 router.get('/:documentID/summary', authenticate, async (req, res) => {
   try {
     const documentID = parseInt(req.params.documentID, 10);
     const pool = await getPool();
-    const result = await pool.request()
-      .input("documentID", sql.Int, documentID)
-      .query(`SELECT SummaryText, GenerateAT FROM AISummary WHERE documentID = @documentID`);
+    const result = await pool.query(
+      `SELECT "SummaryText", "GenerateAT" FROM "AISummary" WHERE "documentID" = $1`,
+      [documentID]
+    );
 
-    if (result.recordset.length === 0) {
+    if (result.rows.length === 0) {
       return res.json({ success: true, summary: null });
     }
     return res.json({
       success: true,
-      summary: result.recordset[0].SummaryText,
-      generateAt: result.recordset[0].GenerateAT
+      summary: result.rows[0].SummaryText,
+      generateAt: result.rows[0].GenerateAT
     });
   } catch (err) {
     console.error("Get summary failed:", err);
@@ -93,34 +80,31 @@ router.get('/:documentID/summary', authenticate, async (req, res) => {
   }
 });
 
-// Generate AI summary
 router.post('/:documentID/generate-summary', authenticate, async (req, res) => {
   try {
     const documentID = parseInt(req.params.documentID, 10);
     const pool = await getPool();
-    const result = await pool.request()
-      .input("documentID", sql.Int, documentID)
-      .query(`SELECT filePath FROM Document WHERE documentID = @documentID`);
+    const result = await pool.query(
+      `SELECT "filePath" FROM "Document" WHERE "documentID" = $1`,
+      [documentID]
+    );
 
-    if (result.recordset.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ success: false, message: "Document not found" });
     }
 
-    const filePath = result.recordset[0].filePath;
+    const filePath = result.rows[0].filePath;
     const summary = await generateAISummary(filePath);
     if (!summary) {
       return res.status(500).json({ success: false, message: "AI generation failed" });
     }
 
-    await pool.request()
-      .input("documentID", sql.Int, documentID)
-      .input("summaryText", sql.NVarChar(sql.MAX), summary)
-      .query(`
-        IF EXISTS(SELECT 1 FROM AISummary WHERE documentID=@documentID)
-          UPDATE AISummary SET SummaryText=@summaryText, GenerateAT=GETDATE() WHERE documentID=@documentID
-        ELSE
-          INSERT INTO AISummary (documentID, SummaryText, GenerateAT) VALUES (@documentID, @summaryText, GETDATE())
-      `);
+    await pool.query(`
+      INSERT INTO "AISummary" ("documentID", "SummaryText", "GenerateAT")
+      VALUES ($1, $2, NOW())
+      ON CONFLICT ("documentID")
+      DO UPDATE SET "SummaryText" = $2, "GenerateAT" = NOW()
+    `, [documentID, summary]);
 
     return res.json({ success: true, summary });
   } catch (err) {
@@ -129,47 +113,34 @@ router.post('/:documentID/generate-summary', authenticate, async (req, res) => {
   }
 });
 
-
 console.log("VERSION ROUTE REGISTERED");
-// Get versions
+
 router.get('/:id/versions', authenticate, async (req, res) => {
   const documentID = parseInt(req.params.id, 10);
   try {
     const pool = await getPool();
-    const result = await pool.request()
-      .input("documentID", sql.Int, documentID)
-      .query(`
-        SELECT dv.versionNum, dv.uploadDate, dv.filePath, dv.isLatest, dv.uploadedBy, u.UserName
-        FROM DocumentVersion dv
-        LEFT JOIN Users u ON dv.uploadedBy = u.userID
-        WHERE documentID = @documentID
-        ORDER BY versionNum DESC
-      `);
-    res.json({ success: true, versions: result.recordset });
+    const result = await pool.query(`
+      SELECT dv."versionNum", dv."uploadDate", dv."filePath", dv."isLatest", dv."uploadedBy", u."UserName"
+      FROM "DocumentVersion" dv
+      LEFT JOIN "Users" u ON dv."uploadedBy" = u."userID"
+      WHERE "documentID" = $1
+      ORDER BY dv."versionNum" DESC
+    `, [documentID]);
+    res.json({ success: true, versions: result.rows });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// Add new version
-// Add new version
 router.post("/:id/version", authenticate, upload.single("file"), async (req, res) => {
   try {
     const documentID = Number(req.params.id);
-
     if (Number.isNaN(documentID)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid document ID"
-      });
+      return res.status(400).json({ success: false, message: "Invalid document ID" });
     }
-
     if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "No file uploaded"
-      });
+      return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
     const result = await addNewVersion({
@@ -187,38 +158,23 @@ router.post("/:id/version", authenticate, upload.single("file"), async (req, res
 
   } catch (err) {
     console.error("Upload new version failed:", err);
-
-    return res.status(500).json({
-      success: false,
-      message: err.message
-    });
+    return res.status(500).json({ success: false, message: err.message });
   }
 });
-// Change current version
+
 router.put("/:id/versions", authenticate, async (req, res) => {
   try {
     const documentID = Number(req.params.id);
     const { versionNum } = req.body;
 
     if (Number.isNaN(documentID)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid document ID"
-      });
+      return res.status(400).json({ success: false, message: "Invalid document ID" });
     }
-
     if (versionNum === undefined || versionNum === null) {
-      return res.status(400).json({
-        success: false,
-        message: "Version number required"
-      });
+      return res.status(400).json({ success: false, message: "Version number required" });
     }
 
-    const result = await setLatestVersion(
-      documentID,
-      Number(versionNum),
-      req.user.UserID
-    );
+    const result = await setLatestVersion(documentID, Number(versionNum), req.user.UserID);
 
     return res.json({
       success: true,
@@ -228,17 +184,10 @@ router.put("/:id/versions", authenticate, async (req, res) => {
 
   } catch (err) {
     console.error("Change current version failed:", err);
-
-    return res.status(500).json({
-      success: false,
-      message: err.message
-    });
+    return res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// ---- Single document (must be after sub-paths) ----
-
-// Get single document
 router.get('/:documentID', authenticate, async (req, res) => {
   try {
     const documentID = parseInt(req.params.documentID, 10);
@@ -249,7 +198,6 @@ router.get('/:documentID', authenticate, async (req, res) => {
     if (!doc) {
       return res.status(404).json({ success: false, message: 'Not found' });
     }
-    // fileUrl already added by service, but we keep the original structure
     res.json({ success: true, document: doc });
   } catch (err) {
     console.error(err);
@@ -257,13 +205,11 @@ router.get('/:documentID', authenticate, async (req, res) => {
   }
 });
 
-// Delete document
 router.delete("/:documentID", authenticate, async (req, res) => {
   const documentID = parseInt(req.params.documentID, 10);
   if (Number.isNaN(documentID)) {
     return res.status(400).json({ success: false, message: "Invalid document ID" });
   }
-
   try {
     await deleteDocument(documentID, req.user.UserID);
     return res.json({ success: true, message: "Deleted successfully" });
@@ -273,15 +219,12 @@ router.delete("/:documentID", authenticate, async (req, res) => {
   }
 });
 
-// ---- Export routes ----
-
 router.post('/export', authenticate, async (req, res) => {
   try {
     const { documentID } = req.body;
     if (!documentID) {
       return res.status(400).json({ success: false, message: "Document ID required" });
     }
-
     const doc = await getDocument(documentID);
     if (!doc) return res.status(404).json({ success: false, message: "Document Not Found" });
 
@@ -366,7 +309,6 @@ router.post('/export-xlsx', authenticate, async (req, res) => {
   }
 });
 
-// Upload new document
 router.post("/upload", authenticate, upload.single('file'), async (req, res) => {
   try {
     const {
@@ -407,70 +349,35 @@ router.post("/upload", authenticate, upload.single('file'), async (req, res) => 
   }
 });
 
-// Update document status
 router.put("/:id/status", authenticate, async (req, res) => {
     try {
-
         const documentID = Number(req.params.id);
         const { statusName } = req.body;
-
         const userID = req.user.UserID;
 
         if (!statusName) {
-            return res.status(400).json({
-                success:false,
-                message:"Status required"
-            });
+            return res.status(400).json({ success:false, message:"Status required" });
         }
 
-        const result = await updateDocumentStatus(
-            documentID,
-            statusName,
-            userID
-        );
-
-
+        const result = await updateDocumentStatus(documentID, statusName, userID);
         res.json(result);
-
-
     } catch(err){
-
         console.error("Update status failed:", err);
-
-        res.status(500).json({
-            success:false,
-            message:err.message
-        });
+        res.status(500).json({ success:false, message:err.message });
     }
 });
 
 router.post("/:id/preview", authenticate, async(req,res)=>{
-
-    try{
-
+    try {
        console.log("PREVIEW ROUTE HIT");
         console.log("USER:", req.user);
-
         const documentID = Number(req.params.id);
-
-        const result = await previewDocument(
-            documentID,
-            req.user.UserID
-        );
-
+        const result = await previewDocument(documentID, req.user.UserID);
         res.json(result);
-
-
     }catch(err){
-
         console.error(err);
-
-        res.status(500).json({
-            success:false,
-            message:err.message
-        });
+        res.status(500).json({ success:false, message:err.message });
     }
-
 });
 
 export default router;

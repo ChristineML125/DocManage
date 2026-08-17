@@ -1,4 +1,4 @@
-import { getPool, sql } from "../config/db.js";
+import { getPool } from "../config/db.js";
 import { generateSummary } from "./aiService.js";
 import { addAuditLog } from "./auditLogsService.js";
 import path from "path";
@@ -9,101 +9,76 @@ import {
 
 console.log(">>> documentService.js loaded");
 
-// ---------- Helper ----------
 function cleanLike(str) {
   if (!str) return null;
   return str.replace(/[%_]/g, '\\$&');
 }
 
-// ---------- Queries ----------
-
-/**
- * List documents with optional keyword filter.
- * Returns EXACTLY the same field names as the original route.
- */
 export async function listDocuments(filters = {}) {
   const pool = await getPool();
-  const request = pool.request()
-    .input("keyword", sql.NVarChar(200), cleanLike(filters.keyword))
-    .input("departmentId", sql.Int, filters.departmentId ? Number(filters.departmentId) : null)
-    .input("categoryId", sql.Int, filters.categoryId ? Number(filters.categoryId) : null)
-    .input("branchId", sql.Int, filters.branchId ? Number(filters.branchId) : null);
+  const keyword = cleanLike(filters.keyword);
+  const departmentId = filters.departmentId ? Number(filters.departmentId) : null;
+  const categoryId = filters.categoryId ? Number(filters.categoryId) : null;
+  const branchId = filters.branchId ? Number(filters.branchId) : null;
 
-  // Fixed: use the pre-configured request object
-  const result = await request.query(`
+  const result = await pool.query(`
     SELECT
-      d.documentID,
-      d.documentName,
-      dept.departmentName,
-      c.categoriesName,
-      d.uploadDate,
-      d.filePath,
-      s.statusName,
-      dv.versionNum
-    FROM Document d
-    LEFT JOIN Department dept ON d.departmentID = dept.departmentID
-    LEFT JOIN Category c ON d.categoriesID = c.categoriesID
-    LEFT JOIN Status s ON d.statusID = s.statusID
-    LEFT JOIN DocumentVersion dv ON d.documentID = dv.documentID AND dv.filePath = d.filePath
+      d."documentID",
+      d."documentName",
+      dept."departmentName",
+      c."categoriesName",
+      d."uploadDate",
+      d."filePath",
+      s."statusName",
+      dv."versionNum"
+    FROM "Document" d
+    LEFT JOIN "Department" dept ON d."departmentID" = dept."departmentID"
+    LEFT JOIN "Category" c ON d."categoriesID" = c."categoriesID"
+    LEFT JOIN "Status" s ON d."statusID" = s."statusID"
+    LEFT JOIN "DocumentVersion" dv ON d."documentID" = dv."documentID" AND dv."filePath" = d."filePath"
     WHERE 1=1
-      AND (@keyword IS NULL OR d.documentName LIKE '%' + @keyword + '%' OR c.categoriesName LIKE '%' + @keyword + '%')
-      AND (@departmentId IS NULL OR d.departmentID = @departmentId)
-      AND (@categoryId IS NULL OR d.categoriesID = @categoryId)
-      AND (@branchId IS NULL OR d.branchID = @branchId)
-    ORDER BY d.uploadDate DESC
-  `);
+      AND ($1::text IS NULL OR d."documentName" LIKE '%' || $1 || '%' OR c."categoriesName" LIKE '%' || $1 || '%')
+      AND ($2::int IS NULL OR d."departmentID" = $2)
+      AND ($3::int IS NULL OR d."categoriesID" = $3)
+      AND ($4::int IS NULL OR d."branchID" = $4)
+    ORDER BY d."uploadDate" DESC
+  `, [keyword, departmentId, categoryId, branchId]);
 
-  return result.recordset;
+  return result.rows;
 }
 
-/**
- * Get a single document by ID.
- * Returns EXACTLY the same field names as the original route.
- */
 export async function getDocument(documentID) {
-
   const pool = await getPool();
 
-  const result = await pool.request()
-    .input("documentID", sql.Int, documentID)
-    .query(`
-      SELECT
-        d.documentID,
-        d.documentName,
+  const result = await pool.query(`
+    SELECT
+      d."documentID",
+      d."documentName",
+      dv."filePath",
+      dv."VersionID",
+      dv."VersionNum",
+      dv."IsLatest",
+      dept."departmentName",
+      c."categoriesName",
+      d."uploadDate",
+      d."uploadedBy",
+      s."statusName",
+      d."pdfPath",
+      d."previewPath"
+    FROM "Document" d
+    LEFT JOIN "DocumentVersion" dv
+      ON d."documentID" = dv."DocumentID"
+      AND dv."IsLatest" = true
+    LEFT JOIN "Department" dept
+      ON d."departmentID" = dept."departmentID"
+    LEFT JOIN "Category" c
+      ON d."categoriesID" = c."categoriesID"
+    LEFT JOIN "Status" s
+      ON d."statusID" = s."statusID"
+    WHERE d."documentID" = $1
+  `, [documentID]);
 
-        dv.filePath,
-        dv.VersionID,
-        dv.VersionNum,
-        dv.IsLatest,
-
-        dept.departmentName,
-        c.categoriesName,
-        d.uploadDate,
-        d.uploadedBy,
-        s.statusName,
-        d.pdfPath,
-        d.previewPath
-
-      FROM Document d
-
-      LEFT JOIN DocumentVersion dv
-        ON d.documentID = dv.DocumentID
-        AND dv.IsLatest = 1
-
-      LEFT JOIN Department dept
-        ON d.departmentID = dept.departmentID
-
-      LEFT JOIN Category c
-        ON d.categoriesID = c.categoriesID
-
-      LEFT JOIN Status s
-        ON d.statusID = s.statusID
-
-      WHERE d.documentID = @documentID
-    `);
-
-  const document = result.recordset[0];
-
+  const document = result.rows[0];
   if (!document) return null;
 
   return {
@@ -113,8 +88,6 @@ export async function getDocument(documentID) {
       : null
   };
 }
-
-// ---------- Upload new document (with transaction) ----------
 
 export async function uploadDocument({
   originalname,
@@ -128,7 +101,6 @@ export async function uploadDocument({
   const ext = path.extname(filename).toLowerCase();
   const documentName = path.parse(originalname).name;
 
-  // Generate PDF preview
   let pdfPath = null;
   if (ext === ".pdf") {
     pdfPath = filename;
@@ -139,74 +111,43 @@ export async function uploadDocument({
   }
 
   const pool = await getPool();
-  const transaction = new sql.Transaction(pool);
-
-  await transaction.begin();
+  const client = await pool.connect();
 
   try {
-    // Insert main document record
-    const docResult = await new sql.Request(transaction)
-      .input("documentName", sql.NVarChar(255), documentName)
-      .input("categoryId", sql.Int, categoryId)
-      .input("departmentId", sql.Int, departmentId)
-      .input("branchId", sql.Int, branchId)
-      .input("uploadedById", sql.Int, uploadedById)
-      .input("statusId", sql.Int, statusId)
-      .input("filePath", sql.NVarChar(500), filename)
-      .input("pdfPath", sql.NVarChar(500), pdfPath)
-      .query(`
-        INSERT INTO Document (
-          documentName,
-          categoriesID,
-          departmentID,
-          branchID,
-          uploadedBy,
-          statusID,
-          filePath,
-          pdfPath,
-          uploadDate
-        ) VALUES (
-          @documentName,
-          @categoryId,
-          @departmentId,
-          @branchId,
-          @uploadedById,
-          @statusId,
-          @filePath,
-          @pdfPath,
-          GETDATE()
-        );
-        SELECT SCOPE_IDENTITY() AS id;
-      `);
-    const newDocId = docResult.recordset[0].id;
+    await client.query('BEGIN');
 
-    // Insert initial version
-    await new sql.Request(transaction)
-      .input("documentID", sql.Int, newDocId)
-      .input("versionNum", sql.Int, 1)
-      .input("uploadedById", sql.Int, uploadedById)
-      .input("filePath", sql.NVarChar(500), filename)
-      .query(`
-        INSERT INTO DocumentVersion (
-          documentID,
-          versionNum,
-          uploadedBy,
-          filePath,
-          uploadDate,
-          isLatest
-        ) VALUES (
-          @documentID,
-          1,
-          @uploadedById,
-          @filePath,
-          GETDATE(),
-          1
-        );
-      `);
+    const docResult = await client.query(`
+      INSERT INTO "Document" (
+        "documentName",
+        "categoriesID",
+        "departmentID",
+        "branchID",
+        "uploadedBy",
+        "statusID",
+        "filePath",
+        "pdfPath",
+        "uploadDate"
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+      RETURNING "documentID" AS id
+    `,
+    [documentName, categoryId, departmentId, branchId, uploadedById, statusId, filename, pdfPath]);
 
-    await transaction.commit();
+    const newDocId = docResult.rows[0].id;
 
-    // Audit log (outside transaction to avoid rolling back on log failure)
+    await client.query(`
+      INSERT INTO "DocumentVersion" (
+        "documentID",
+        "versionNum",
+        "uploadedBy",
+        "filePath",
+        "uploadDate",
+        "isLatest"
+      ) VALUES ($1, 1, $2, $3, NOW(), true)
+    `,
+    [newDocId, uploadedById, filename]);
+
+    await client.query('COMMIT');
+
     await addAuditLog({
       userID: uploadedById,
       action: "Upload Document",
@@ -218,16 +159,14 @@ export async function uploadDocument({
 
     return { id: newDocId, filePath: filename };
   } catch (err) {
-    try {
-      await transaction.rollback();
-    } catch (rollbackErr) {
+    try { await client.query('ROLLBACK'); } catch (rollbackErr) {
       console.error("Rollback failed:", rollbackErr);
     }
     throw err;
+  } finally {
+    client.release();
   }
 }
-
-// ---------- Add new version (with transaction and PDF conversion) ----------
 
 export async function addNewVersion({
   documentID,
@@ -236,7 +175,6 @@ export async function addNewVersion({
 }) {
 
   const ext = path.extname(filePath).toLowerCase();
-
   let pdfPath = null;
 
   if (ext === ".pdf") {
@@ -248,74 +186,49 @@ export async function addNewVersion({
   }
 
   const pool = await getPool();
-  const transaction = new sql.Transaction(pool);
+  const client = await pool.connect();
 
   try {
+    await client.query('BEGIN');
 
-    await transaction.begin();
+    const versionResult = await client.query(`
+      SELECT COALESCE(MAX("VersionNum"), 0) + 1 AS "VersionNum"
+      FROM "DocumentVersion"
+      WHERE "DocumentID" = $1
+    `, [documentID]);
 
-    // 1. Get next version number
-    const versionResult = await new sql.Request(transaction)
-      .input("documentID", sql.Int, documentID)
-      .query(`
-        SELECT ISNULL(MAX(VersionNum), 0) + 1 AS VersionNum
-        FROM DocumentVersion
-        WHERE DocumentID = @documentID
-      `);
+    const versionNum = versionResult.rows[0].VersionNum;
 
-    const versionNum = versionResult.recordset[0].VersionNum;
+    await client.query(`
+      UPDATE "DocumentVersion"
+      SET "IsLatest" = false
+      WHERE "DocumentID" = $1
+    `, [documentID]);
 
-    // 2. Old current version -> not current
-    await new sql.Request(transaction)
-      .input("documentID", sql.Int, documentID)
-      .query(`
-        UPDATE DocumentVersion
-        SET IsLatest = 0
-        WHERE DocumentID = @documentID
-      `);
+    await client.query(`
+      INSERT INTO "DocumentVersion" (
+        "DocumentID",
+        "VersionNum",
+        "UploadDate",
+        "FilePath",
+        "UploadedBy",
+        "IsLatest"
+      ) VALUES ($1, $2, NOW(), $3, $4, true)
+    `,
+    [documentID, versionNum, filePath, uploadedBy]);
 
-    // 3. Insert new version
-    await new sql.Request(transaction)
-      .input("documentID", sql.Int, documentID)
-      .input("versionNum", sql.Int, versionNum)
-      .input("filePath", sql.NVarChar(500), filePath)
-      .input("uploadedBy", sql.Int, uploadedBy)
-      .query(`
-        INSERT INTO DocumentVersion (
-          DocumentID,
-          VersionNum,
-          UploadDate,
-          FilePath,
-          UploadedBy,
-          IsLatest
-        )
-        VALUES (
-          @documentID,
-          @versionNum,
-          GETDATE(),
-          @filePath,
-          @uploadedBy,
-          1
-        )
-      `);
+    await client.query(`
+      UPDATE "Document"
+      SET
+        "FilePath" = $1,
+        "PdfPath" = $2,
+        "UploadDate" = NOW()
+      WHERE "DocumentID" = $3
+    `,
+    [filePath, pdfPath, documentID]);
 
-    // 4. Update main Document
-    await new sql.Request(transaction)
-      .input("documentID", sql.Int, documentID)
-      .input("filePath", sql.NVarChar(500), filePath)
-      .input("pdfPath", sql.NVarChar(500), pdfPath)
-      .query(`
-        UPDATE Document
-        SET
-          FilePath = @filePath,
-          PdfPath = @pdfPath,
-          UploadDate = GETDATE()
-        WHERE DocumentID = @documentID
-      `);
+    await client.query('COMMIT');
 
-    await transaction.commit();
-
-    // 5. Audit
     await addAuditLog({
       userID: uploadedBy,
       action: "Add Document Version",
@@ -325,76 +238,44 @@ export async function addNewVersion({
       description: `Added version ${versionNum} for document ${documentID}`
     });
 
-    return {
-      documentID,
-      versionNum,
-      filePath,
-      pdfPath
-    };
+    return { documentID, versionNum, filePath, pdfPath };
 
   } catch (error) {
-
-    try {
-      await transaction.rollback();
-    } catch (rollbackError) {
+    try { await client.query('ROLLBACK'); } catch (rollbackError) {
       console.error("Rollback failed:", rollbackError);
     }
-
     throw error;
+  } finally {
+    client.release();
   }
 }
 
-// ---------- Delete document ----------
-
 export async function deleteDocument(documentID, deleteBy) {
   const pool = await getPool();
-  const transaction = new sql.Transaction(pool);
 
-  //get the delete name
-  const docResult = await pool.request()
-      .input("documentID", sql.Int, documentID)
-      .query(`
-          SELECT documentName
-          FROM Document
-          WHERE documentID=@documentID
-      `);
+  const docResult = await pool.query(
+    `SELECT "documentName" FROM "Document" WHERE "documentID"=$1`,
+    [documentID]
+  );
 
-  const documentName = docResult.recordset[0]?.documentName;
+  const documentName = docResult.rows[0]?.documentName;
 
-
-  await transaction.begin();
+  const client = await pool.connect();
 
   try {
-    // Safely delete from UsersDocument if the table exists
-    await transaction.request()
-      .input("documentID", sql.Int, documentID)
-      .query(`
-        IF OBJECT_ID('dbo.UsersDocument', 'U') IS NOT NULL
-          DELETE FROM UsersDocument WHERE documentID = @documentID;
-      `);
+    await client.query('BEGIN');
 
-    // AI summaries (table should exist; if not, it will throw – better to know)
-    await transaction.request()
-      .input("documentID", sql.Int, documentID)
-      .query(`DELETE FROM AISummary WHERE documentID = @documentID`);
+    await client.query(`DELETE FROM "AISummary" WHERE "documentID" = $1`, [documentID]);
+    await client.query(`DELETE FROM "DocumentVersion" WHERE "documentID" = $1`, [documentID]);
 
-    // All versions
-    await transaction.request()
-      .input("documentID", sql.Int, documentID)
-      .query(`DELETE FROM DocumentVersion WHERE documentID = @documentID`);
+    const result = await client.query(`DELETE FROM "Document" WHERE "documentID" = $1`, [documentID]);
 
-    // Main document
-    const result = await transaction.request()
-      .input("documentID", sql.Int, documentID)
-      .query(`DELETE FROM Document WHERE documentID = @documentID`);
-
-    if (result.rowsAffected[0] === 0) {
+    if (result.rowCount === 0) {
       throw new Error("Document not found");
     }
 
-    await transaction.commit();
+    await client.query('COMMIT');
 
-    // Audit log after successful delete
     await addAuditLog({
       userID: deleteBy,
       action: "Delete Document",
@@ -406,61 +287,48 @@ export async function deleteDocument(documentID, deleteBy) {
 
     return true;
   } catch (err) {
-    try {
-      await transaction.rollback();
-    } catch (rollbackErr) {
+    try { await client.query('ROLLBACK'); } catch (rollbackErr) {
       console.error("Rollback failed:", rollbackErr);
     }
     throw err;
+  } finally {
+    client.release();
   }
 }
 
-// ---------- Upload new version with AI summary (backward compatible) ----------
-
 export async function uploadNewVersion(payload) {
   const pool = await getPool();
-  const transaction = new sql.Transaction(pool);
-  await transaction.begin();
+  const client = await pool.connect();
+
   try {
+    await client.query('BEGIN');
+
     const documentId = payload.documentId;
-    const nextVersion = await new sql.Request(transaction)
-      .input("documentId", sql.Int, payload.documentId)
-      .query(`
-        SELECT ISNULL(MAX(VersionNumber), 0) + 1 AS VersionNumber
-        FROM dbo.DocumentVersion
-        WHERE DocumentId = @documentId;
-      `);
-    const versionNumber = nextVersion.recordset[0].VersionNumber;
+    const nextVersion = await client.query(`
+      SELECT COALESCE(MAX("VersionNumber"), 0) + 1 AS "VersionNumber"
+      FROM "DocumentVersion"
+      WHERE "DocumentId" = $1
+    `, [documentId]);
+    const versionNumber = nextVersion.rows[0].VersionNumber;
 
-    await new sql.Request(transaction)
-      .input("documentId", sql.Int, payload.documentId)
-      .query(`UPDATE dbo.DocumentVersion SET IsLatest = 0 WHERE DocumentId = @documentId;`);
+    await client.query(`UPDATE "DocumentVersion" SET "IsLatest" = false WHERE "DocumentId" = $1`, [documentId]);
 
-    await new sql.Request(transaction)
-      .input("documentId", sql.Int, payload.documentId)
-      .input("versionNum", sql.Int, versionNumber)
-      .input("filePath", sql.NVarChar(255), payload.filePath)
-      .input("uploadedById", sql.Int, payload.uploadedById)
-      .query(`
-        INSERT INTO dbo.DocumentVersion (
-          DocumentId, VersionNumber, filePath, IsLatest, UploadedBy
-        ) VALUES (
-          @documentId, @versionNum, @filePath, 1, @uploadedById
-        );
-      `);
+    await client.query(`
+      INSERT INTO "DocumentVersion" (
+        "DocumentId", "VersionNumber", "filePath", "IsLatest", "UploadedBy"
+      ) VALUES ($1, $2, $3, true, $4)
+    `,
+    [documentId, versionNumber, payload.filePath, payload.uploadedById]);
 
     const summary = await generateSummary(payload.filePath);
-    await new sql.Request(transaction)
-      .input("documentId", sql.Int, payload.documentId)
-      .input("summaryText", sql.VarChar(sql.Max), summary)
-      .query(`UPDATE dbo.AISummary SET summaryText = @summaryText WHERE documentId = @documentId;`);
+    await client.query(`UPDATE "AISummary" SET "summaryText" = $1 WHERE "documentId" = $2`, [summary, documentId]);
 
-    await transaction.commit();
+    await client.query('COMMIT');
 
     await addAuditLog({
       userID: payload.uploadedById,
       action: "Update Document",
-      targetEntity: documentName,
+      targetEntity: "Document",
       targetID: documentId,
       documentID: documentId,
       description: `Updated document ${documentId}`
@@ -468,81 +336,60 @@ export async function uploadNewVersion(payload) {
 
     return getDocument(documentId);
   } catch (error) {
-    await transaction.rollback();
+    try { await client.query('ROLLBACK'); } catch (e) { /* ignore */ }
     throw error;
+  } finally {
+    client.release();
   }
 }
 
-// ---------- Set latest version ----------
-
-// ---------- Set latest/current version ----------
-
 export async function setLatestVersion(documentID, versionNum, userID) {
   const pool = await getPool();
-  const transaction = new sql.Transaction(pool);
-
-  await transaction.begin();
+  const client = await pool.connect();
 
   try {
+    await client.query('BEGIN');
 
-    // 1. Find selected version
-    const check = await new sql.Request(transaction)
-      .input("documentID", sql.Int, documentID)
-      .input("versionNum", sql.Int, versionNum)
-      .query(`
-        SELECT
-          VersionID,
-          VersionNum,
-          filePath
-        FROM dbo.DocumentVersion
-        WHERE DocumentID = @documentID
-          AND VersionNum = @versionNum
-      `);
+    const check = await client.query(`
+      SELECT
+        "VersionID",
+        "VersionNum",
+        "filePath"
+      FROM "DocumentVersion"
+      WHERE "DocumentID" = $1
+        AND "VersionNum" = $2
+    `, [documentID, versionNum]);
 
-    if (check.recordset.length === 0) {
+    if (check.rows.length === 0) {
       throw new Error("Version not found for this document");
     }
 
-    const selectedVersion = check.recordset[0];
+    const selectedVersion = check.rows[0];
 
-    // 2. Set all versions to not latest
-    await new sql.Request(transaction)
-      .input("documentID", sql.Int, documentID)
-      .query(`
-        UPDATE dbo.DocumentVersion
-        SET IsLatest = 0
-        WHERE DocumentID = @documentID
-      `);
+    await client.query(`
+      UPDATE "DocumentVersion"
+      SET "IsLatest" = false
+      WHERE "DocumentID" = $1
+    `, [documentID]);
 
-    // 3. Set selected version as latest
-    const result = await new sql.Request(transaction)
-      .input("documentID", sql.Int, documentID)
-      .input("versionNum", sql.Int, versionNum)
-      .query(`
-        UPDATE dbo.DocumentVersion
-        SET IsLatest = 1
-        WHERE DocumentID = @documentID
-          AND VersionNum = @versionNum
-      `);
+    const result = await client.query(`
+      UPDATE "DocumentVersion"
+      SET "IsLatest" = true
+      WHERE "DocumentID" = $1
+        AND "VersionNum" = $2
+    `, [documentID, versionNum]);
 
-    if (result.rowsAffected[0] === 0) {
+    if (result.rowCount === 0) {
       throw new Error("Failed to update current version");
     }
 
-    // 4. IMPORTANT:
-    // Update main Document to point to the selected version
-    await new sql.Request(transaction)
-      .input("documentID", sql.Int, documentID)
-      .input("filePath", sql.NVarChar(500), selectedVersion.filePath)
-      .query(`
-        UPDATE Document
-        SET filePath = @filePath
-        WHERE documentID = @documentID
-      `);
+    await client.query(`
+      UPDATE "Document"
+      SET "filePath" = $1
+      WHERE "documentID" = $2
+    `, [selectedVersion.filePath, documentID]);
 
-    // 5. Update pdfPath according to selected version
     const ext = path.extname(selectedVersion.filePath).toLowerCase();
-
     let pdfPath = null;
 
     if (ext === ".pdf") {
@@ -553,18 +400,14 @@ export async function setLatestVersion(documentID, versionNum, userID) {
       pdfPath = await convertXlsxToPdf(selectedVersion.filePath);
     }
 
-    await new sql.Request(transaction)
-      .input("documentID", sql.Int, documentID)
-      .input("pdfPath", sql.NVarChar(500), pdfPath)
-      .query(`
-        UPDATE Document
-        SET pdfPath = @pdfPath
-        WHERE documentID = @documentID
-      `);
+    await client.query(`
+      UPDATE "Document"
+      SET "pdfPath" = $1
+      WHERE "documentID" = $2
+    `, [pdfPath, documentID]);
 
-    await transaction.commit();
+    await client.query('COMMIT');
 
-    // 6. Audit log
     await addAuditLog({
       userID: userID,
       action: "Change Current Version",
@@ -577,32 +420,27 @@ export async function setLatestVersion(documentID, versionNum, userID) {
     return await getDocument(documentID);
 
   } catch (error) {
-
-    try {
-      await transaction.rollback();
-    } catch (rollbackError) {
+    try { await client.query('ROLLBACK'); } catch (rollbackError) {
       console.error("Rollback failed:", rollbackError);
     }
-
     throw error;
+  } finally {
+    client.release();
   }
 }
 
 export async function updateDocumentStatus(documentID, statusName, userID) {
     const pool = await getPool();
 
-    const result = await pool.request()
-        .input("documentID", sql.Int, documentID)
-        .input("statusName", sql.NVarChar(50), statusName)
-        .query(`
-            UPDATE Document
-            SET statusID = (
-                SELECT statusID
-                FROM Status
-                WHERE statusName = @statusName
-            )
-            WHERE documentID = @documentID
-        `);
+    const result = await pool.query(`
+        UPDATE "Document"
+        SET "statusID" = (
+            SELECT "statusID"
+            FROM "Status"
+            WHERE "statusName" = $1
+        )
+        WHERE "documentID" = $2
+    `, [statusName, documentID]);
 
       await addAuditLog({
         userID: userID,
@@ -613,41 +451,34 @@ export async function updateDocumentStatus(documentID, statusName, userID) {
         description:`Change status to ${statusName}`
       });
 
-    if (result.rowsAffected[0] === 0) {
-        return {
-            success: false,
-            message: "Document not found"
-        };
+    if (result.rowCount === 0) {
+        return { success: false, message: "Document not found" };
     }
 
-    return {
-        success: true,
-        message: "Status updated"
-    };
+    return { success: true, message: "Status updated" };
 }
 
 export async function previewDocument(documentID, userID) {
 
     const pool = await getPool();
 
-    const result = await pool.request()
-        .input("documentID", sql.Int, documentID)
-        .query(`
-            SELECT TOP 1
-                d.documentID,
-                d.documentName,
-                dv.VersionID,
-                dv.VersionNum,
-                dv.filePath,
-                dv.IsLatest
-            FROM Document d
-            INNER JOIN DocumentVersion dv
-                ON d.documentID = dv.DocumentID
-            WHERE d.documentID = @documentID
-              AND dv.IsLatest = 1
-        `);
+    const result = await pool.query(`
+        SELECT
+            d."documentID",
+            d."documentName",
+            dv."VersionID",
+            dv."VersionNum",
+            dv."filePath",
+            dv."IsLatest"
+        FROM "Document" d
+        INNER JOIN "DocumentVersion" dv
+            ON d."documentID" = dv."DocumentID"
+        WHERE d."documentID" = $1
+          AND dv."IsLatest" = true
+        LIMIT 1
+    `, [documentID]);
 
-    const document = result.recordset[0];
+    const document = result.rows[0];
 
     if (!document) {
         throw new Error("Current version not found");
@@ -674,20 +505,18 @@ export async function getCountDoc(){
 
     const pool = await getPool();
 
-    const result = await pool.request()
-    .query(`
+    const result = await pool.query(`
         SELECT
-          (SELECT COUNT(*) FROM Document) AS totalDocument,
-          (SELECT COUNT(DISTINCT departmentID) FROM Document) AS department,
-          (SELECT COUNT(DISTINCT categoriesID) FROM Document) AS category,
-          (SELECT COUNT(*) FROM Document d
-            INNER JOIN Status s ON d.statusID = s.statusID
-            WHERE s.statusName = 'Active') AS activeCount,
-          (SELECT COUNT(*) FROM Document d
-            INNER JOIN Status s ON d.statusID = s.statusID
-            WHERE s.statusName = 'Archived') AS archivedCount
+          (SELECT COUNT(*) FROM "Document") AS "totalDocument",
+          (SELECT COUNT(DISTINCT "departmentID") FROM "Document") AS "department",
+          (SELECT COUNT(DISTINCT "categoriesID") FROM "Document") AS "category",
+          (SELECT COUNT(*) FROM "Document" d
+            INNER JOIN "Status" s ON d."statusID" = s."statusID"
+            WHERE s."statusName" = 'Active') AS "activeCount",
+          (SELECT COUNT(*) FROM "Document" d
+            INNER JOIN "Status" s ON d."statusID" = s."statusID"
+            WHERE s."statusName" = 'Archived') AS "archivedCount"
     `);
 
-
-    return result.recordset[0];
+    return result.rows[0];
 }

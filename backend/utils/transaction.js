@@ -1,17 +1,18 @@
-import {getPool, sql} from "../config/db.js";
+import { getPool } from "../config/db.js";
 
-export async function withTransaction(callback){
+export async function withTransaction(callback) {
     const pool = await getPool();
-    const transaction = new sql.Transaction(pool);
+    const client = await pool.connect();
 
-    await transaction.begin();
-
-    try{
-        const result = await callback(transaction);
-        await transaction.commit();
+    try {
+        await client.query('BEGIN');
+        const result = await callback(client);
+        await client.query('COMMIT');
         return result;
-    }catch(error){
-        await transaction.rollback();
+    } catch (error) {
+        await client.query('ROLLBACK');
         throw error;
+    } finally {
+        client.release();
     }
 }

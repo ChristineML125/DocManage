@@ -1,5 +1,4 @@
 import express from "express";
-import { getPool, sql } from "../config/db.js";
 import {listAuditLogs} from "../services/auditLogsService.js"
 
 const router = express.Router();
@@ -18,7 +17,6 @@ router.get("/", async(req,res)=>{
             message:err.message
         });
     }
-
 });
 
 export default router;

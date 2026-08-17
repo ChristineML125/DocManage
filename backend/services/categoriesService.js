@@ -1,56 +1,50 @@
-import { getPool, sql } from "../config/db.js";
+import { getPool } from "../config/db.js";
 
 export async function listCategories() {
     const pool = await getPool();
-    const result = await pool.request()
-        .query(`
-            SELECT 
+    const result = await pool.query(`
+        SELECT 
             c.categoriesID AS id, 
             c.categoriesName AS name,
-            COUNT (d.documentID) AS docCount,
-            ISNULL(c.description, '') AS description
-            FROM dbo.Category c
-            LEFT JOIN Document d ON c.categoriesID = d.categoriesID
-            GROUP BY c.categoriesID, c.categoriesName, c.description
-            ORDER BY categoriesName
-        `);
-    return result.recordset;
+            COUNT(d.documentID) AS "docCount",
+            COALESCE(c.description, '') AS description
+        FROM "Category" c
+        LEFT JOIN "Document" d ON c.categoriesID = d.categoriesID
+        GROUP BY c.categoriesID, c.categoriesName, c.description
+        ORDER BY c.categoriesName
+    `);
+    return result.rows;
 }
 
 export async function getCategory(categoryID) {
     const pool = await getPool();
-    const result = await pool.request()
-        .input("categoryID", sql.Int, categoryID)
-        .query(`SELECT categoriesID AS id, categoriesName AS name, ISNULL(description, '') AS description FROM dbo.Category WHERE categoriesID = @categoryID`);
+    const result = await pool.query(
+        `SELECT categoriesID AS id, categoriesName AS name, COALESCE(description, '') AS description FROM "Category" WHERE categoriesID = $1`,
+        [categoryID]
+    );
     
-    if (result.recordset.length === 0) return null;
-    return result.recordset[0];
+    if (result.rows.length === 0) return null;
+    return result.rows[0];
 }
 
 export async function createCategory(name, description = '') {
     const pool = await getPool();
     
-    const check = await pool.request()
-        .input("name", sql.NVarChar(100), name)
-        .query(`SELECT 
-            COUNT(*) AS count FROM dbo.Category WHERE categoriesName = @name
-            
-            `);
+    const check = await pool.query(
+        `SELECT COUNT(*) AS count FROM "Category" WHERE categoriesName = $1`,
+        [name]
+    );
     
-    if (check.recordset[0].count > 0) {
+    if (parseInt(check.rows[0].count) > 0) {
         throw new Error("Category name already exists");
     }
     
-    const result = await pool.request()
-        .input("name", sql.NVarChar(100), name)
-        .input("description", sql.NVarChar(255), description)
-        .query(`
-            INSERT INTO dbo.Category (categoriesName, description) 
-            OUTPUT INSERTED.categoriesID AS id 
-            VALUES (@name, @description)
-        `);
+    const result = await pool.query(
+        `INSERT INTO "Category" (categoriesName, description) VALUES ($1, $2) RETURNING categoriesID AS id`,
+        [name, description]
+    );
     
-    return result.recordset[0].id;
+    return result.rows[0].id;
 }
 
 export async function updateCategory(categoryId, name, description = '') {
@@ -61,20 +55,19 @@ export async function updateCategory(categoryId, name, description = '') {
         throw new Error("Category not found");
     }
     
-    const check = await pool.request()
-        .input("categoryId", sql.Int, categoryId)
-        .input("name", sql.NVarChar(100), name)
-        .query(`SELECT COUNT(*) AS count FROM dbo.Category WHERE categoriesName = @name AND categoriesID != @categoryId`);
+    const check = await pool.query(
+        `SELECT COUNT(*) AS count FROM "Category" WHERE categoriesName = $1 AND categoriesID != $2`,
+        [name, categoryId]
+    );
     
-    if (check.recordset[0].count > 0) {
+    if (parseInt(check.rows[0].count) > 0) {
         throw new Error("Category name already exists");
     }
     
-    await pool.request()
-        .input("categoryID", sql.Int, categoryId)
-        .input("name", sql.NVarChar(100), name)
-        .input("description", sql.NVarChar(255), description)
-        .query(`UPDATE dbo.Category SET categoriesName = @name, description = @description WHERE categoriesID = @categoryID`);
+    await pool.query(
+        `UPDATE "Category" SET categoriesName = $1, description = $2 WHERE categoriesID = $3`,
+        [name, description, categoryId]
+    );
     
     return await getCategory(categoryId);
 }
@@ -82,19 +75,21 @@ export async function updateCategory(categoryId, name, description = '') {
 export async function deleteCategory(categoryId) {
     const pool = await getPool();
     
-    const check = await pool.request()
-        .input("categoryId", sql.Int, categoryId)
-        .query(`SELECT COUNT(*) AS count FROM dbo.Document WHERE categoriesID = @categoryId`);
+    const check = await pool.query(
+        `SELECT COUNT(*) AS count FROM "Document" WHERE categoriesID = $1`,
+        [categoryId]
+    );
     
-    if (check.recordset[0].count > 0) {
+    if (parseInt(check.rows[0].count) > 0) {
         throw new Error("Cannot delete category: it is used by existing documents");
     }
     
-    const result = await pool.request()
-        .input("categoryId", sql.Int, categoryId)
-        .query(`DELETE FROM dbo.Category WHERE categoriesID = @categoryId`);
+    const result = await pool.query(
+        `DELETE FROM "Category" WHERE categoriesID = $1`,
+        [categoryId]
+    );
     
-    if (result.rowsAffected[0] === 0) {
+    if (result.rowCount === 0) {
         throw new Error("Category not found");
     }
     

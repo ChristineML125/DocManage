@@ -1,49 +1,47 @@
-import {getPool, sql} from "../config/db.js";
+import {getPool} from "../config/db.js";
 
 export async function listAuditLogs(filters = {}){
     const pool = await getPool();
 
-    const request = pool.request()
-    .input("action", sql.NVarChar(50), filters.action || null)
-    .input("departmentId", sql.Int, filters.departmentId ? Number(filters.departmentId) : null)
+    const params = [filters.action || null, filters.departmentId ? Number(filters.departmentId) : null];
 
-    const result = await request.query(`
+    const result = await pool.query(`
         SELECT
-            a.AuditLogID AS id,
-            executor.UserName AS UserName,
-            a.Action,
+            a."AuditLogID" AS id,
+            executor."UserName" AS "UserName",
+            a."Action",
 
             CASE
-                WHEN a.targetEntity = 'User'
-                THEN targetUser.UserName
+                WHEN a."targetEntity" = 'User'
+                THEN targetUser."UserName"
 
-                WHEN a.targetEntity = 'Document'
-                THEN targetDoc.documentName
+                WHEN a."targetEntity" = 'Document'
+                THEN targetDoc."documentName"
 
-                ELSE a.targetEntity
-            END AS targetEntity,
+                ELSE a."targetEntity"
+            END AS "targetEntity",
 
-            a.targetID,
-            a.description,
-            a.[timestamp]
+            a."targetID",
+            a."description",
+            a."timestamp"
 
-        FROM AuditLog a
+        FROM "AuditLog" a
 
-        LEFT JOIN Users executor
-        ON a.UserID = executor.UserID
+        LEFT JOIN "Users" executor
+        ON a."UserID" = executor."UserID"
 
-        LEFT JOIN Users targetUser
-        ON a.targetEntity='User'
-        AND a.targetID = targetUser.UserID
+        LEFT JOIN "Users" targetUser
+        ON a."targetEntity"='User'
+        AND a."targetID" = targetUser."UserID"
 
-        LEFT JOIN Document targetDoc
-        ON a.targetEntity='Document'
-        AND a.targetID = targetDoc.documentID
+        LEFT JOIN "Document" targetDoc
+        ON a."targetEntity"='Document'
+        AND a."targetID" = targetDoc."documentID"
 
-        ORDER BY a.[timestamp] DESC
+        ORDER BY a."timestamp" DESC
     `);
 
-    return result.recordset;
+    return result.rows;
 }
 
 export async function addAuditLog({
@@ -57,34 +55,19 @@ export async function addAuditLog({
 
     const pool = await getPool();
 
-    await pool.request()
-    .input("UserID", sql.Int, userID)
-    .input("Action", sql.VarChar(50), action)
-    .input("documentID", sql.Int, documentID)
-    .input("description", sql.VarChar(255), description)
-    .input("targetEntity", sql.VarChar(255), targetEntity)
-    .input("targetID", sql.Int, targetID)
-    .query(`
-        INSERT INTO AuditLog
+    await pool.query(`
+        INSERT INTO "AuditLog"
         (
-            UserID,
-            Action,
-            documentID,
-            description,
-            targetEntity,
-            targetID,
-            timestamp
+            "UserID",
+            "Action",
+            "documentID",
+            "description",
+            "targetEntity",
+            "targetID",
+            "timestamp"
         )
-        VALUES
-        (
-            @UserID,
-            @Action,
-            @documentID,
-            @description,
-            @targetEntity,
-            @targetID,
-            GETDATE()
-        )
-    `);
+        VALUES ($1, $2, $3, $4, $5, $6, NOW())
+    `,
+    [userID, action, documentID, description, targetEntity, targetID]);
 
 }

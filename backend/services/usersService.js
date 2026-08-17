@@ -1,10 +1,9 @@
-import { getPool, sql } from "../config/db.js";
+import { getPool } from "../config/db.js";
 import crypto from "crypto";
 import { addAuditLog } from "./auditLogsService.js";
 import { getAvatarPath } from "./profileService.js";
 
 
-// Create User
 export async function createUser(
     userName,
     password,
@@ -21,40 +20,24 @@ export async function createUser(
 
     const pool = await getPool();
 
-    const result = await pool.request()
-        .input("userName", sql.VarChar(255), userName)
-        .input("password", sql.NVarChar(255), hashedPassword)
-        .input("departmentId", sql.Int, departmentId)
-        .input("role", sql.VarChar(50), role)
-        .input("email", sql.VarChar(255), email)
-        .query(`
-            INSERT INTO Users
-            (
-                UserName,
-                Password,
-                DepartmentID,
-                role,
-                Email,
-                UserStatusID,
-                CreatedAt,
-                LastLogin
-            )
-            VALUES
-            (
-                @userName,
-                @password,
-                @departmentId,
-                @role,
-                @email,
-                1,
-                GETDATE(),
-                NULL
-            );
+    const result = await pool.query(`
+        INSERT INTO "Users"
+        (
+            "UserName",
+            "Password",
+            "DepartmentID",
+            "role",
+            "Email",
+            "UserStatusID",
+            "CreatedAt",
+            "LastLogin"
+        )
+        VALUES ($1, $2, $3, $4, $5, 1, NOW(), NULL)
+        RETURNING "UserID" AS id
+    `,
+    [userName, hashedPassword, departmentId, role, email]);
 
-            SELECT SCOPE_IDENTITY() AS id;
-        `);
-
-    const userID = result.recordset[0].id;
+    const userID = result.rows[0].id;
 
     await addAuditLog({
         userID: createdBy,
@@ -68,74 +51,69 @@ export async function createUser(
 }
 
 
-// Get All Users
 export async function allUserList(){
 
     const pool = await getPool();
 
-    const result = await pool.request()
-    .query(`
+    const result = await pool.query(`
         SELECT
-            u.UserID,
-            u.UserName,
-            u.Email,
-            u.DepartmentID,
-            u.role,
-            d.departmentName,
-            us.StatusName,
-            u.CreatedAt,
-            u.LastLogin
-        FROM Users u
-        LEFT JOIN Department d
-        ON u.DepartmentID=d.departmentID
-        LEFT JOIN UserStatus us
-        ON u.UserStatusID=us.UserStatusID
-        ORDER BY u.UserName
+            u."UserID",
+            u."UserName",
+            u."Email",
+            u."DepartmentID",
+            u."role",
+            d."departmentName",
+            us."StatusName",
+            u."CreatedAt",
+            u."LastLogin"
+        FROM "Users" u
+        LEFT JOIN "Department" d
+        ON u."DepartmentID"=d."departmentID"
+        LEFT JOIN "UserStatus" us
+        ON u."UserStatusID"=us."UserStatusID"
+        ORDER BY u."UserName"
     `);
 
-    return Promise.all(result.recordset.map(async (user) => ({
+    return Promise.all(result.rows.map(async (user) => ({
         ...user,
         AvatarPath: await getAvatarPath(user.UserID)
     })));
 }
 
 
-// Get User
 export async function getUser(userID){
 
     const pool = await getPool();
 
-    const result = await pool.request()
-    .input("userID",sql.Int,userID)
-    .query(`
+    const result = await pool.query(`
         SELECT
-            u.UserID,
-            u.UserName,
-            u.Email,
-            u.DepartmentID,
-            u.role,
-            d.departmentName,
-            us.StatusName,
-            u.CreatedAt,
-            u.LastLogin
-        FROM Users u
-        LEFT JOIN Department d
-        ON u.DepartmentID=d.departmentID
-        LEFT JOIN UserStatus us
-        ON u.UserStatusID=us.UserStatusID
-        WHERE u.UserID=@userID
-    `);
+            u."UserID",
+            u."UserName",
+            u."Email",
+            u."DepartmentID",
+            u."role",
+            d."departmentName",
+            us."StatusName",
+            u."CreatedAt",
+            u."LastLogin"
+        FROM "Users" u
+        LEFT JOIN "Department" d
+        ON u."DepartmentID"=d."departmentID"
+        LEFT JOIN "UserStatus" us
+        ON u."UserStatusID"=us."UserStatusID"
+        WHERE u."UserID"=$1
+    `,
+    [userID]);
 
 
-    if(result.recordset.length===0){
+    if(result.rows.length===0){
         throw new Error("User not found");
     }
 
-    return result.recordset[0];
+    return result.rows[0];
 }
 
 
-// Edit User
 export async function editUser(
     userID,
     {
@@ -149,21 +127,16 @@ export async function editUser(
 
     const pool = await getPool();
 
-    await pool.request()
-    .input("userID",sql.Int,userID)
-    .input("userName",sql.VarChar,userName)
-    .input("departmentId",sql.Int,departmentId)
-    .input("role",sql.VarChar,role)
-    .input("email",sql.VarChar,email)
-    .query(`
-        UPDATE Users
+    await pool.query(`
+        UPDATE "Users"
         SET
-            UserName=@userName,
-            DepartmentID=@departmentId,
-            role=@role,
-            Email=@email
-        WHERE UserID=@userID
-    `);
+            "UserName"=$1,
+            "DepartmentID"=$2,
+            "role"=$3,
+            "Email"=$4
+        WHERE "UserID"=$5
+    `,
+    [userName, departmentId, role, email, userID]);
 
 
     await addAuditLog({
@@ -179,7 +152,6 @@ export async function editUser(
 }
 
 
-// Update Status
 export async function updateUserStatus(
     userID,
     status,
@@ -189,33 +161,26 @@ export async function updateUserStatus(
     const pool = await getPool();
 
 
-    const statusResult =
-    await pool.request()
-    .input("status",sql.VarChar,status)
-    .query(`
-        SELECT UserStatusID
-        FROM UserStatus
-        WHERE StatusName=@status
-    `);
+    const statusResult = await pool.query(
+        `SELECT "UserStatusID" FROM "UserStatus" WHERE "StatusName"=$1`,
+        [status]
+    );
 
 
-    if(statusResult.recordset.length===0){
+    if(statusResult.rows.length===0){
         throw new Error("Invalid status");
     }
 
 
-    const statusID =
-    statusResult.recordset[0].UserStatusID;
+    const statusID = statusResult.rows[0].UserStatusID;
 
 
-    await pool.request()
-    .input("userID",sql.Int,userID)
-    .input("statusID",sql.Int,statusID)
-    .query(`
-        UPDATE Users
-        SET UserStatusID=@statusID
-        WHERE UserID=@userID
-    `);
+    await pool.query(`
+        UPDATE "Users"
+        SET "UserStatusID"=$1
+        WHERE "UserID"=$2
+    `,
+    [statusID, userID]);
 
 
     await addAuditLog({
@@ -234,7 +199,6 @@ export async function updateUserStatus(
 }
 
 
-// Reset Password
 export async function resetPassword(
     userID,
     newPassword,
@@ -250,16 +214,14 @@ export async function resetPassword(
     const pool=await getPool();
 
 
-    await pool.request()
-    .input("userID",sql.Int,userID)
-    .input("password",sql.NVarChar,hashedPassword)
-    .query(`
-        UPDATE Users
+    await pool.query(`
+        UPDATE "Users"
         SET
-            Password=@password,
-            MustChangePassword=1
-        WHERE UserID=@userID
-    `);
+            "Password"=$1,
+            "MustChangePassword"=true
+        WHERE "UserID"=$2
+    `,
+    [hashedPassword, userID]);
 
     await addAuditLog({
         userID: adminID,
@@ -274,7 +236,6 @@ export async function resetPassword(
 }
 
 
-// Change Password
 export async function changePassword(
     userID,
     currentPassword,
@@ -284,17 +245,13 @@ export async function changePassword(
     const pool=await getPool();
 
 
-    const result =
-    await pool.request()
-    .input("userID",sql.Int,userID)
-    .query(`
-        SELECT Password
-        FROM Users
-        WHERE UserID=@userID
-    `);
+    const result = await pool.query(
+        `SELECT "Password" FROM "Users" WHERE "UserID"=$1`,
+        [userID]
+    );
 
 
-    const user=result.recordset[0];
+    const user=result.rows[0];
 
 
     const oldHash =
@@ -314,15 +271,13 @@ export async function changePassword(
     .digest("hex");
 
 
-    await pool.request()
-    .input("userID",sql.Int,userID)
-    .input("password",sql.NVarChar,newHash)
-    .query(`
-        UPDATE Users
-        SET Password=@password,
-        MustChangePassword=0
-        WHERE UserID=@userID
-    `);
+    await pool.query(`
+        UPDATE "Users"
+        SET "Password"=$1,
+            "MustChangePassword"=false
+        WHERE "UserID"=$2
+    `,
+    [newHash, userID]);
 
 
     await addAuditLog({
@@ -341,18 +296,17 @@ export async function getCount(){
 
     const pool = await getPool();
 
-    const result = await pool.request()
-    .query(`
+    const result = await pool.query(`
         SELECT
-            COUNT(*) AS totalUsers,
-            SUM(CASE WHEN role='admin' THEN 1 ELSE 0 END) AS adminCount,
-            SUM(CASE WHEN role='staff' THEN 1 ELSE 0 END) AS staffCount
-        FROM Users u
-        JOIN UserStatus us
-        ON u.UserStatusID=us.UserStatusID
-        WHERE us.StatusName='Active'
+            COUNT(*) AS "totalUsers",
+            SUM(CASE WHEN "role"='admin' THEN 1 ELSE 0 END) AS "adminCount",
+            SUM(CASE WHEN "role"='staff' THEN 1 ELSE 0 END) AS "staffCount"
+        FROM "Users" u
+        JOIN "UserStatus" us
+        ON u."UserStatusID"=us."UserStatusID"
+        WHERE us."StatusName"='Active'
     `);
 
 
-    return result.recordset[0];
+    return result.rows[0];
 }
