@@ -1,9 +1,13 @@
 const BASE_URL = [
     import.meta.env.VITE_API_URL_PRIMARY,
     import.meta.env.VITE_API_URL_BACKUP,
-    import.meta.env.VITE_API_URL,
-    'https://docmanage-l0xc.onrender.com/api'
+    import.meta.env.VITE_API_URL
 ].filter(Boolean);
+
+// If no env var is set, use same-origin (when frontend is served from backend)
+if (BASE_URL.length === 0) {
+    BASE_URL.push('');
+}
 
 console.log("BASE_URL =", BASE_URL);
 

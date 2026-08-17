@@ -65,6 +65,14 @@ app.use((err, _req, res, _next) => {
 app.get("/", (req,res)=>{
     res.send("Backend is running");
 });
+
+// Serve frontend build
+const frontendDist = path.join(__dirname, "..", "frontend", "dist");
+app.use(express.static(frontendDist));
+// SPA fallback: serve index.html for all non-API, non-file routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendDist, 'index.html'));
+});
 // empty route for remove warning
 app.get('/.well-known/appspecific/com.chrome.devtools.json', (req,res)=>{
     res.json({});
