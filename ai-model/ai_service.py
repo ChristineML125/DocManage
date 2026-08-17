@@ -14,17 +14,16 @@ print("Loading models...")
 MODEL_NAME = os.getenv("MODEL_NAME", "facebook/bart-large-cnn")
 AI_PORT = int(os.getenv("AI_PORT", 5000))
 
-chunk_summarizer = pipeline(
-    "summarization",
-    model=MODEL_NAME, 
-    device=-1
-)
-
-final_summarizer = pipeline(
+summarizer = pipeline(
     "summarization",
     model=MODEL_NAME,
     device=-1
 )
+
+print("Model loaded successfully!")
+
+chunk_summarizer = summarizer
+final_summarizer = summarizer
 
 def clean_document(text):
     remove_words = [
@@ -33,7 +32,7 @@ def clean_document(text):
         "I/we have not",
         "Student ID",
         "Cover Sheet",
-        "Signature"
+        "Signature",
     ]
     lines = text.split("\n")
     result = []
@@ -102,17 +101,17 @@ def generate_summary(text):
         print(f"Processing chunk {index+1}/{len(chunks)}")
         
         try:
-            result = chunk_summarizer(
+            final_result = summarizer(
                 chunk,
                 max_length=150,
-                min_length=30,
+                min_length=40,
                 do_sample=False,
-                num_beams=4,
-                repetition_penalty=3.0,
+                num_beams=1,
+                repetition_penalty=2.0,
                 no_repeat_ngram_size=3,
                 early_stopping=True
             )
-            chunk_summaries.append(result[0]["summary_text"])
+            chunk_summaries.append(final_result[0]["summary_text"])
         except Exception as e:
             print(f"Error processing chunk {index+1}: {e}")
             continue
@@ -130,12 +129,12 @@ def generate_summary(text):
         try:
             final_result = final_summarizer(
                 combined_summaries,
-                max_length=300,
-                min_length=100,
+                max_length=150,
+                min_length=40,
                 do_sample=False,
-                num_beams=4,
-                repetition_penalty=4.0,
-                no_repeat_ngram_size=4,
+                num_beams=1,
+                repetition_penalty=2.0,
+                no_repeat_ngram_size=3,
                 early_stopping=True
             )
             final_text = final_result[0]["summary_text"]

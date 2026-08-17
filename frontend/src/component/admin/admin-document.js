@@ -16,6 +16,7 @@ import {deleteDocuments,
 
 import { renderAsync } from "docx-preview";
 import * as XLSX from "xlsx";
+import { getFileUrl, fetchFile } from '../../api/http';
 
 export class AdminAllDocument extends LitElement {
 
@@ -1522,7 +1523,7 @@ static styles = css`
         const filePath = res.document.filePath;
 
         const fileUrl = filePath
-          ? `http://localhost:3000/files/${filePath}`
+          ? getFileUrl(filePath)
           : null;
         
         const fileType = filePath.split('.').pop().toLowerCase();
@@ -1621,7 +1622,7 @@ static styles = css`
 
    async renderDoc(url) {
     //Get doc in backend
-    const res = await fetch(url);
+    const res = await fetchFile(url);
     // Convert docx to raw binary data, Because docx-preview cannot get url and it only can buffer 
     const buffer = await res.arrayBuffer(); // arrayBuffer: raw docx data
 
@@ -1644,7 +1645,7 @@ static styles = css`
   }
 
   async renderModalDoc(url) {
-    const res = await fetch(url);
+    const res = await fetchFile(url);
 
     const buffer = await res.arrayBuffer();
     await this.updateComplete;
@@ -1990,6 +1991,44 @@ static styles = css`
       }
   }
 
+  async makeCurrentVersion() {
+    if (!this.selectedVer || !this.selectedDoc) {
+        return;
+    }
+
+      try {
+          const res = await updateDocumentVersion(
+              this.selectedDoc.documentID,
+              this.selectedVer.versionNum
+          );
+
+          if (res.success) {
+              alert(`V${this.selectedVer.versionNum}.0 is now the current version`);
+
+              // 重新加载 document
+              await this.fetchDocuments();
+
+              const updatedDoc = this.documents.find(
+                  d => d.documentID === this.selectedDoc.documentID
+              );
+
+              if (updatedDoc) {
+                  await this.selectDoc(updatedDoc);
+              }
+
+              // 重新加载 Version History
+              await this.openHistoryVersion();
+
+          } else {
+              alert(res.message || "Failed to update current version");
+          }
+
+      } catch (err) {
+          console.error("Failed to change current version:", err);
+          alert("Failed to change current version");
+      }
+  }
+
   _handleDeleteClick(e) {
     e.stopPropagation();
     const row = e.target.closest('tr');
@@ -2096,7 +2135,7 @@ static styles = css`
         return html`<iframe src="${url}"></iframe>`;
     }
 
-    if (["png","jpg","jpeg"].includes(type)) {
+    if (["png","jpg","jpeg","webp"].includes(type)) {
         return html`<img src="${url}" style="max-width:100%;height:auto;">`;
     }
 
@@ -2133,7 +2172,7 @@ static styles = css`
   }
 
   async renderExcel(url) {
-    const res = await fetch(url);
+     const res = await fetchFile(url);
     const buffer = await res.arrayBuffer();
 
     const workbook = XLSX.read(buffer, {
@@ -2164,7 +2203,7 @@ static styles = css`
   }
 
   async renderModalExcel(url) {
-      const res = await fetch(url);
+      const res = await fetchFile(url);
       const buffer = await res.arrayBuffer();
 
       await this.updateComplete;
@@ -2227,7 +2266,7 @@ static styles = css`
   async selectVersion(version){
       this.selectedVer = {
           ...version,
-          fileUrl: `http://localhost:3000/files/${version.filePath}`,
+          fileUrl: getFileUrl(version.filePath),
           fileType: version.filePath.split('.').pop().toLowerCase()
       };
 
@@ -2503,6 +2542,11 @@ static styles = css`
               </div>
 
               <div class="version-content">
+                <button
+                    @click=${this.makeCurrentVersion}
+                >
+                    Make Current
+                </button>
                 <div class="version-list">
                   ${this.versions.length === 0 
                     ? html`

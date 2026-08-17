@@ -64,7 +64,7 @@ export async function updateCategory(id, name, description = ''){
     try{
         const data = await http (`/categories/${id}`, {
             method: "PUT",
-            body: JSON.stringify({name})
+            body: JSON.stringify({name, description})
         });
         return data;
     } catch (err) {

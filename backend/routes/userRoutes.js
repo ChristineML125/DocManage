@@ -4,6 +4,12 @@ import { getPool, sql } from "../config/db.js";
 import { avatarUpload } from "../middleware/upload.js";
 import { getAvatarPath, saveAvatarPath } from "../services/profileService.js";
 import {
+    completePasswordResetRequest,
+    createPasswordResetRequest,
+    listPasswordResetRequests
+} from "../services/passwordResetRequestService.js";
+import { sendTemporaryPasswordEmail } from "../services/emailService.js";
+import {
     createUser,
     editUser,
     updateUserStatus,
@@ -17,6 +23,13 @@ import jwt from "jsonwebtoken";
 import { authenticate } from "../middleware/auth.js";
 
 const router = express.Router();
+
+function requireAdmin(req, res, next) {
+    if (req.user?.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Administrator access is required.' });
+    }
+    next();
+}
 
 
 // Login
@@ -109,6 +122,10 @@ router.put("/change-password", authenticate, async(req,res)=>{
         newPassword
     }=req.body;
 
+    if (Number(userID) !== Number(req.user.UserID)) {
+        return res.status(403).json({ success: false, message: 'You can only change your own password.' });
+    }
+
     try{
 
         await changePassword(
@@ -158,7 +175,7 @@ router.get("/count",async(req,res)=>{
 });
 
 // Get All User
-router.get("/list",async(req,res)=>{
+router.get("/list", authenticate, requireAdmin, async(req,res)=>{
     try{
         const users=await allUserList();
 
@@ -176,7 +193,7 @@ router.get("/list",async(req,res)=>{
 });
 
 // Create User
-router.post("/", authenticate, async(req,res)=>{
+router.post("/", authenticate, requireAdmin, async(req,res)=>{
     const {
         UserName,
         Password,
@@ -216,25 +233,11 @@ router.post("/", authenticate, async(req,res)=>{
 });
 
 // Password Reset Requests
-router.get("/password-reset-requests", authenticate, async(req,res)=>{
+router.get("/password-reset-requests", authenticate, requireAdmin, async(req,res)=>{
     try{
-
-        const pool = await getPool();
-
-        const result = await pool.request()
-        .query(`
-            SELECT
-                u.UserID,
-                u.UserName,
-                u.Email
-            FROM Users u
-            WHERE u.MustChangePassword = 1
-        `);
-
-
         res.json({
             success:true,
-            requests:result.recordset
+            requests:await listPasswordResetRequests()
         });
 
 
@@ -249,7 +252,7 @@ router.get("/password-reset-requests", authenticate, async(req,res)=>{
 });
 
 // Edit User
-router.put("/:id", authenticate, async(req,res)=>{
+router.put("/:id", authenticate, requireAdmin, async(req,res)=>{
     try{
         const userID=Number(req.params.id);
 
@@ -279,7 +282,7 @@ router.put("/:id", authenticate, async(req,res)=>{
 
 
 // Update User Status
-router.put("/:id/status", authenticate, async(req,res)=>{
+router.put("/:id/status", authenticate, requireAdmin, async(req,res)=>{
     try{
         const userID=Number(req.params.id);
 
@@ -304,7 +307,7 @@ router.put("/:id/status", authenticate, async(req,res)=>{
 
 
 // Reset Password
-router.post("/:id/reset-password", authenticate, async(req,res)=>{
+router.post("/:id/reset-password", authenticate, requireAdmin, async(req,res)=>{
     try{
         const userID=Number(req.params.id);
 
@@ -338,8 +341,99 @@ router.post("/:id/reset-password", authenticate, async(req,res)=>{
     }
 });
 
+// Generate and email a temporary password.  The reset request is cleared only
+// after the SMTP server confirms the message was accepted for delivery.
+router.post("/:id/send-temp-password", authenticate, requireAdmin, async(req,res)=>{
+    const userID = Number(req.params.id);
+    if (Number.isNaN(userID)) {
+        return res.status(400).json({ success: false, message: 'Invalid User ID' });
+    }
+
+    try {
+        const user = await getUser(userID);
+        if (!user.Email) {
+            return res.status(400).json({ success: false, message: 'This user does not have an email address.' });
+        }
+
+        const tempPassword = Math.floor(100000 + Math.random() * 900000).toString();
+        await resetPassword(userID, tempPassword, req.user.UserID);
+        await sendTemporaryPasswordEmail({
+            email: user.Email,
+            userName: user.UserName,
+            temporaryPassword: tempPassword
+        });
+        await completePasswordResetRequest(userID);
+
+        res.json({ success: true, message: `Temporary password sent to ${user.Email}.` });
+    } catch (err) {
+        console.error('Send temporary password failed:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Forgot Password
+router.post("/forgot-password", async (req, res) => {
+    const { UserName } = req.body;
+
+    if (!UserName) {
+        return res.status(400).json({
+            success: false,
+            message: "Please enter your username"
+        });
+    }
+
+    try {
+        const pool = await getPool();
+
+        // Check whether user exists
+        const result = await pool.request()
+            .input("UserName", sql.VarChar, UserName)
+            .query(`
+                SELECT UserID, UserName, Email
+                FROM Users
+                WHERE UserName = @UserName
+                AND UserStatusID = 1
+            `);
+
+        const user = result.recordset[0];
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Mark user as requiring password reset and persist the request so it
+        // is visible to administrators until the temporary password is emailed.
+        await pool.request()
+            .input("UserID", sql.Int, user.UserID)
+            .query(`
+                UPDATE Users
+                SET MustChangePassword = 1
+                WHERE UserID = @UserID
+            `);
+
+        await createPasswordResetRequest(user);
+
+        res.json({
+            success: true,
+            message: "Password reset request submitted successfully"
+        });
+
+    } catch (err) {
+        console.error("Forgot password error:", err);
+
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+});
+
 // Upload Avatar
 router.post("/:id/avatar",
+authenticate,
 avatarUpload.single("avatar"),
 async(req,res)=>{
 
@@ -350,6 +444,10 @@ async(req,res)=>{
             success:false,
             message:"Invalid user or file"
         });
+    }
+
+    if (Number(req.user.UserID) !== userID && req.user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'You can only update your own profile photo.' });
     }
 
     try{
@@ -385,6 +483,10 @@ router.get("/:id", authenticate, async(req,res)=>{
                 success:false,
                 message:"Invalid User ID"
             });
+        }
+
+        if (Number(req.user.UserID) !== userID && req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'You can only view your own profile.' });
         }
 
         const user=await getUser(userID);

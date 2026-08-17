@@ -17,7 +17,8 @@ import {
   getDocument,
   updateDocumentStatus,
   previewDocument,
-  getCountDoc
+  getCountDoc,
+  setLatestVersion
 } from '../services/documentService.js';
 import { authenticate } from '../middleware/auth.js';
 import { getPool, sql } from '../config/db.js';
@@ -25,7 +26,7 @@ import { getPool, sql } from '../config/db.js';
 const router = express.Router();
 
 // Document Count
-router.get("/count",async(req,res)=>{
+router.get("/count", authenticate, async(req,res)=>{
 
     try{
 
@@ -52,7 +53,7 @@ router.get("/count",async(req,res)=>{
 });
 
 // List documents
-router.get('/list', async (req, res) => {
+router.get('/list', authenticate, async (req, res) => {
   try {
     const documents = await listDocuments({
       keyword: req.query.keyword,
@@ -70,7 +71,7 @@ router.get('/list', async (req, res) => {
 // ---- Routes with sub-paths (must come before /:documentID) ----
 
 // Get AI summary
-router.get('/:documentID/summary', async (req, res) => {
+router.get('/:documentID/summary', authenticate, async (req, res) => {
   try {
     const documentID = parseInt(req.params.documentID, 10);
     const pool = await getPool();
@@ -128,8 +129,10 @@ router.post('/:documentID/generate-summary', authenticate, async (req, res) => {
   }
 });
 
+
+console.log("VERSION ROUTE REGISTERED");
 // Get versions
-router.get('/:id/versions', async (req, res) => {
+router.get('/:id/versions', authenticate, async (req, res) => {
   const documentID = parseInt(req.params.id, 10);
   try {
     const pool = await getPool();
@@ -150,35 +153,93 @@ router.get('/:id/versions', async (req, res) => {
 });
 
 // Add new version
-router.post("/:id/version", authenticate, upload.single('file'), async (req, res) => {
-  const documentID = parseInt(req.params.id, 10);
-  if (Number.isNaN(documentID)) {
-    return res.status(400).json({ success: false, message: "Invalid document ID" });
-  }
-
-  const file = req.file;
-  if (!file) {
-    return res.status(400).json({ success: false, message: "No file uploaded" });
-  }
-
+// Add new version
+router.post("/:id/version", authenticate, upload.single("file"), async (req, res) => {
   try {
-    await addNewVersion({
+    const documentID = Number(req.params.id);
+
+    if (Number.isNaN(documentID)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid document ID"
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded"
+      });
+    }
+
+    const result = await addNewVersion({
       documentID,
-      filePath: file.filename,
+      filePath: req.file.filename,
       uploadedBy: req.user.UserID
     });
 
-    return res.json({ success: true, message: "Update version successfully" });
+    return res.status(201).json({
+      success: true,
+      message: `Version ${result.versionNum} uploaded successfully`,
+      versionNum: result.versionNum,
+      document: result
+    });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: err.message });
+    console.error("Upload new version failed:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+});
+// Change current version
+router.put("/:id/versions", authenticate, async (req, res) => {
+  try {
+    const documentID = Number(req.params.id);
+    const { versionNum } = req.body;
+
+    if (Number.isNaN(documentID)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid document ID"
+      });
+    }
+
+    if (versionNum === undefined || versionNum === null) {
+      return res.status(400).json({
+        success: false,
+        message: "Version number required"
+      });
+    }
+
+    const result = await setLatestVersion(
+      documentID,
+      Number(versionNum),
+      req.user.UserID
+    );
+
+    return res.json({
+      success: true,
+      message: `Version ${versionNum} is now the current version`,
+      document: result
+    });
+
+  } catch (err) {
+    console.error("Change current version failed:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 });
 
 // ---- Single document (must be after sub-paths) ----
 
 // Get single document
-router.get('/:documentID', async (req, res) => {
+router.get('/:documentID', authenticate, async (req, res) => {
   try {
     const documentID = parseInt(req.params.documentID, 10);
     if (isNaN(documentID)) {

@@ -9,6 +9,7 @@ dist/
 # Python
 __pycache__/
 *.pyc
+ai-model/.python-packages/
 
 # Virtual environments
 venv/
@@ -33,3 +34,14 @@ backend/temp.pdf
 backend/test.js
 backend/test.sql
 backend/testInsert.js
+
+# Flutter build
+docmanage_mobile/build/
+docmanage_mobile/.dart_tool/
+docmanage_mobile/android/.gradle/
+docmanage_mobile/android/build/
+docmanage_mobile/.packages
+
+# Frontend build
+frontend/dist/
+frontend/android/app/build/

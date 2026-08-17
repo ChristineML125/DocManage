@@ -132,6 +132,10 @@ export async function changePassword(data){
 
 }
 
+export async function sendTemporaryPassword(id) {
+    return http(`/users/${id}/send-temp-password`, { method: 'POST' });
+}
+
 export async function uploadAvatar(id, file) {
     const formData = new FormData();
     formData.append('avatar', file);

@@ -129,7 +129,6 @@ export class StaffUpload extends LitElement {
       return;
     }
     const user = JSON.parse(userStr);
-    const uploadedById = user.UserID;
     const branchId = user.branchId || user.BranchID || 1;
 
     this.uploading = true;
@@ -138,14 +137,11 @@ export class StaffUpload extends LitElement {
       formData.append('file', this.selectedFile);
       formData.append('categoryId', this.formData.categoryId);
       formData.append('departmentId', this.formData.departmentId);
-      formData.append('uploadedById', uploadedById);
       formData.append('branchId', branchId);
 
-      const res = await fetch('http://localhost:3000/api/documents/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
+      // Use the shared API client so the request includes the current login token
+      // and uses the configured API address instead of a hard-coded localhost URL.
+      const data = await uploadDocument(formData);
       if (data.success) {
         alert('Document uploaded successfully!');
 
@@ -653,11 +649,11 @@ export class StaffUpload extends LitElement {
           >
             <span class="material-symbols-outlined icon">cloud_upload</span>
             <h3>Drag and drop file here</h3>
-            <p style="font-size:14px; color:#3d4947;">Support for PDF, DICOM, JPG (Max 50MB)</p>
+            <p style="font-size:14px; color:#3d4947;">Supports PDF, Office files, PNG, JPG, WebP and HEIC (Max 25MB)</p>
             <input
               type="file"
               id="fileInput"
-              accept=".pdf,.docx,.doc,.txt,.xls,.xlsx,.png,.jpg,.jpeg"
+              accept=".pdf,.docx,.doc,.txt,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.heic,.heif"
               style="display: none"
               @change=${this._onFileChange}
             />

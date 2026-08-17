@@ -5,12 +5,15 @@
   "main": "server.js",
   "scripts": {
     "server": "node server.js",
-    "ai": "C:\\Users\\USER\\anaconda\\envs\\llm\\python.exe -u ../ai-model/ai_service.py",
+    "ai": "C:\\Users\\USER\\anaconda3\\envs\\docmanage-ai\\python.exe -u ../ai-model/ai_service.py",
     "dev": "concurrently \"npm run server\" \"npm run ai\"",
-    "start": "node server.js"
+    "start": "concurrently \"npm run server\" \"npm run ai\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "nodemailer": "^9.0.5"
+  }
 }

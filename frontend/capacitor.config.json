@@ -1,0 +1,9 @@
+{
+  "appId": "com.christine.docmanage",
+  "appName": "DocManage",
+  "webDir": "dist",
+  "server": {
+    "cleartext": true,
+    "androidScheme": "http"
+  }
+}

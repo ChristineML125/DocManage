@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { Router } from '@vaadin/router';
 import '../../api/documentAPI.js';
 import { getDocuments, getDocumentsList } from '../../api/documentAPI.js';
+import { getFileUrl } from '../../api/http.js';
 
 export class TopBar extends LitElement {
 
@@ -249,7 +250,7 @@ export class TopBar extends LitElement {
       return html`
         <img
           class="avatar"
-          src="http://localhost:3000/files/${this.avatarPath}"
+          src="${this.avatarPath ? getFileUrl(this.avatarPath) : ''}"
           alt="Profile photo"
         >
       `;

@@ -61,14 +61,21 @@ export async function listDocuments(filters = {}) {
  * Returns EXACTLY the same field names as the original route.
  */
 export async function getDocument(documentID) {
+
   const pool = await getPool();
+
   const result = await pool.request()
     .input("documentID", sql.Int, documentID)
     .query(`
       SELECT
         d.documentID,
         d.documentName,
-        d.filePath,
+
+        dv.filePath,
+        dv.VersionID,
+        dv.VersionNum,
+        dv.IsLatest,
+
         dept.departmentName,
         c.categoriesName,
         d.uploadDate,
@@ -76,20 +83,34 @@ export async function getDocument(documentID) {
         s.statusName,
         d.pdfPath,
         d.previewPath
+
       FROM Document d
-      LEFT JOIN Department dept ON d.departmentID = dept.departmentID
-      LEFT JOIN Category c ON d.categoriesID = c.categoriesID
-      LEFT JOIN Status s ON d.statusID = s.statusID
+
+      LEFT JOIN DocumentVersion dv
+        ON d.documentID = dv.DocumentID
+        AND dv.IsLatest = 1
+
+      LEFT JOIN Department dept
+        ON d.departmentID = dept.departmentID
+
+      LEFT JOIN Category c
+        ON d.categoriesID = c.categoriesID
+
+      LEFT JOIN Status s
+        ON d.statusID = s.statusID
+
       WHERE d.documentID = @documentID
     `);
 
   const document = result.recordset[0];
+
   if (!document) return null;
 
-  // Add fileUrl for convenience (does NOT break existing fields)
   return {
     ...document,
-    fileUrl: document.filePath ? `/files/${document.filePath}` : null
+    fileUrl: document.filePath
+      ? `/files/${document.filePath}`
+      : null
   };
 }
 
@@ -208,9 +229,16 @@ export async function uploadDocument({
 
 // ---------- Add new version (with transaction and PDF conversion) ----------
 
-export async function addNewVersion({ documentID, filePath, uploadedBy }) {
+export async function addNewVersion({
+  documentID,
+  filePath,
+  uploadedBy
+}) {
+
   const ext = path.extname(filePath).toLowerCase();
+
   let pdfPath = null;
+
   if (ext === ".pdf") {
     pdfPath = filePath;
   } else if (ext === ".docx") {
@@ -223,38 +251,45 @@ export async function addNewVersion({ documentID, filePath, uploadedBy }) {
   const transaction = new sql.Transaction(pool);
 
   try {
+
     await transaction.begin();
 
-    // Mark all existing versions as not latest
-    await transaction.request()
-      .input("documentID", sql.Int, documentID)
-      .query(`UPDATE DocumentVersion SET isLatest = 0 WHERE documentID = @documentID`);
-
-    // Determine next version number
-    const versionResult = await transaction.request()
+    // 1. Get next version number
+    const versionResult = await new sql.Request(transaction)
       .input("documentID", sql.Int, documentID)
       .query(`
-        SELECT ISNULL(MAX(versionNum), 0) + 1 AS versionNum
+        SELECT ISNULL(MAX(VersionNum), 0) + 1 AS VersionNum
         FROM DocumentVersion
-        WHERE documentID = @documentID
+        WHERE DocumentID = @documentID
       `);
-    const versionNum = versionResult.recordset[0].versionNum;
 
-    // Insert new version record
-    await transaction.request()
+    const versionNum = versionResult.recordset[0].VersionNum;
+
+    // 2. Old current version -> not current
+    await new sql.Request(transaction)
+      .input("documentID", sql.Int, documentID)
+      .query(`
+        UPDATE DocumentVersion
+        SET IsLatest = 0
+        WHERE DocumentID = @documentID
+      `);
+
+    // 3. Insert new version
+    await new sql.Request(transaction)
       .input("documentID", sql.Int, documentID)
       .input("versionNum", sql.Int, versionNum)
-      .input("filePath", sql.VarChar, filePath)
+      .input("filePath", sql.NVarChar(500), filePath)
       .input("uploadedBy", sql.Int, uploadedBy)
       .query(`
         INSERT INTO DocumentVersion (
-          documentID,
-          versionNum,
-          uploadDate,
-          filePath,
-          uploadedBy,
-          isLatest
-        ) VALUES (
+          DocumentID,
+          VersionNum,
+          UploadDate,
+          FilePath,
+          UploadedBy,
+          IsLatest
+        )
+        VALUES (
           @documentID,
           @versionNum,
           GETDATE(),
@@ -264,22 +299,23 @@ export async function addNewVersion({ documentID, filePath, uploadedBy }) {
         )
       `);
 
-    // Update main document record with new file and PDF paths
-    await transaction.request()
+    // 4. Update main Document
+    await new sql.Request(transaction)
       .input("documentID", sql.Int, documentID)
-      .input("filePath", sql.VarChar, filePath)
+      .input("filePath", sql.NVarChar(500), filePath)
       .input("pdfPath", sql.NVarChar(500), pdfPath)
       .query(`
         UPDATE Document
-        SET filePath = @filePath,
-            pdfPath = @pdfPath,
-            uploadDate = GETDATE()
-        WHERE documentID = @documentID
+        SET
+          FilePath = @filePath,
+          PdfPath = @pdfPath,
+          UploadDate = GETDATE()
+        WHERE DocumentID = @documentID
       `);
 
     await transaction.commit();
 
-    // Audit log
+    // 5. Audit
     await addAuditLog({
       userID: uploadedBy,
       action: "Add Document Version",
@@ -289,14 +325,22 @@ export async function addNewVersion({ documentID, filePath, uploadedBy }) {
       description: `Added version ${versionNum} for document ${documentID}`
     });
 
-    return { documentID, versionNum, filePath, pdfPath };
-  } catch (err) {
+    return {
+      documentID,
+      versionNum,
+      filePath,
+      pdfPath
+    };
+
+  } catch (error) {
+
     try {
       await transaction.rollback();
-    } catch (rollbackErr) {
-      console.error("Rollback failed:", rollbackErr);
+    } catch (rollbackError) {
+      console.error("Rollback failed:", rollbackError);
     }
-    throw err;
+
+    throw error;
   }
 }
 
@@ -431,34 +475,115 @@ export async function uploadNewVersion(payload) {
 
 // ---------- Set latest version ----------
 
-export async function setLatestVersion(documentID, versionId) {
+// ---------- Set latest/current version ----------
+
+export async function setLatestVersion(documentID, versionNum, userID) {
   const pool = await getPool();
   const transaction = new sql.Transaction(pool);
+
   await transaction.begin();
+
   try {
+
+    // 1. Find selected version
     const check = await new sql.Request(transaction)
       .input("documentID", sql.Int, documentID)
-      .input("versionID", sql.Int, versionId)
-      .query(`SELECT 1 AS exist FROM DocumentVersion WHERE DocumentID = @documentID AND VersionId = @versionId;`);
-    if (check.recordset.length == 0) {
+      .input("versionNum", sql.Int, versionNum)
+      .query(`
+        SELECT
+          VersionID,
+          VersionNum,
+          filePath
+        FROM dbo.DocumentVersion
+        WHERE DocumentID = @documentID
+          AND VersionNum = @versionNum
+      `);
+
+    if (check.recordset.length === 0) {
       throw new Error("Version not found for this document");
     }
 
+    const selectedVersion = check.recordset[0];
+
+    // 2. Set all versions to not latest
+    await new sql.Request(transaction)
+      .input("documentID", sql.Int, documentID)
+      .query(`
+        UPDATE dbo.DocumentVersion
+        SET IsLatest = 0
+        WHERE DocumentID = @documentID
+      `);
+
+    // 3. Set selected version as latest
     const result = await new sql.Request(transaction)
       .input("documentID", sql.Int, documentID)
-      .input("versionId", sql.Int, versionId)
+      .input("versionNum", sql.Int, versionNum)
       .query(`
-        UPDATE dbo.DocumentVersion 
-        SET isLatest = CASE WHEN versionID = @versionId THEN 1 ELSE 0 END
-        WHERE DocumentID = @documentID;
+        UPDATE dbo.DocumentVersion
+        SET IsLatest = 1
+        WHERE DocumentID = @documentID
+          AND VersionNum = @versionNum
       `);
+
     if (result.rowsAffected[0] === 0) {
-      throw new Error("No version updated");
+      throw new Error("Failed to update current version");
     }
+
+    // 4. IMPORTANT:
+    // Update main Document to point to the selected version
+    await new sql.Request(transaction)
+      .input("documentID", sql.Int, documentID)
+      .input("filePath", sql.NVarChar(500), selectedVersion.filePath)
+      .query(`
+        UPDATE Document
+        SET filePath = @filePath
+        WHERE documentID = @documentID
+      `);
+
+    // 5. Update pdfPath according to selected version
+    const ext = path.extname(selectedVersion.filePath).toLowerCase();
+
+    let pdfPath = null;
+
+    if (ext === ".pdf") {
+      pdfPath = selectedVersion.filePath;
+    } else if (ext === ".docx") {
+      pdfPath = await convertDocxToPdf(selectedVersion.filePath);
+    } else if (ext === ".xlsx") {
+      pdfPath = await convertXlsxToPdf(selectedVersion.filePath);
+    }
+
+    await new sql.Request(transaction)
+      .input("documentID", sql.Int, documentID)
+      .input("pdfPath", sql.NVarChar(500), pdfPath)
+      .query(`
+        UPDATE Document
+        SET pdfPath = @pdfPath
+        WHERE documentID = @documentID
+      `);
+
     await transaction.commit();
+
+    // 6. Audit log
+    await addAuditLog({
+      userID: userID,
+      action: "Change Current Version",
+      targetEntity: "Document",
+      targetID: documentID,
+      documentID: documentID,
+      description: `Changed current version to Version ${versionNum}`
+    });
+
     return await getDocument(documentID);
+
   } catch (error) {
-    await transaction.rollback();
+
+    try {
+      await transaction.rollback();
+    } catch (rollbackError) {
+      console.error("Rollback failed:", rollbackError);
+    }
+
     throw error;
   }
 }
@@ -501,38 +626,41 @@ export async function updateDocumentStatus(documentID, statusName, userID) {
     };
 }
 
-export async function previewDocument(documentID, userID){
+export async function previewDocument(documentID, userID) {
 
     const pool = await getPool();
 
     const result = await pool.request()
         .input("documentID", sql.Int, documentID)
         .query(`
-            SELECT
-                documentID,
-                documentName,
-                filePath
-            FROM Document
-            WHERE documentID = @documentID
+            SELECT TOP 1
+                d.documentID,
+                d.documentName,
+                dv.VersionID,
+                dv.VersionNum,
+                dv.filePath,
+                dv.IsLatest
+            FROM Document d
+            INNER JOIN DocumentVersion dv
+                ON d.documentID = dv.DocumentID
+            WHERE d.documentID = @documentID
+              AND dv.IsLatest = 1
         `);
-
 
     const document = result.recordset[0];
 
-    if(!document){
-        throw new Error("Document not found");
+    if (!document) {
+        throw new Error("Current version not found");
     }
-
 
     await addAuditLog({
         userID,
-        action:"Preview Document",
-        targetEntity:"Document",
-        targetID:documentID,
-        documentID:documentID,
-        description:`Preview Document ${document.documentName}`
+        action: "Preview Document",
+        targetEntity: "Document",
+        targetID: documentID,
+        documentID: documentID,
+        description: `Preview Document ${document.documentName}`
     });
-
 
     return {
         ...document,

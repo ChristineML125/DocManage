@@ -1,6 +1,7 @@
 import { getPool, sql } from "../config/db.js";
 import crypto from "crypto";
 import { addAuditLog } from "./auditLogsService.js";
+import { getAvatarPath } from "./profileService.js";
 
 
 // Create User
@@ -77,6 +78,7 @@ export async function allUserList(){
         SELECT
             u.UserID,
             u.UserName,
+            u.Email,
             u.DepartmentID,
             u.role,
             d.departmentName,
@@ -91,7 +93,10 @@ export async function allUserList(){
         ORDER BY u.UserName
     `);
 
-    return result.recordset;
+    return Promise.all(result.recordset.map(async (user) => ({
+        ...user,
+        AvatarPath: await getAvatarPath(user.UserID)
+    })));
 }
 
 

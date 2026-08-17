@@ -5,7 +5,7 @@ import { getUserList,
         createUser, 
         getUsers,
         updateUserStatus,
-        resetPassword,
+        sendTemporaryPassword,
         getPasswordResetRequests
       } from '../../api/userAPI.js';
 import { getDocumentsList } from '../../api/documentAPI.js';
@@ -17,6 +17,8 @@ import autoTable from 'jspdf-autotable';
 
 export class userManagement extends LitElement{
   static styles = css`
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
     :host {
         display: flex;
         flex-direction: column;
@@ -317,6 +319,15 @@ export class userManagement extends LitElement{
         color: #1e40af;
     }
 
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #dff4ff;
+        border: 1px solid #c8d9e8;
+    }
+
     /* ========== Username ========== */
     .username {
         font-weight: 600;
@@ -426,100 +437,245 @@ export class userManagement extends LitElement{
         margin: 0;
     }
 
-    /* ========== Modal Overlay ========== */
+    /* ========== Register Modal (Material 3) ========== */
     .modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(11, 28, 48, 0.4);
+        background: rgba(7, 30, 39, 0.4);
         backdrop-filter: blur(4px);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 1000;
+        padding: 16px;
     }
 
-    .modal {
-        background: white;
-        width: 90%;
-        max-width: 440px;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    }
-
-    .modal h3 {
-        font-size: 24px;
-        font-weight: 600;
-        margin: 0 0 20px;
-    }
-
-    /* ========== Form Group ========== */
-    .form-group {
-        margin-bottom: 16px;
-    }
-
-    .form-group label {
-        display: block;
-        font-size: 14px;
-        font-weight: 600;
-        color: #0b1c30;
-        margin-bottom: 6px;
-    }
-
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
+    .register-modal {
+        background: #ffffff;
         width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #bcc9c6;
-        border-radius: 8px;
-        font-size: 14px;
+        max-width: 448px;
+        border-radius: 12px;
+        box-shadow: 0 24px 50px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        font-family: 'Manrope', sans-serif;
+    }
+
+    .register-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 24px 24px 8px;
+    }
+
+    .register-modal-header h2 {
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 28px;
+        color: #071e27;
+        margin: 0;
+    }
+
+    .reg-close-btn {
+        padding: 4px;
+        border: none;
+        background: none;
+        border-radius: 50%;
+        cursor: pointer;
+        color: #3e4946;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .reg-close-btn:hover {
+        background: #cfe6f2;
+        color: #071e27;
+    }
+
+    .register-modal-body {
+        padding: 16px 24px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        overflow-y: auto;
+        max-height: 70vh;
+        box-sizing: border-box;
+    }
+
+    .reg-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .reg-field label {
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 24px;
+        color: #071e27;
+    }
+
+    .reg-input,
+    .reg-select {
+        width: 100%;
+        height: 48px;
+        padding: 0 16px;
+        border: 1px solid #bdc9c5;
+        border-radius: 4px;
+        background: #f3faff;
+        font-family: inherit;
+        font-size: 16px;
+        line-height: 24px;
+        color: #071e27;
         outline: none;
         box-sizing: border-box;
-        font-family: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-        border-color: #00685f;
-        box-shadow: 0 0 0 2px rgba(0, 104, 95, 0.2);
+    .reg-input::placeholder {
+        color: #6e7a76;
+        opacity: 0.8;
     }
 
-    /* ========== Modal Action Buttons ========== */
-    .modal-actions {
+    .reg-input:focus,
+    .reg-select:focus {
+        border-color: #005e53;
+        box-shadow: 0 0 0 1px #005e53;
+    }
+
+    .reg-input.input-error,
+    .reg-select.input-error {
+        border-color: #ba1a1a;
+    }
+
+    .reg-input.input-error:focus,
+    .reg-select.input-error:focus {
+        border-color: #ba1a1a;
+        box-shadow: 0 0 0 1px #ba1a1a;
+    }
+
+    .reg-select {
+        appearance: none;
+        padding-right: 40px;
+        cursor: pointer;
+    }
+
+    .reg-select-wrap {
+        position: relative;
+    }
+
+    .reg-select-wrap .material-symbols-outlined {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #3e4946;
+        pointer-events: none;
+    }
+
+    .password-wrap {
+        position: relative;
+    }
+
+    .password-wrap input {
+        padding-right: 44px;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: none;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+        color: #3e4946;
         display: flex;
-        gap: 12px;
-        margin-top: 24px;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, color 0.2s;
     }
 
-    .btn-cancel {
+    .password-toggle:hover {
+        background: #cfe6f2;
+        color: #071e27;
+    }
+
+    .helper-text {
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16px;
+        letter-spacing: 0.05em;
+        color: #6e7a76;
+        margin: 4px 0 0;
+    }
+
+    .field-error {
+        font-size: 12px;
+        font-weight: 500;
+        color: #ba1a1a;
+        margin-top: 4px;
+    }
+
+    .reg-input:disabled,
+    .reg-select:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .register-modal-footer {
+        display: flex;
+        gap: 16px;
+        padding: 16px 24px 24px;
+    }
+
+    .btn-cancel-reg,
+    .btn-create-reg {
         flex: 1;
-        padding: 10px;
-        background: #f2f4f6;
+        height: 48px;
         border: none;
         border-radius: 8px;
+        font-family: inherit;
+        font-size: 16px;
         font-weight: 600;
+        line-height: 24px;
         cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
     }
 
-    .btn-cancel:hover {
-        background: #e0e3e5;
+    .btn-cancel-reg {
+        background: #cfe6f2;
+        color: #071e27;
     }
 
-    .btn-create {
-        flex: 1;
-        padding: 10px;
-        background: #00ad57;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
+    .btn-cancel-reg:hover {
+        background: #d5ecf8;
+    }
+
+    .btn-create-reg {
+        background: #005e53;
         color: #ffffff;
+        box-shadow: 0 4px 12px rgba(0, 94, 83, 0.15);
     }
 
-    .btn-create:hover {
-        background: #278d5c;
+    .btn-create-reg:hover {
+        background: #00796b;
+    }
+
+    .btn-cancel-reg:active,
+    .btn-create-reg:active {
+        transform: scale(0.98);
+    }
+
+    .btn-create-reg:disabled,
+    .btn-cancel-reg:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 
     /* ========== Column Resizer ========== */
@@ -726,10 +882,14 @@ export class userManagement extends LitElement{
 
         newUser: {type: Object},
         departments: { type: Array },
+        formErrors: { type: Object },
+        isCreating: { type: Boolean },
+        showPassword: { type: Boolean },
 
         totalUsers: {type: Number},
         admin: {type: Number},
         staff: {type: Number},
+        errorMessage: { type: String },
 
         showResetModal: { type: Boolean},
         selectedResetUserID: { type: Number },
@@ -746,14 +906,19 @@ export class userManagement extends LitElement{
           Password: '',
           Email: '',
           DepartmentID: '',
-          role: 'Staff'
+          role: ''
       };
+
+      this.formErrors = {};
+      this.isCreating = false;
+      this.showPassword = false;
 
       this.departments = [];
 
       this.totalUsers = 0;
       this.admin = 0;
       this.staff = 0;
+      this.errorMessage = '';
 
       this.deactivateUser = 0;
 
@@ -807,10 +972,12 @@ export class userManagement extends LitElement{
             if(listData.success){
                 this.users = listData.users.slice(0,10);
                 console.log("Users:", this.users);
+                this.errorMessage = '';
             }
 
         }catch(err){
             console.error(err);
+            this.errorMessage = err.message || 'Failed to load users.';
         }
 
         await this.loadResetRequests();
@@ -862,6 +1029,13 @@ export class userManagement extends LitElement{
       day: 'numeric',
     });
   }
+
+    avatarUrl(user) {
+      if (!user?.AvatarPath) return '';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      const fileBaseUrl = apiUrl.replace(/\/?api\/?$/, '');
+      return `${fileBaseUrl}/files/${encodeURIComponent(user.AvatarPath)}`;
+    }
   
     async handleChangeStatus(user) {
 
@@ -907,23 +1081,63 @@ export class userManagement extends LitElement{
       }
     }
 
+    validateForm(){
+      const errors = {};
+      const { UserName, Email, Password, DepartmentID, role } = this.newUser;
+
+      if(!UserName || UserName.trim().length < 3){
+        errors.UserName = 'User name is required (min 3 characters).';
+      }
+
+      if(!Email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(Email.trim())){
+        errors.Email = 'A valid email address is required.';
+      }
+
+      if(!Password || Password.length < 8){
+        errors.Password = 'Password must be at least 8 characters.';
+      }
+
+      if(!DepartmentID){
+        errors.DepartmentID = 'Please select a department.';
+      }
+
+      if(!role || !['Staff', 'Admin'].includes(role)){
+        errors.role = 'Please select a role.';
+      }
+
+      return errors;
+    }
+
     async handleRegister(){
+      const errors = this.validateForm();
+      this.formErrors = errors;
+
+      if(Object.keys(errors).length > 0){
+        return;
+      }
+
+      this.isCreating = true;
+
       try{
-        const data = await createUser(this.newUser);
+        const data = await createUser({
+          ...this.newUser,
+          UserName: this.newUser.UserName.trim(),
+          Email: this.newUser.Email.trim()
+        });
 
         console.log("CREATE RESPONSE:", data);
 
         if(data.success){
-
           alert("User created successfully");
             await this.fetchUser();
             this.closeCreateModal();
         }else{
-          alert(data.message);
+          this.isCreating = false;
+          alert(data.message || 'Failed to create user.');
         }
-        console.log("Create data:", this.newUser);
       }catch(err){
-        alert(err.message);
+        this.isCreating = false;
+        alert(err.message || 'Failed to create user.');
       }
     }
 
@@ -934,22 +1148,38 @@ export class userManagement extends LitElement{
           ...this.newUser,
           [name]: value
       };
+
+      if(this.formErrors[name]){
+        const errors = { ...this.formErrors };
+        delete errors[name];
+        this.formErrors = errors;
+      }
+    }
+
+    togglePasswordVisibility(){
+      this.showPassword = !this.showPassword;
     }
 
     openCreateModal(){
+      this.resetCreateForm();
       this.showCreateModal=true;
-      
+    }
+
+    resetCreateForm(){
+      this.newUser={
+            UserName:'',
+            Password:'',
+            Email:'',
+            DepartmentID:'',
+            role:''
+      };
+      this.formErrors = {};
+      this.isCreating = false;
     }
 
     closeCreateModal(){
       this.showCreateModal=false;
-
-      this.newUser={
-            UserName:'',
-            Password:'',
-            DepartmentID:'',
-            role:'staff'
-      };
+      this.resetCreateForm();
     }
 
     exportPDF() {
@@ -1058,14 +1288,15 @@ export class userManagement extends LitElement{
 
       async handleResetPassword(userID){
             try{
-                const result = await resetPassword(userID);
+                const result = await sendTemporaryPassword(userID);
 
                 console.log("RESET RESULT:", result);
 
                 if(result.success){
-                    this.tempPassword = result.tempPassword;
                     await this.loadResetRequests();
-
+                    await this.fetchUser();
+                    this.closeResetModal();
+                    alert(result.message || 'Temporary password sent successfully.');
                 }else{
                     alert(result.message);
 
@@ -1091,14 +1322,6 @@ export class userManagement extends LitElement{
         this.showResetModal = false;
         this.tempPassword = '';
         this.selectedResetUser = null;
-      }
-
-      createTemporaryPasswordEmail() {
-        const user = this.selectedResetUser;
-        if (!user?.Email || !this.tempPassword) return '#';
-        const subject = 'Your temporary password';
-        const body = `Hello ${user.UserName},\n\nYour temporary password is: ${this.tempPassword}\n\nPlease sign in with this temporary password and set a new password immediately.\n\nRegards,\nDocument Management Administrator`;
-        return `mailto:${encodeURIComponent(user.Email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       }
 
   render() {
@@ -1146,6 +1369,14 @@ export class userManagement extends LitElement{
                 <span>${request.UserName} (${request.Email || 'no email'}) requested a temporary password.</span>
                 <button class="btn-primary" @click=${() => this.openResetModal(request)}>Send temporary password</button>
               </div>`)}
+          </div>` : ''}
+
+        ${this.errorMessage ? html`
+          <div style="margin:0 10px 20px;padding:16px 20px;border:1px solid #f3c1c6;border-radius:12px;background:#fff3f3;color:#ba1a1a;font-size:14px;">
+            <strong>Failed to load users:</strong> ${this.errorMessage}
+            <div style="margin-top:8px;font-size:12px;color:#7a8a9a;">
+              Check the browser console (F12) for details, make sure the backend is running and you are logged in as admin, then refresh the page.
+            </div>
           </div>` : ''}
 
         <div class="container">
@@ -1213,7 +1444,14 @@ export class userManagement extends LitElement{
                         class="${this.selectedUser && this.selectedUser.UserID === u.UserId ? 'active' : ''}"
                         @click=${() => this.selectUser(u)}
                       >
-                        <td><span class="userID">${u.UserID}</span></td>
+                        <td>
+                          <div class="userID">
+                            ${this.avatarUrl(u)
+                              ? html`<img class="user-avatar" src=${this.avatarUrl(u)} alt="${u.UserName} profile photo">`
+                              : html`<span>${u.UserName?.charAt(0)?.toUpperCase() || 'U'}</span>`}
+                            ${u.UserID}
+                          </div>
+                        </td>
                         <td><span class="username">${u.UserName}</span></td>
                         <td><span class="badge">${u.departmentName || 'N/A'}</span></td>
                         <td><span class="">${u.role}</span></td>
@@ -1271,88 +1509,116 @@ export class userManagement extends LitElement{
 
     ${this.showCreateModal ? html`
       <div class="modal-overlay" @click=${this.closeCreateModal}>
-        <div class="modal" @click=${(e) => e.stopPropagation()}>
-          <h3>Create New User</h3>
-          <div class="form-group">
-            <label>User Name</label>
-            <input 
-                placeholder="Staff Name" 
-                .value=${this.newUser.UserName}
-                @input=${(e) => {this.newUser = { 
-                          ...this.newUser, 
-                          UserName : e.target.value
-                        };
-                      }}
-            />
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input
-                type="password"
-                placeholder="Password"
-                @input=${(e) => {this.newUser = { 
-                          ...this.newUser, 
-                          Password : e.target.value
-                        };
-                      }}
-            />
-          </div>
-           <div class="form-group">
-            <label>Email</label>
-            <input
-                placeholder="email"
-                @input=${(e) => {this.newUser = { 
-                          ...this.newUser, 
-                          Email : e.target.value
-                        };
-                      }}
-            />
-          </div>
-          <div class="form-group">
-            <label>Department ID</label>
-            <select
-              .value=${this.newUser.DepartmentId}
-              @change=${(e)=>{
-                        this.newUser={
-                            ...this.newUser,
-                            DepartmentID:e.target.value
-                        }
-                      }}
-            >
-              <option value="">Select Department</option>
-              ${this.departments.map(
-                (dept) => html`<option value="${dept.id}">${dept.name}</option>`
-              )}
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Role</label>
-            <select
-                name="role"
-                @change=${this.handleInput}
-            >
-              <option>Select Roles</option>
-              <option value="staff">Staff</option>
-              <option value="admin">Admin</option>
-            </select>
+        <div class="register-modal" @click=${(e) => e.stopPropagation()}>
+
+          <div class="register-modal-header">
+            <h2>Register New User</h2>
+            <button type="button" class="reg-close-btn" @click=${this.closeCreateModal} aria-label="Close">
+              <span class="material-symbols-outlined">close</span>
+            </button>
           </div>
 
-            <div class="modal-actions">
-              <button class="btn-cancel"
-                @click=${this.closeCreateModal}>
-                Cancel
-              </button>
+          <div class="register-modal-body">
+            <div class="reg-field">
+              <label for="reg-username">Full Name</label>
+              <input
+                  id="reg-username"
+                  class="reg-input ${this.formErrors.UserName ? 'input-error' : ''}"
+                  name="UserName"
+                  placeholder="e.g., Dr. Sarah Jenkins"
+                  autocomplete="name"
+                  .value=${this.newUser.UserName}
+                  @input=${this.handleInput}
+              />
+              ${this.formErrors.UserName ? html`<div class="field-error">${this.formErrors.UserName}</div>` : ''}
+            </div>
 
-              <button class="btn-create"
-                @click=${this.handleRegister}>
-                Create
-              </button>
+            <div class="reg-field">
+              <label for="reg-email">Email Address</label>
+              <input
+                  id="reg-email"
+                  class="reg-input ${this.formErrors.Email ? 'input-error' : ''}"
+                  name="Email"
+                  type="email"
+                  placeholder="sarah.jenkins@hospital.org"
+                  autocomplete="email"
+                  .value=${this.newUser.Email}
+                  @input=${this.handleInput}
+              />
+              ${this.formErrors.Email ? html`<div class="field-error">${this.formErrors.Email}</div>` : ''}
+            </div>
+
+            <div class="reg-field">
+              <label for="reg-role">Role</label>
+              <div class="reg-select-wrap">
+                <select
+                    id="reg-role"
+                    class="reg-select ${this.formErrors.role ? 'input-error' : ''}"
+                    name="role"
+                    .value=${this.newUser.role}
+                    @change=${this.handleInput}
+                >
+                  <option value="" disabled selected>Select a role</option>
+                  <option value="Staff">Staff</option>
+                  <option value="Admin">Admin</option>
+                </select>
+                <span class="material-symbols-outlined">expand_more</span>
+              </div>
+              ${this.formErrors.role ? html`<div class="field-error">${this.formErrors.role}</div>` : ''}
+            </div>
+
+            <div class="reg-field">
+              <label for="reg-dept">Department</label>
+              <div class="reg-select-wrap">
+                <select
+                    id="reg-dept"
+                    class="reg-select ${this.formErrors.DepartmentID ? 'input-error' : ''}"
+                    name="DepartmentID"
+                    .value=${this.newUser.DepartmentID}
+                    @change=${this.handleInput}
+                >
+                  <option value="" disabled selected>Select a department</option>
+                  ${this.departments.map(
+                    (dept) => html`<option value="${dept.id}">${dept.name}</option>`
+                  )}
+                </select>
+                <span class="material-symbols-outlined">expand_more</span>
+              </div>
+              ${this.formErrors.DepartmentID ? html`<div class="field-error">${this.formErrors.DepartmentID}</div>` : ''}
+            </div>
+
+            <div class="reg-field">
+              <label for="reg-password">Set Temporary Password</label>
+              <div class="password-wrap">
+                <input
+                    id="reg-password"
+                    class="reg-input ${this.formErrors.Password ? 'input-error' : ''}"
+                    name="Password"
+                    type=${this.showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    autocomplete="new-password"
+                    .value=${this.newUser.Password}
+                    @input=${this.handleInput}
+                />
+                <button type="button" class="password-toggle" @click=${this.togglePasswordVisibility} aria-label="Toggle password visibility">
+                  <span class="material-symbols-outlined">${this.showPassword ? 'visibility_off' : 'visibility'}</span>
+                </button>
+              </div>
+              <p class="helper-text">User will be required to change this upon first login.</p>
+              ${this.formErrors.Password ? html`<div class="field-error">${this.formErrors.Password}</div>` : ''}
             </div>
           </div>
+
+          <div class="register-modal-footer">
+            <button class="btn-cancel-reg" ?disabled=${this.isCreating} @click=${this.closeCreateModal}>
+              Cancel
+            </button>
+            <button class="btn-create-reg" ?disabled=${this.isCreating} @click=${this.handleRegister}>
+              ${this.isCreating ? 'Creating...' : 'Register User'}
+            </button>
+          </div>
         </div>
-
       </div>
-
   `:''}
   ${this.showResetModal ?html`
     <!-- Reset Password Modal -->
@@ -1372,16 +1638,6 @@ export class userManagement extends LitElement{
                     Choose how you would like to reset the password for this user. This action will invalidate their current password.
                 </p>
                 <div class="reset-options">
-                    ${this.tempPassword ? html`
-                      <div style="padding:14px;border-radius:8px;background:#edf7ef;color:#12632d;">
-                        <strong>Temporary password: ${this.tempPassword}</strong>
-                        <p style="margin:8px 0;">Send it to ${this.selectedResetUser?.Email || 'this user'} and ask them to change it immediately after login.</p>
-                        ${this.selectedResetUser?.Email
-                          ? html`<a class="reset-option-btn" style="box-sizing:border-box;text-decoration:none;justify-content:center;" href=${this.createTemporaryPasswordEmail()}>Open email draft</a>`
-                          : html`<p style="margin:0;color:#a51f1f;">This user does not have an email address.</p>`}
-                      </div>` : ''}
-
-                    <!-- Option 2: Generate Temp Password -->
                     <button 
                       class="reset-option-btn"
                       @click=${() => this.handleResetPassword(this.selectedResetUserID)}
@@ -1393,11 +1649,11 @@ export class userManagement extends LitElement{
 
                               <div class="reset-option-text">
                                   <p class="reset-option-title">
-                                      Generate Temp Password
+                                  Send Temporary Password
                                   </p>
 
                                   <p class="reset-option-desc">
-                                      Generate a temporary password for first login
+                                  Send a temporary password to ${this.selectedResetUser?.Email || 'the user'} and require a password change at next login
                                   </p>
                               </div>
                           </div>

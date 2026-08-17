@@ -15,6 +15,7 @@ import {getDocumentsList,
 
 import { renderAsync } from "docx-preview";
 import * as XLSX from "xlsx";
+import { getFileUrl, fetchFile } from '../../api/http';
 
 export class StaffAllDocument extends LitElement {
 
@@ -1521,7 +1522,7 @@ export class StaffAllDocument extends LitElement {
          const filePath = res.document.filePath;
  
          const fileUrl = filePath
-           ? `http://localhost:3000/files/${filePath}`
+           ? getFileUrl(filePath)
            : null;
          
          const fileType = filePath.split('.').pop().toLowerCase();
@@ -1620,7 +1621,7 @@ export class StaffAllDocument extends LitElement {
  
     async renderDoc(url) {
      //Get doc in backend
-     const res = await fetch(url);
+     const res = await fetchFile(url);
      // Convert docx to raw binary data, Because docx-preview cannot get url and it only can buffer 
      const buffer = await res.arrayBuffer(); // arrayBuffer: raw docx data
  
@@ -1643,7 +1644,7 @@ export class StaffAllDocument extends LitElement {
    }
  
    async renderModalDoc(url) {
-     const res = await fetch(url);
+     const res = await fetchFile(url);
  
      const buffer = await res.arrayBuffer();
      await this.updateComplete;
@@ -2056,7 +2057,7 @@ export class StaffAllDocument extends LitElement {
          return html`<iframe src="${url}"></iframe>`;
      }
  
-     if (["png","jpg","jpeg"].includes(type)) {
+    if (["png","jpg","jpeg","webp"].includes(type)) {
          return html`<img src="${url}" style="max-width:100%;height:auto;">`;
      }
  
@@ -2093,7 +2094,7 @@ export class StaffAllDocument extends LitElement {
    }
  
    async renderExcel(url) {
-     const res = await fetch(url);
+     const res = await fetchFile(url);
      const buffer = await res.arrayBuffer();
  
      const workbook = XLSX.read(buffer, {
@@ -2124,7 +2125,7 @@ export class StaffAllDocument extends LitElement {
    }
  
    async renderModalExcel(url) {
-       const res = await fetch(url);
+       const res = await fetchFile(url);
        const buffer = await res.arrayBuffer();
  
        await this.updateComplete;
@@ -2187,7 +2188,7 @@ export class StaffAllDocument extends LitElement {
    async selectVersion(version){
        this.selectedVer = {
            ...version,
-           fileUrl: `http://localhost:3000/files/${version.filePath}`,
+           fileUrl: getFileUrl(version.filePath),
            fileType: version.filePath.split('.').pop().toLowerCase()
        };
  
@@ -2198,12 +2199,12 @@ export class StaffAllDocument extends LitElement {
            await this.renderModalDoc(this.selectedVer.fileUrl);
        }
  
-       if(this.selectedVer.fileType === "xlsx" || fileType === "xls"){
-           await this.updateComplete;
-           await this.renderModalExcel(this.selectedVer.fileUrl);
-       }
+   if(this.selectedVer.fileType === "xlsx" || fileType === "xls"){
+        await this.updateComplete;
+        await this.renderModalExcel(this.selectedVer.fileUrl);
+    }
    }
- 
+
    _updateFormField(field, value) {
      this.formData = { ...this.formData, [field]: value };
    }

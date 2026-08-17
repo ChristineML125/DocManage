@@ -19,13 +19,36 @@ if (!fs.existsSync(storageRoot)) {
 // Define allowed Mime types for file uploads
 const allowedMimeTypes = new Set([
   "application/pdf",
+
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+
   "text/plain",
+
   "image/png",
   "image/jpeg",
+  "image/jpg",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+]);
+
+const allowedExtensions = new Set([
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".txt",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".heic",
+  ".heif",
+  ".xls",
+  ".xlsx",
 ]);
 
 // Define the storage configuration for multer, specifying the destination and filename for uploaded files
@@ -33,9 +56,10 @@ const storage = multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, storageRoot), // All uploaded files will be stored in the storageRoot directory
     // Generate a unique filename for each uploaded file using the current timestamp and a random number, while preserving the original file extension
     // This ensures that file names do not overwrite each other and reserve extensions for proper handling
-    filename: (_req, _file, cb) => {
+    filename: (_req, file, cb) => {
         const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-        cb(null, `${unique}${path.extname(_file.originalname)}`);
+        const extension = path.extname(file.originalname).toLowerCase();
+        cb(null, `${unique}${extension}`);
     }
 });
 
@@ -44,25 +68,104 @@ export const upload = multer({
     limits: { fileSize: 25 * 1024 * 1024 }, // Limit file size to 25MB
     // Define a file filter to allow only specific Mime types for uploads. If the uploaded file's Mime type is not in the allowed list, an error is returned.
     fileFilter: (_req, file, cb) => {
-        if (!allowedMimeTypes.has(file.mimetype)) {
-            cb(new Error("Only PDF, Word, text, excel, and image files are allowed."));
-            return;
-        }
-        cb(null, true);
+
+    const mimeType =
+      (file.mimetype || "").toLowerCase();
+
+    const extension =
+      path.extname(file.originalname).toLowerCase();
+
+
+    // Debug information
+    console.log("========== MULTER UPLOAD ==========");
+    console.log("Original filename:", file.originalname);
+    console.log("MIME type:", mimeType);
+    console.log("Extension:", extension);
+    console.log("===================================");
+
+
+    // Normal case:
+    // MIME type is recognized
+    if (allowedMimeTypes.has(mimeType)) {
+      cb(null, true);
+      return;
     }
+
+
+    // Android / mobile fallback:
+    // MIME type may be application/octet-stream
+    // but the file extension is valid.
+    if (allowedExtensions.has(extension)) {
+      cb(null, true);
+      return;
+    }
+
+
+    cb(
+      new Error(
+        "Only PDF, Word, text, excel, and image files are allowed."
+      )
+    );
+  },
 });
+
+const allowedAvatarMimeTypes = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+]);
+
+const allowedAvatarExtensions = new Set([
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+]);
 
 // Profile photos are stored alongside the other application files, but use a
 // narrower allow-list and a smaller size limit than document uploads.
 export const avatarUpload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+
   fileFilter: (_req, file, cb) => {
-    if (!new Set(["image/png", "image/jpeg", "image/webp"]).has(file.mimetype)) {
-      cb(new Error("Only PNG, JPEG, and WebP profile photos are allowed."));
+
+    const mimeType =
+      (file.mimetype || "").toLowerCase();
+
+    const extension =
+      path.extname(file.originalname).toLowerCase();
+
+
+    console.log("========== AVATAR UPLOAD ==========");
+    console.log("Original filename:", file.originalname);
+    console.log("MIME type:", mimeType);
+    console.log("Extension:", extension);
+    console.log("===================================");
+
+
+    if (allowedAvatarMimeTypes.has(mimeType)) {
+      cb(null, true);
       return;
     }
-    cb(null, true);
-  }
+
+
+    // Android fallback
+    if (allowedAvatarExtensions.has(extension)) {
+      cb(null, true);
+      return;
+    }
+
+
+    cb(
+      new Error(
+        "Only PNG, JPEG, and WebP profile photos are allowed."
+      )
+    );
+  },
 });
 

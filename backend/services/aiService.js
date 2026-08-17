@@ -1,74 +1,54 @@
-//let Node.js can use Python Flask
 import axios from "axios";
-//this package for create this format
 import FormData from "form-data";
-//Node.js read file
 import fs from "fs";
 import path from "path";
-import { convertDocxToPdf,
-         convertXlsxToPdf,
- } from "../utils/convert.js";
+import { convertDocxToPdf, convertXlsxToPdf } from "../utils/convert.js";
 
 export async function generateSummary(filePath) {
-    try{
-        console.log("AI Summary started:", filePath);
+  console.log("AI Summary started:", filePath);
 
-        // storage folder path
-        const storagePath = path.join(
-            process.cwd(),
-            "..",
-            "storage"
-        );
+  const storagePath = path.join(process.cwd(), "..", "storage");
+  const ext = path.extname(filePath).toLowerCase();
+  let pdfFilePath = filePath;
 
-        let pdfFilePath = filePath;
+  if (ext === ".docx") {
+    pdfFilePath = await convertDocxToPdf(filePath);
+  } else if (ext === ".xlsx") {
+    pdfFilePath = await convertXlsxToPdf(filePath);
+  } else if (ext !== ".pdf") {
+    throw new Error(
+      "AI Summary currently supports PDF, DOCX, and XLSX files. Image summaries require OCR support."
+    );
+  }
 
-        const ext = path.extname(filePath).toLowerCase();
+  const fullPath = path.join(storagePath, pdfFilePath);
+  if (!fs.existsSync(fullPath)) {
+    throw new Error("The document file could not be found in storage.");
+  }
 
-        // Convert different file types into PDF before AI summary
-        if(ext === ".docx"){
+  const formData = new FormData();
+  formData.append("file", fs.createReadStream(fullPath));
 
-            console.log("Converting DOCX to PDF...");
-            pdfFilePath = await convertDocxToPdf(filePath);
-
-        }else if(ext === ".xlsx"){
-
-            console.log("Converting XLSX to PDF...");
-            pdfFilePath = await convertXlsxToPdf(filePath);
-
-        }else if(ext === ".pdf"){
-
-            console.log("File already PDF");
-
-        }else{
-            throw new Error("Unsupported file type");
-
-        }
-
-        const fullPath = path.join(
-           storagePath,
-           pdfFilePath
-        );
-
-        const formData = new FormData();
-
-        formData.append (
-            "file",
-            fs.createReadStream(fullPath)
-        )
-
-        const response = await axios.post(
-            "http://localhost:5000/summary",
-            formData,
-            {
-                headers: formData.getHeaders()
-            }
-        );
-
-        return response.data.summary;
-    } catch (err) {
-        console.error("AI Summary Error:");
-        console.error(err);
-        return null;
+  const aiServiceUrl = process.env.AI_SERVICE_URL || "http://127.0.0.1:5000";
+  let response;
+  try {
+    response = await axios.post(`${aiServiceUrl}/summary`, formData, {
+      headers: formData.getHeaders(),
+      timeout: 120000,
+    });
+  } catch (err) {
+    if (err.code === "ECONNREFUSED") {
+      throw new Error(
+        `AI Summary service is unavailable at ${aiServiceUrl}. Start the AI service and try again.`
+      );
     }
+    throw new Error(err.response?.data?.message || `AI Summary service failed: ${err.message}`);
+  }
 
+  const summary = response.data?.summary;
+  if (!summary || !summary.trim()) {
+    throw new Error("AI Summary service returned no summary.");
+  }
+
+  return summary;
 }

@@ -40,8 +40,6 @@ export async function getPool() {
     return poolPromise;
 }
 
-console.log("SQL CONFIG:", config);
-
 export async function testConnection() {
     try {
         const pool = await getPool();

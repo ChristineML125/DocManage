@@ -38,8 +38,8 @@ router.get('/:id', async (req, res) => {
 // POST /api/categories - create new category
 router.post('/', async (req, res) => {
     try {
-        const { name } = req.body;
-        const id = await createCategory(name);
+        const { name, description } = req.body;
+        const id = await createCategory(name, description);
         return res.status(201).json({ success: true, id });
     } catch (err) {
         console.error('Failed to create category:', err);
@@ -50,8 +50,8 @@ router.post('/', async (req, res) => {
 // PUT /api/categories/:id - update category
 router.put('/:id', async (req, res) => {
     try {
-        const { name } = req.body;
-        const category = await updateCategory(parseInt(req.params.id), name);
+        const { name, description } = req.body;
+        const category = await updateCategory(parseInt(req.params.id), name, description);
         return res.json({ success: true, category });
     } catch (err) {
         console.error('Failed to update category:', err);

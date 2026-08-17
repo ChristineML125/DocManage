@@ -60,6 +60,14 @@ export class LoginPage extends LitElement {
     align-items: center;
   }
 
+  .left .logo-img {
+    width: auto;
+    max-width: 220px;
+    height: auto;
+    margin-top: 8px;
+    box-shadow: none;
+  }
+
   .right {
     background: white;
     flex: 1;
@@ -84,6 +92,26 @@ export class LoginPage extends LitElement {
 
     box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.12);
   }
+
+  @media (max-width:600px){
+      .login-container{
+          padding:15px;
+      }
+
+      .login-card{
+          padding:20px;
+          border-radius:12px;
+      }
+
+      h1{
+          font-size:24px;
+      }
+
+      input,
+      button{
+          height:44px;
+      }
+  }
 `;
 
   render() {
@@ -94,7 +122,7 @@ export class LoginPage extends LitElement {
           <section class="left">
             <h1>Document Management</h1>
             <p>Secure, efficient, and professional document management for the modern workplace.</p>
-            <img src="/img/staffDashboard.png" alt="staffDashboard">
+            <img class="logo-img" src="/img/docly-logo.png" alt="Docly logo">
           </section>
 
           <section class="right">

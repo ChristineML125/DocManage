@@ -14,6 +14,7 @@ import lookupRoutes from './routes/lookupRoutes.js';
 import categoriesRoutes from './routes/categoriesRoutes.js';
 import departmentRoutes from './routes/departmentRoutes.js';
 import auditLogsRoutes from './routes/auditLogsRoutes.js';
+import { authenticate } from './middleware/auth.js';
 
 dotenv.config();
 
@@ -22,12 +23,29 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(cors());
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+app.use(cors({
+    credentials: true,
+    origin(origin, callback) {
+        // Native mobile requests do not send an Origin header.
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error('Origin is not allowed by CORS'));
+    }
+}));
 app.use(express.json());
 // Serve static files from the frontend build directory
 const storagePath = path.join(process.cwd(), "..", "storage");
 console.log("Storage folder:", storagePath);
-app.use("/files", express.static(storagePath));
+// Older releases stored reset requests in this folder. Never expose that file
+// while existing installations are migrated to backend/data.
+app.use("/files/password-reset-requests.json", (_req, res) => {
+    res.status(404).end();
+});
+app.use("/files", authenticate, express.static(storagePath));
 
 app.use("/api/documents", documentRoutes);
 app.use("/api/users", userRoutes);
@@ -55,8 +73,8 @@ app.get('/.well-known/appspecific/com.chrome.devtools.json', (req,res)=>{
 const PORT = process.env.PORT || 3000;
 // server start
 try{
-    app.listen(PORT, ()=>{
-        console.log(`Server running on http://localhost:${PORT}`);
+    app.listen(PORT, "0.0.0.0", ()=>{
+        console.log(`Server running on http://0.0.0.0:${PORT}`);
     }).on('error', (err)=>{
         console.error('Server listen error:', err);
     });
