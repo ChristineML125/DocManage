@@ -1,7 +1,8 @@
 const BASE_URL = [
     import.meta.env.VITE_API_URL_PRIMARY,
     import.meta.env.VITE_API_URL_BACKUP,
-    import.meta.env.VITE_API_URL
+    import.meta.env.VITE_API_URL,
+    'https://docmanage-l0xc.onrender.com/api'
 ].filter(Boolean);
 
 console.log("BASE_URL =", BASE_URL);
