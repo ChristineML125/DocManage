@@ -1446,13 +1446,16 @@ export class userManagement extends LitElement{
                       >
                         <td>
                           <div class="userID">
-                            ${this.avatarUrl(u)
-                              ? html`<img class="user-avatar" src=${this.avatarUrl(u)} alt="${u.UserName} profile photo">`
-                              : html`<span>${u.UserName?.charAt(0)?.toUpperCase() || 'U'}</span>`}
                             ${u.UserID}
                           </div>
                         </td>
-                        <td><span class="username">${u.UserName}</span></td>
+                        <td><span class="username">
+                            ${this.avatarUrl(u)
+                              ? html`<img class="user-avatar" src=${this.avatarUrl(u)} alt="${u.UserName} profile photo">`
+                              : html`<span>${u.UserName?.charAt(0)?.toUpperCase() || 'U'}</span>`}
+                              ${u.UserName}
+                            </span>
+                        </td>
                         <td><span class="badge">${u.departmentName || 'N/A'}</span></td>
                         <td><span class="">${u.role}</span></td>
                         <td><span class="">${this.formatDate(u.CreatedAt)}</span></td>
