@@ -154,6 +154,9 @@ router.post("/register", async(req,res)=>{
         });
     }
 });
+
+
+router.put("/change-password", authenticate, async(req,res)=>{
     const {
         userID,
         currentPassword,
