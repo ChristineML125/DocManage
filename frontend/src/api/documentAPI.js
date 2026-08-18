@@ -81,6 +81,17 @@ export async function deleteDocuments(id) {
     }
 }
 
+export async function renameDocument(id, documentName) {
+    try {
+        return http(`/documents/${id}/rename`, {
+            method: "PUT",
+            body: JSON.stringify({ documentName }),
+        });
+    } catch (err) {
+        return { success: false, message: err.message };
+    }
+}
+
 export async function exportPDF(documentID, options = {}){
      try{
         return http('/documents/export',{

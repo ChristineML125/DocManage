@@ -146,6 +146,98 @@ export class PersonalDocumentPage extends LitElement {
       background: #ede9fe;
     }
 
+    .icon-btn {
+      width: 30px;
+      height: 30px;
+      border: none;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: transparent;
+      transition: background 0.15s;
+    }
+    .icon-btn .material-symbols-outlined {
+      font-size: 18px;
+    }
+    .edit-btn:hover {
+      background: #e0e7ff;
+      color: #4338ca;
+    }
+    .delete-btn:hover {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 28px 32px;
+      width: 420px;
+      max-width: 92vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-box h3 {
+      margin: 0 0 16px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1d21;
+    }
+    .modal-box p {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: #4a5568;
+    }
+    .modal-box input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      outline: none;
+    }
+    .modal-box input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .modal-actions button {
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-cancel {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .btn-confirm {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-danger {
+      background: #dc2626;
+      color: #fff;
+    }
+
     .status-badge {
       display: inline-block;
       padding: 3px 12px;
@@ -1344,7 +1436,10 @@ export class PersonalDocumentPage extends LitElement {
     selectedFile: { type: Object },
     dragOver: { type: Boolean },
     rightPanelWidth: { type: Number },
-    isDragging: { type: Boolean }
+    isDragging: { type: Boolean },
+    editingDoc: { type: Object },
+    editName: { type: String },
+    deletingDoc: { type: Object }
   };
 
   constructor() {
@@ -1373,6 +1468,9 @@ export class PersonalDocumentPage extends LitElement {
     this.dragOver = false;
     this.rightPanelWidth = 350;
     this.isDragging = false;
+    this.editingDoc = null;
+    this.editName = '';
+    this.deletingDoc = null;
 
     this._onMouseMove = this._onMouseMove.bind(this);
     this._onMouseUp = this._onMouseUp.bind(this);
@@ -1482,6 +1580,56 @@ export class PersonalDocumentPage extends LitElement {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
       this.updatePagination();
+    }
+  }
+
+  async startEdit(doc) {
+    this.editingDoc = doc;
+    this.editName = doc.documentName;
+  }
+
+  async saveEdit() {
+    if (!this.editName.trim() || !this.editingDoc) return;
+    try {
+      const { renameDocument } = await import('../../api/documentAPI.js');
+      const res = await renameDocument(this.editingDoc.documentID, this.editName.trim());
+      if (res.success) {
+        this.editingDoc.documentName = this.editName.trim();
+        if (this.selectedDoc?.documentID === this.editingDoc.documentID) {
+          this.selectedDoc = { ...this.selectedDoc, documentName: this.editName.trim() };
+        }
+        this.editingDoc = null;
+        this.editName = '';
+        await this.loadDocs();
+      } else {
+        alert(res.message || 'Rename failed');
+      }
+    } catch (err) {
+      alert('Rename failed: ' + err.message);
+    }
+  }
+
+  confirmDelete(doc) {
+    this.deletingDoc = doc;
+  }
+
+  async doDelete() {
+    if (!this.deletingDoc) return;
+    try {
+      const { deleteDocuments } = await import('../../api/documentAPI.js');
+      const res = await deleteDocuments(this.deletingDoc.documentID);
+      if (res.success) {
+        if (this.selectedDoc?.documentID === this.deletingDoc.documentID) {
+          this.selectedDoc = null;
+          this.pdfBlobUrl = null;
+        }
+        this.deletingDoc = null;
+        await this.loadDocs();
+      } else {
+        alert(res.message || 'Delete failed');
+      }
+    } catch (err) {
+      alert('Delete failed: ' + err.message);
     }
   }
 
@@ -2066,16 +2214,18 @@ export class PersonalDocumentPage extends LitElement {
               <thead>
                 <tr>
                   <th>Document Title</th>
-                  <th>Category</th>
+                  <th>File Type</th>
                   <th>Status</th>
                   <th>Version</th>
+                  <th>Edit</th>
+                  <th>Delete</th>
                 </tr>
               </thead>
               <tbody>
                 ${this.filteredDocs.length === 0
                   ? html`
                       <tr>
-                        <td colspan="4">
+                        <td colspan="6">
                           <div class="empty-placeholder">
                             <div class="material-symbols-outlined icon">inbox</div>
                             <p>No documents available</p>
@@ -2083,7 +2233,9 @@ export class PersonalDocumentPage extends LitElement {
                         </td>
                       </tr>
                     `
-                  : this.paginatedDocs.map(doc => html`
+                  : this.paginatedDocs.map(doc => {
+                    const ext = doc.filePath?.split('.').pop()?.toUpperCase() || 'N/A';
+                    return html`
                       <tr
                         class="${this.selectedDoc && this.selectedDoc.documentID === doc.documentID ? 'active' : ''}"
                         @click=${() => this.selectDoc(doc)}
@@ -2101,11 +2253,22 @@ export class PersonalDocumentPage extends LitElement {
                             <span class="doc-title" title="${doc.documentName}">${doc.documentName}</span>
                           </div>
                         </td>
-                        <td><span class="badge">${doc.categoriesName || 'N/A'}</span></td>
+                        <td><span class="badge">${ext}</span></td>
                         <td><span class="status-badge ${this.getStatusClass(doc.statusName)}">${doc.statusName}</span></td>
                         <td><span class="badge-version">V ${doc.versionNum}.0</span></td>
+                        <td>
+                          <button class="icon-btn edit-btn" title="Edit name" @click=${(e) => { e.stopPropagation(); this.startEdit(doc); }}>
+                            <span class="material-symbols-outlined">edit</span>
+                          </button>
+                        </td>
+                        <td>
+                          <button class="icon-btn delete-btn" title="Delete document" @click=${(e) => { e.stopPropagation(); this.confirmDelete(doc); }}>
+                            <span class="material-symbols-outlined">delete</span>
+                          </button>
+                        </td>
                       </tr>
-                    `)}
+                    `;
+                  })}
               </tbody>
             </table>
             <div class="pagination">
@@ -2456,6 +2619,33 @@ export class PersonalDocumentPage extends LitElement {
           </div>
         `
         : ''}
+
+        ${this.editingDoc ? html`
+          <div class="modal-overlay" @click=${() => { this.editingDoc = null; this.editName = ''; }}>
+            <div class="modal-box" @click=${e => e.stopPropagation()}>
+              <h3>Rename Document</h3>
+              <input type="text" .value=${this.editName} @input=${e => this.editName = e.target.value}
+                @keydown=${e => { if (e.key === 'Enter') this.saveEdit(); }} autofocus>
+              <div class="modal-actions">
+                <button class="btn-cancel" @click=${() => { this.editingDoc = null; this.editName = ''; }}>Cancel</button>
+                <button class="btn-confirm" @click=${() => this.saveEdit()}>Save</button>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        ${this.deletingDoc ? html`
+          <div class="modal-overlay" @click=${() => { this.deletingDoc = null; }}>
+            <div class="modal-box" @click=${e => e.stopPropagation()}>
+              <h3>Delete Document</h3>
+              <p>Are you sure you want to delete "<strong>${this.deletingDoc.documentName}</strong>"? This action cannot be undone.</p>
+              <div class="modal-actions">
+                <button class="btn-cancel" @click=${() => { this.deletingDoc = null; }}>Cancel</button>
+                <button class="btn-danger" @click=${() => this.doDelete()}>Delete</button>
+              </div>
+            </div>
+          </div>
+        ` : ''}
     `;
   }
 }

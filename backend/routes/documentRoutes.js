@@ -359,6 +359,27 @@ router.get('/:documentID', authenticate, async (req, res) => {
   }
 });
 
+router.put("/:id/rename", authenticate, async (req, res) => {
+  try {
+    const documentID = Number(req.params.id);
+    const own = await checkDocumentOwnership(documentID, req.user);
+    if (!own.allowed) {
+      if (own.reason === 'not_found') return res.status(404).json({ success:false, message:"Document not found" });
+      return res.status(403).json({ success:false, message:"Access denied" });
+    }
+    const { documentName } = req.body;
+    if (!documentName || !documentName.trim()) {
+      return res.status(400).json({ success:false, message:"Document name required" });
+    }
+    const pool = await getPool();
+    await pool.query(`UPDATE "Document" SET "documentName" = $1 WHERE "documentID" = $2`, [documentName.trim(), documentID]);
+    return res.json({ success:true, message:"Renamed successfully" });
+  } catch(err) {
+    console.error("Rename failed:", err);
+    res.status(500).json({ success:false, message:err.message });
+  }
+});
+
 router.delete("/:documentID", authenticate, async (req, res) => {
   const documentID = parseInt(req.params.documentID, 10);
   if (Number.isNaN(documentID)) {
