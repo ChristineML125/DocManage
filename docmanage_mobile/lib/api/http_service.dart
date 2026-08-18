@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class HttpService {
   static const String baseUrl =
-      'https://docmanage-l0xc.onrender.com/api';
+      'https://docmanage-1.onrender.com/api';
 
   static String getFileUrl(String fileUrl) {
     if (fileUrl.trim().isEmpty) {

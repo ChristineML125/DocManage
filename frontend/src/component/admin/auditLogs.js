@@ -306,7 +306,7 @@ export class AuditLog extends LitElement {
     this.filterAction = 'all';
     this.filterEntity = 'all';
     this.currentPage = 1;
-    this.pageSize = 8;
+    this.pageSize = 30;
     this.showDetail = false;
   }
 
@@ -450,12 +450,14 @@ export class AuditLog extends LitElement {
               <span class="material-symbols-outlined icon">bolt</span>
               <select id="action" @change="${this.handleActionFilter}">
                 <option value="action">All Action</option>
-                <option value="insert">Upload</option>
+                <option value="upload">Upload</option>
                 <option value="delete">Delete</option>
                 <option value="create">Create</option>
                 <option value="block">Block</option>
                 <option value="preview">Preview</option>
                 <option value="update">Update</option>
+                <option value="export">Export</option>
+                <option value="download">Download</option>
               </select>
             </div>
             <div class="column">
