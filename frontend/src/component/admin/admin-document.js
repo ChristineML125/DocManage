@@ -1904,7 +1904,12 @@ static styles = css`
     }, 1500);
 
     if (res?.success && res.downloadUrl) {
-      window.open(res.downloadUrl, "_blank");
+      const a = document.createElement("a");
+      a.href = res.downloadUrl;
+      a.download = res.documentName || "download";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   }
 
