@@ -36,7 +36,9 @@ export async function listDocuments(filters = {}) {
     LEFT JOIN "Category" c ON d."categoriesID" = c."categoriesID"
     LEFT JOIN "Status" s ON d."statusID" = s."statusID"
     LEFT JOIN "DocumentVersion" dv ON d."documentID" = dv."DocumentID" AND dv."filePath" = d."filePath"
+    LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID"
     WHERE 1=1
+      AND (u."userType" IS NULL OR u."userType" = 'company')
       AND ($1::text IS NULL OR d."documentName" LIKE '%' || $1 || '%' OR c."categoriesName" LIKE '%' || $1 || '%')
       AND ($2::int IS NULL OR d."departmentID" = $2)
       AND ($3::int IS NULL OR d."categoriesID" = $3)
@@ -507,15 +509,17 @@ export async function getCountDoc(){
 
     const result = await pool.query(`
         SELECT
-          (SELECT COUNT(*) FROM "Document") AS "totalDocument",
-          (SELECT COUNT(DISTINCT "departmentID") FROM "Document") AS "department",
-          (SELECT COUNT(DISTINCT "categoriesID") FROM "Document") AS "category",
+          (SELECT COUNT(*) FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company') AS "totalDocument",
+          (SELECT COUNT(DISTINCT d."departmentID") FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company') AS "department",
+          (SELECT COUNT(DISTINCT d."categoriesID") FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company') AS "category",
           (SELECT COUNT(*) FROM "Document" d
             INNER JOIN "Status" s ON d."statusID" = s."statusID"
-            WHERE s."statusName" = 'Active') AS "activeCount",
+            LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID"
+            WHERE s."statusName" = 'Active' AND (u."userType" IS NULL OR u."userType" = 'company')) AS "activeCount",
           (SELECT COUNT(*) FROM "Document" d
             INNER JOIN "Status" s ON d."statusID" = s."statusID"
-            WHERE s."statusName" = 'Archived') AS "archivedCount"
+            LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID"
+            WHERE s."statusName" = 'Archived' AND (u."userType" IS NULL OR u."userType" = 'company')) AS "archivedCount"
     `);
 
     return result.rows[0];

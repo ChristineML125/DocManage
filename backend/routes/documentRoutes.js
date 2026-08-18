@@ -30,6 +30,21 @@ import { generateUniqueFilename } from '../middleware/upload.js';
 
 const router = express.Router();
 
+async function checkDocumentOwnership(documentID, user) {
+  const pool = await getPool();
+  const result = await pool.query(`
+    SELECT d."uploadedBy", u."userType"
+    FROM "Document" d
+    LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID"
+    WHERE d."documentID" = $1
+  `, [documentID]);
+  if (result.rows.length === 0) return { allowed: false, reason: 'not_found' };
+  const docUserType = result.rows[0].userType || 'company';
+  const requestUserType = user.userType || 'company';
+  if (docUserType !== requestUserType) return { allowed: false, reason: 'forbidden' };
+  return { allowed: true, doc: result.rows[0] };
+}
+
 router.get("/count", authenticate, async(req,res)=>{
     try{
         const data = await getCountDoc();
@@ -65,6 +80,11 @@ router.get('/list', authenticate, async (req, res) => {
 router.get('/:documentID/summary', authenticate, async (req, res) => {
   try {
     const documentID = parseInt(req.params.documentID, 10);
+    const own = await checkDocumentOwnership(documentID, req.user);
+    if (!own.allowed) {
+      if (own.reason === 'not_found') return res.status(404).json({ success: false, message: 'Document not found' });
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
     const pool = await getPool();
     const result = await pool.query(
       `SELECT "SummaryText", "GenerateAT" FROM "AISummary" WHERE "documentID" = $1`,
@@ -88,6 +108,11 @@ router.get('/:documentID/summary', authenticate, async (req, res) => {
 router.post('/:documentID/generate-summary', authenticate, async (req, res) => {
   try {
     const documentID = parseInt(req.params.documentID, 10);
+    const own = await checkDocumentOwnership(documentID, req.user);
+    if (!own.allowed) {
+      if (own.reason === 'not_found') return res.status(404).json({ success: false, message: 'Document not found' });
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
     const pool = await getPool();
     const result = await pool.query(
       `SELECT "filePath" FROM "Document" WHERE "documentID" = $1`,
@@ -214,6 +239,11 @@ router.post('/personal/upload', authenticate, upload.single('file'), async (req,
 
 router.get('/:id/versions', authenticate, async (req, res) => {
   const documentID = parseInt(req.params.id, 10);
+  const own = await checkDocumentOwnership(documentID, req.user);
+  if (!own.allowed) {
+    if (own.reason === 'not_found') return res.status(404).json({ success: false, message: 'Document not found' });
+    return res.status(403).json({ success: false, message: 'Access denied' });
+  }
   try {
     const pool = await getPool();
     const result = await pool.query(`
@@ -233,6 +263,11 @@ router.get('/:id/versions', authenticate, async (req, res) => {
 router.post("/:id/version", authenticate, upload.single("file"), async (req, res) => {
   try {
     const documentID = Number(req.params.id);
+    const own = await checkDocumentOwnership(documentID, req.user);
+    if (!own.allowed) {
+      if (own.reason === 'not_found') return res.status(404).json({ success: false, message: 'Document not found' });
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
     if (Number.isNaN(documentID)) {
       return res.status(400).json({ success: false, message: "Invalid document ID" });
     }
@@ -274,6 +309,11 @@ router.post("/:id/version", authenticate, upload.single("file"), async (req, res
 router.put("/:id/versions", authenticate, async (req, res) => {
   try {
     const documentID = Number(req.params.id);
+    const own = await checkDocumentOwnership(documentID, req.user);
+    if (!own.allowed) {
+      if (own.reason === 'not_found') return res.status(404).json({ success: false, message: 'Document not found' });
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
     const { versionNum } = req.body;
 
     if (Number.isNaN(documentID)) {
@@ -303,6 +343,11 @@ router.get('/:documentID', authenticate, async (req, res) => {
     if (isNaN(documentID)) {
       return res.status(400).json({ success: false, message: 'Invalid ID' });
     }
+    const own = await checkDocumentOwnership(documentID, req.user);
+    if (!own.allowed) {
+      if (own.reason === 'not_found') return res.status(404).json({ success: false, message: 'Not found' });
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
     const doc = await getDocument(documentID);
     if (!doc) {
       return res.status(404).json({ success: false, message: 'Not found' });
@@ -319,6 +364,11 @@ router.delete("/:documentID", authenticate, async (req, res) => {
   if (Number.isNaN(documentID)) {
     return res.status(400).json({ success: false, message: "Invalid document ID" });
   }
+  const own = await checkDocumentOwnership(documentID, req.user);
+  if (!own.allowed) {
+    if (own.reason === 'not_found') return res.status(404).json({ success: false, message: 'Document not found' });
+    return res.status(403).json({ success: false, message: 'Access denied' });
+  }
   try {
     await deleteDocument(documentID, req.user.UserID);
     return res.json({ success: true, message: "Deleted successfully" });
@@ -331,9 +381,11 @@ router.delete("/:documentID", authenticate, async (req, res) => {
 router.post('/export', authenticate, async (req, res) => {
   try {
     const { documentID } = req.body;
-    if (!documentID) {
-      return res.status(400).json({ success: false, message: "Document ID required" });
-    }
+    if (!documentID) return res.status(400).json({ success: false, message: "Document ID required" });
+
+    const own = await checkDocumentOwnership(documentID, req.user);
+    if (!own.allowed) return res.status(403).json({ success: false, message: 'Access denied' });
+
     const doc = await getDocument(documentID);
     if (!doc) return res.status(404).json({ success: false, message: "Document Not Found" });
 
@@ -377,6 +429,9 @@ router.post('/export-docx', authenticate, async (req, res) => {
     const { documentID } = req.body;
     if (!documentID) return res.status(400).json({ success: false, message: "Document ID required" });
 
+    const own = await checkDocumentOwnership(documentID, req.user);
+    if (!own.allowed) return res.status(403).json({ success: false, message: 'Access denied' });
+
     const doc = await getDocument(documentID);
     if (!doc) return res.status(404).json({ success: false, message: "Document Not Found" });
 
@@ -419,6 +474,9 @@ router.post('/export-xlsx', authenticate, async (req, res) => {
   try {
     const { documentID } = req.body;
     if (!documentID) return res.status(400).json({ success: false, message: "Document ID required" });
+
+    const own = await checkDocumentOwnership(documentID, req.user);
+    if (!own.allowed) return res.status(403).json({ success: false, message: 'Access denied' });
 
     const doc = await getDocument(documentID);
     if (!doc) return res.status(404).json({ success: false, message: "Document Not Found" });
@@ -503,6 +561,11 @@ router.post("/upload", authenticate, upload.single('file'), async (req, res) => 
 router.put("/:id/status", authenticate, async (req, res) => {
     try {
         const documentID = Number(req.params.id);
+        const own = await checkDocumentOwnership(documentID, req.user);
+        if (!own.allowed) {
+          if (own.reason === 'not_found') return res.status(404).json({ success:false, message:"Document not found" });
+          return res.status(403).json({ success:false, message:"Access denied" });
+        }
         const { statusName } = req.body;
         const userID = req.user.UserID;
 
@@ -523,6 +586,11 @@ router.post("/:id/preview", authenticate, async(req,res)=>{
        console.log("PREVIEW ROUTE HIT");
         console.log("USER:", req.user);
         const documentID = Number(req.params.id);
+        const own = await checkDocumentOwnership(documentID, req.user);
+        if (!own.allowed) {
+          if (own.reason === 'not_found') return res.status(404).json({ success:false, message:"Document not found" });
+          return res.status(403).json({ success:false, message:"Access denied" });
+        }
         const result = await previewDocument(documentID, req.user.UserID);
         res.json(result);
     }catch(err){

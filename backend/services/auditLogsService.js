@@ -9,6 +9,7 @@ export async function listAuditLogs(filters = {}){
         SELECT
             a."AuditLogID" AS id,
             executor."UserName" AS "UserName",
+            executor."userType" AS "userType",
             a."Action",
 
             CASE
@@ -37,6 +38,8 @@ export async function listAuditLogs(filters = {}){
         LEFT JOIN "Document" targetDoc
         ON a."targetEntity"='Document'
         AND a."targetID" = targetDoc."documentID"
+
+        WHERE (executor."userType" IS NULL OR executor."userType" = 'company')
 
         ORDER BY a."timestamp" DESC
     `);
