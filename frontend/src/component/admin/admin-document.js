@@ -1904,12 +1904,19 @@ static styles = css`
     }, 1500);
 
     if (res?.success && res.downloadUrl) {
-      const a = document.createElement("a");
-      a.href = res.downloadUrl;
-      a.download = res.documentName || "download";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      fetchFile(res.downloadUrl).then(fileRes => fileRes.blob()).then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = res.documentName || "download";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+      }).catch(err => {
+        console.error("Export download failed:", err);
+        alert("Download failed: " + err.message);
+      });
     }
   }
 
