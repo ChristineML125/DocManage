@@ -31,7 +31,7 @@ export async function fetchFile(filePathOrUrl) {
     for (const baseURL of BASE_URL) {
         try {
             let url = filePathOrUrl;
-            if (!/^https?:\/\//i.test(url)) {
+            if (!/^https?:\/\//i.test(url) && !url.startsWith('/files/')) {
                 const base = baseURL.replace(/\/api\/?$/i, "");
                 url = `${base}/files/${encodeURIComponent(url)}`;
             }

@@ -46,6 +46,8 @@ app.use("/files/password-reset-requests.json", (_req, res) => {
     res.status(404).end();
 });
 app.use("/files", authenticate, express.static(storagePath));
+// If file not found in storage, return 404 instead of falling through to SPA
+app.use("/files", (_req, res) => res.status(404).json({ error: "File not found" }));
 
 app.use("/api/documents", documentRoutes);
 app.use("/api/users", userRoutes);
