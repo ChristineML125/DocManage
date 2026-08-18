@@ -258,9 +258,9 @@ router.post('/export', authenticate, async (req, res) => {
     }
 
     if (!pdfFile) {
-      return res.json({ success: true, documentName: doc.documentName, downloadUrl: `${req.protocol}://${req.get('host')}/files/${filename}`, fallback: true });
+      pdfFile = filename;
     }
-    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${pdfFile}`;
+    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${pdfFile}?download=1&name=${encodeURIComponent(doc.documentName + '.pdf')}`;
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);
@@ -291,9 +291,9 @@ router.post('/export-docx', authenticate, async (req, res) => {
     }
 
     if (!docxName) {
-      return res.json({ success: true, documentName: doc.documentName, downloadUrl: `${req.protocol}://${req.get('host')}/files/${filename}`, fallback: true });
+      docxName = filename;
     }
-    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${docxName}`;
+    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${docxName}?download=1&name=${encodeURIComponent(doc.documentName + '.docx')}`;
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);
@@ -324,9 +324,9 @@ router.post('/export-xlsx', authenticate, async (req, res) => {
     }
 
     if (!xlsxFile) {
-      return res.json({ success: true, documentName: doc.documentName, downloadUrl: `${req.protocol}://${req.get('host')}/files/${filename}`, fallback: true });
+      xlsxFile = filename;
     }
-    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${xlsxFile}`;
+    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${xlsxFile}?download=1&name=${encodeURIComponent(doc.documentName + '.xlsx')}`;
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);

@@ -41,7 +41,7 @@ app.use(express.json());
 // Serve uploaded files
 if (supabaseConfigured()) {
     console.log("Using Supabase Storage for files");
-    app.use("/files", authenticate, async (req, res) => {
+    app.use("/files", async (req, res) => {
         const filename = req.path.replace(/^\//, '');
         if (!filename || filename === 'password-reset-requests.json') {
             return res.status(404).end();
@@ -68,8 +68,11 @@ if (supabaseConfigured()) {
                 jpeg: 'image/jpeg',
                 webp: 'image/webp',
             };
+            const disposition = req.query.download === '1' ? 'attachment' : 'inline';
+            const downloadName = req.query.name || filename;
             res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
             res.setHeader('Content-Length', buffer.length);
+            res.setHeader('Content-Disposition', `${disposition}; filename="${downloadName}"`);
             res.send(buffer);
         } catch (err) {
             console.error("File proxy error:", err);
