@@ -326,12 +326,22 @@ export class userManagement extends LitElement{
         object-fit: cover;
         background: #dff4ff;
         border: 1px solid #c8d9e8;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e40af;
+        flex-shrink: 0;
     }
 
     /* ========== Username ========== */
     .username {
         font-weight: 600;
         color: #0b1c30;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
     /* ========== Badge ========== */
@@ -1450,10 +1460,10 @@ export class userManagement extends LitElement{
                           </div>
                         </td>
                         <td><span class="username">
-                            ${this.avatarUrl(u)
-                              ? html`<img class="user-avatar" src=${this.avatarUrl(u)} alt="${u.UserName} profile photo">`
-                              : html`<span>${u.UserName?.charAt(0)?.toUpperCase() || 'U'}</span>`}
-                              ${u.UserName}
+                                ${this.avatarUrl(u)
+                                    ? html`<img class="user-avatar" src=${this.avatarUrl(u)} alt="${u.UserName} profile photo">`
+                                    : html`<span class="user-avatar user-avatar-fallback">${u.UserName?.charAt(0)?.toUpperCase() || 'U'}</span>`}
+                                ${u.UserName}
                             </span>
                         </td>
                         <td><span class="badge">${u.departmentName || 'N/A'}</span></td>
