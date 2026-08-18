@@ -136,8 +136,8 @@ export async function uploadDocument({
 
     await client.query(`
       INSERT INTO "DocumentVersion" (
-        "documentID",
-        "versionNum",
+        "DocumentID",
+        "VersionNum",
         "uploadedBy",
         "filePath",
         "uploadDate",
@@ -209,9 +209,9 @@ export async function addNewVersion({
       INSERT INTO "DocumentVersion" (
         "DocumentID",
         "VersionNum",
-        "UploadDate",
-        "FilePath",
-        "UploadedBy",
+        "uploadDate",
+        "filePath",
+        "uploadedBy",
         "isLatest"
       ) VALUES ($1, $2, NOW(), $3, $4, true)
     `,
@@ -266,7 +266,7 @@ export async function deleteDocument(documentID, deleteBy) {
     await client.query('BEGIN');
 
     await client.query(`DELETE FROM "AISummary" WHERE "documentID" = $1`, [documentID]);
-    await client.query(`DELETE FROM "DocumentVersion" WHERE "documentID" = $1`, [documentID]);
+    await client.query(`DELETE FROM "DocumentVersion" WHERE "DocumentID" = $1`, [documentID]);
 
     const result = await client.query(`DELETE FROM "Document" WHERE "documentID" = $1`, [documentID]);
 
@@ -305,23 +305,23 @@ export async function uploadNewVersion(payload) {
 
     const documentId = payload.documentId;
     const nextVersion = await client.query(`
-      SELECT COALESCE(MAX("VersionNumber"), 0) + 1 AS "VersionNumber"
+      SELECT COALESCE(MAX("VersionNum"), 0) + 1 AS "VersionNum"
       FROM "DocumentVersion"
-      WHERE "DocumentId" = $1
+      WHERE "DocumentID" = $1
     `, [documentId]);
-    const versionNumber = nextVersion.rows[0].VersionNumber;
+    const versionNumber = nextVersion.rows[0].VersionNum;
 
-    await client.query(`UPDATE "DocumentVersion" SET "isLatest" = false WHERE "DocumentId" = $1`, [documentId]);
+    await client.query(`UPDATE "DocumentVersion" SET "isLatest" = false WHERE "DocumentID" = $1`, [documentId]);
 
     await client.query(`
       INSERT INTO "DocumentVersion" (
-        "DocumentId", "VersionNumber", "filePath", "isLatest", "UploadedBy"
+        "DocumentID", "VersionNum", "filePath", "isLatest", "uploadedBy"
       ) VALUES ($1, $2, $3, true, $4)
     `,
     [documentId, versionNumber, payload.filePath, payload.uploadedById]);
 
     const summary = await generateSummary(payload.filePath);
-    await client.query(`UPDATE "AISummary" SET "summaryText" = $1 WHERE "documentId" = $2`, [summary, documentId]);
+    await client.query(`UPDATE "AISummary" SET "summaryText" = $1 WHERE "documentID" = $2`, [summary, documentId]);
 
     await client.query('COMMIT');
 
