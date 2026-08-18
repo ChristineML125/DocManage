@@ -260,7 +260,7 @@ router.post('/export', authenticate, async (req, res) => {
     if (!pdfFile) {
       pdfFile = filename;
     }
-    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${pdfFile}?download=1&name=${encodeURIComponent(doc.documentName + '.pdf')}`;
+    const downloadUrl = `/files/${pdfFile}?download=1&name=${encodeURIComponent(doc.documentName + '.pdf')}`;
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);
@@ -293,7 +293,7 @@ router.post('/export-docx', authenticate, async (req, res) => {
     if (!docxName) {
       docxName = filename;
     }
-    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${docxName}?download=1&name=${encodeURIComponent(doc.documentName + '.docx')}`;
+    const downloadUrl = `/files/${docxName}?download=1&name=${encodeURIComponent(doc.documentName + '.docx')}`;
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);
@@ -326,7 +326,7 @@ router.post('/export-xlsx', authenticate, async (req, res) => {
     if (!xlsxFile) {
       xlsxFile = filename;
     }
-    const downloadUrl = `${req.protocol}://${req.get('host')}/files/${xlsxFile}?download=1&name=${encodeURIComponent(doc.documentName + '.xlsx')}`;
+    const downloadUrl = `/files/${xlsxFile}?download=1&name=${encodeURIComponent(doc.documentName + '.xlsx')}`;
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);

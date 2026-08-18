@@ -20,6 +20,7 @@ import { isConfigured as supabaseConfigured, getPublicUrl, getSupabase } from '.
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1);
 // fix dirname (ES module)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

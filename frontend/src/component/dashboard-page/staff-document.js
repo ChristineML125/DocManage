@@ -1396,10 +1396,11 @@ export class StaffAllDocument extends LitElement {
      showHistoryVersion: {type: Boolean},
      showUploadVersion: { type: Boolean},
  
-     showAISummary: { type: Boolean },
-     showSummary: {type: Boolean},
-     loadingSummary: {type: Boolean},
-     aiSummary: {type: String}
+      showAISummary: { type: Boolean },
+      showSummary: {type: Boolean},
+      loadingSummary: {type: Boolean},
+      aiSummary: {type: String},
+      pdfBlobUrl: {type: String}
    };
  
    constructor() {
@@ -1435,10 +1436,11 @@ export class StaffAllDocument extends LitElement {
      this._exportCompletionTimer = null;
      this._exportAbortController = null;
  
-     this.showAISummary = false;
-     this.showSummary = false;
-     this.loadingSummary= false;
-     this.aiSummary= "";
+      this.showAISummary = false;
+      this.showSummary = false;
+      this.loadingSummary= false;
+      this.aiSummary= "";
+      this.pdfBlobUrl = null;
    }
  
    connectedCallback() {
@@ -1538,10 +1540,21 @@ export class StaffAllDocument extends LitElement {
              await this.updateComplete;
              await this.renderDoc(fileUrl);
            }
- 
+
            if (fileType === "xlsx" || fileType === "xls") {
              await this.updateComplete;
              await this.renderExcel(fileUrl);
+           }
+
+           if (fileType === "pdf" && fileUrl) {
+             try {
+               const fileRes = await fetchFile(fileUrl);
+               const blob = await fileRes.blob();
+               if(this.pdfBlobUrl) URL.revokeObjectURL(this.pdfBlobUrl);
+               this.pdfBlobUrl = URL.createObjectURL(blob);
+             } catch(err) {
+               console.error("Failed to load PDF as blob:", err);
+             }
            }
  
          console.log("fileType:", fileType);
@@ -1710,14 +1723,26 @@ export class StaffAllDocument extends LitElement {
                this.selectedDoc.fileUrl
            );
        }
- 
+
        if(this.selectedDoc?.fileType === "xlsx" || 
          this.selectedDoc?.fileType === "xls")
        {
            await this.renderModalExcel(
                this.selectedDoc.fileUrl
            );
-       } 
+       }
+
+       if(this.selectedDoc?.fileType === "pdf" && this.selectedDoc?.fileUrl){
+           try {
+               const res = await fetchFile(this.selectedDoc.fileUrl);
+               const blob = await res.blob();
+               if(this.pdfBlobUrl) URL.revokeObjectURL(this.pdfBlobUrl);
+               this.pdfBlobUrl = URL.createObjectURL(blob);
+               await this.updateComplete;
+           } catch(err) {
+               console.error("Failed to load PDF as blob:", err);
+           }
+       }
    }
  
     async openHistoryVersion(){
@@ -1785,6 +1810,10 @@ export class StaffAllDocument extends LitElement {
      }
      this.showPreviewModal = false;
      this.showHistoryVersion = false;
+     if(this.pdfBlobUrl){
+       URL.revokeObjectURL(this.pdfBlobUrl);
+       this.pdfBlobUrl = null;
+     }
    }
  
    closeUploadModal(){
@@ -1874,7 +1903,19 @@ export class StaffAllDocument extends LitElement {
      }, 1500);
  
      if (res?.success && res.downloadUrl) {
-       window.open(res.downloadUrl, "_blank");
+       fetchFile(res.downloadUrl).then(fileRes => fileRes.blob()).then(blob => {
+         const blobUrl = URL.createObjectURL(blob);
+         const a = document.createElement("a");
+         a.href = blobUrl;
+         a.download = res.documentName || "download";
+         document.body.appendChild(a);
+         a.click();
+         document.body.removeChild(a);
+         setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+       }).catch(err => {
+         console.error("Export download failed:", err);
+         alert("Download failed: " + err.message);
+       });
      }
    }
  
@@ -2054,7 +2095,10 @@ export class StaffAllDocument extends LitElement {
  
    renderPreview(type, url, containerId = "docx-container", excelContainer="excel-container") {
      if (type === "pdf") {
-         return html`<iframe src="${url}"></iframe>`;
+         if (this.pdfBlobUrl) {
+             return html`<iframe src="${this.pdfBlobUrl}"></iframe>`;
+         }
+         return html`<iframe></iframe>`;
      }
  
     if (["png","jpg","jpeg","webp"].includes(type)) {
@@ -2191,14 +2235,26 @@ export class StaffAllDocument extends LitElement {
            fileUrl: getFileUrl(version.filePath),
            fileType: version.filePath.split('.').pop().toLowerCase()
        };
- 
+
        console.log("Selected version ", this.selectedVer);
- 
+
        if(this.selectedVer.fileType === "docx"){
            await this.updateComplete;
            await this.renderModalDoc(this.selectedVer.fileUrl);
        }
- 
+
+       if(this.selectedVer.fileType === "pdf" && this.selectedVer.fileUrl){
+           try {
+               const res = await fetchFile(this.selectedVer.fileUrl);
+               const blob = await res.blob();
+               if(this.pdfBlobUrl) URL.revokeObjectURL(this.pdfBlobUrl);
+               this.pdfBlobUrl = URL.createObjectURL(blob);
+               await this.updateComplete;
+           } catch(err) {
+               console.error("Failed to load version PDF as blob:", err);
+           }
+       }
+
    if(this.selectedVer.fileType === "xlsx" || fileType === "xls"){
         await this.updateComplete;
         await this.renderModalExcel(this.selectedVer.fileUrl);
