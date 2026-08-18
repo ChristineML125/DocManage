@@ -30,12 +30,12 @@ export async function listDocuments(filters = {}) {
       d."uploadDate",
       d."filePath",
       s."statusName",
-      dv."versionNum"
+      dv."VersionNum"
     FROM "Document" d
     LEFT JOIN "Department" dept ON d."departmentID" = dept."departmentID"
     LEFT JOIN "Category" c ON d."categoriesID" = c."categoriesID"
     LEFT JOIN "Status" s ON d."statusID" = s."statusID"
-    LEFT JOIN "DocumentVersion" dv ON d."documentID" = dv."documentID" AND dv."filePath" = d."filePath"
+    LEFT JOIN "DocumentVersion" dv ON d."documentID" = dv."DocumentID" AND dv."filePath" = d."filePath"
     WHERE 1=1
       AND ($1::text IS NULL OR d."documentName" LIKE '%' || $1 || '%' OR c."categoriesName" LIKE '%' || $1 || '%')
       AND ($2::int IS NULL OR d."departmentID" = $2)
@@ -57,7 +57,7 @@ export async function getDocument(documentID) {
       dv."filePath",
       dv."VersionID",
       dv."VersionNum",
-      dv."IsLatest",
+      dv."isLatest",
       dept."departmentName",
       c."categoriesName",
       d."uploadDate",
@@ -68,7 +68,7 @@ export async function getDocument(documentID) {
     FROM "Document" d
     LEFT JOIN "DocumentVersion" dv
       ON d."documentID" = dv."DocumentID"
-      AND dv."IsLatest" = true
+      AND dv."isLatest" = true
     LEFT JOIN "Department" dept
       ON d."departmentID" = dept."departmentID"
     LEFT JOIN "Category" c
@@ -201,7 +201,7 @@ export async function addNewVersion({
 
     await client.query(`
       UPDATE "DocumentVersion"
-      SET "IsLatest" = false
+      SET "isLatest" = false
       WHERE "DocumentID" = $1
     `, [documentID]);
 
@@ -212,7 +212,7 @@ export async function addNewVersion({
         "UploadDate",
         "FilePath",
         "UploadedBy",
-        "IsLatest"
+        "isLatest"
       ) VALUES ($1, $2, NOW(), $3, $4, true)
     `,
     [documentID, versionNum, filePath, uploadedBy]);
@@ -311,11 +311,11 @@ export async function uploadNewVersion(payload) {
     `, [documentId]);
     const versionNumber = nextVersion.rows[0].VersionNumber;
 
-    await client.query(`UPDATE "DocumentVersion" SET "IsLatest" = false WHERE "DocumentId" = $1`, [documentId]);
+    await client.query(`UPDATE "DocumentVersion" SET "isLatest" = false WHERE "DocumentId" = $1`, [documentId]);
 
     await client.query(`
       INSERT INTO "DocumentVersion" (
-        "DocumentId", "VersionNumber", "filePath", "IsLatest", "UploadedBy"
+        "DocumentId", "VersionNumber", "filePath", "isLatest", "UploadedBy"
       ) VALUES ($1, $2, $3, true, $4)
     `,
     [documentId, versionNumber, payload.filePath, payload.uploadedById]);
@@ -368,13 +368,13 @@ export async function setLatestVersion(documentID, versionNum, userID) {
 
     await client.query(`
       UPDATE "DocumentVersion"
-      SET "IsLatest" = false
+      SET "isLatest" = false
       WHERE "DocumentID" = $1
     `, [documentID]);
 
     const result = await client.query(`
       UPDATE "DocumentVersion"
-      SET "IsLatest" = true
+      SET "isLatest" = true
       WHERE "DocumentID" = $1
         AND "VersionNum" = $2
     `, [documentID, versionNum]);
@@ -469,12 +469,12 @@ export async function previewDocument(documentID, userID) {
             dv."VersionID",
             dv."VersionNum",
             dv."filePath",
-            dv."IsLatest"
+            dv."isLatest"
         FROM "Document" d
         INNER JOIN "DocumentVersion" dv
             ON d."documentID" = dv."DocumentID"
         WHERE d."documentID" = $1
-          AND dv."IsLatest" = true
+          AND dv."isLatest" = true
         LIMIT 1
     `, [documentID]);
 
