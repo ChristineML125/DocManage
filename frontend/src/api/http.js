@@ -6,7 +6,7 @@ const BASE_URL = [
 
 // If no env var is set, use same-origin (when frontend is served from backend)
 if (BASE_URL.length === 0) {
-    BASE_URL.push('');
+    BASE_URL.push('/api');
 }
 
 console.log("BASE_URL =", BASE_URL);
