@@ -175,6 +175,36 @@ router.put("/change-password", authenticate, async(req,res)=>{
     }
 });
 
+router.put("/profile", authenticate, async(req,res)=>{
+    const { UserName, Email } = req.body;
+    const userID = req.user.UserID;
+
+    if (!UserName || !UserName.trim()) {
+        return res.status(400).json({ success:false, message:"Username is required" });
+    }
+
+    try{
+        const pool = await getPool();
+
+        const existing = await pool.query(`SELECT "UserID" FROM "Users" WHERE "UserName" = $1 AND "UserID" != $2`, [UserName.trim(), userID]);
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ success:false, message:"Username already taken" });
+        }
+
+        if (Email && Email.trim()) {
+            const emailExists = await pool.query(`SELECT "UserID" FROM "Users" WHERE "Email" = $1 AND "UserID" != $2`, [Email.trim(), userID]);
+            if (emailExists.rows.length > 0) {
+                return res.status(400).json({ success:false, message:"Email already in use" });
+            }
+        }
+
+        await pool.query(`UPDATE "Users" SET "UserName" = $1, "Email" = $2 WHERE "UserID" = $3`, [UserName.trim(), Email?.trim() || null, userID]);
+        res.json({ success:true, message:"Profile updated successfully" });
+    }catch(err){
+        res.status(500).json({ success:false, message:err.message });
+    }
+});
+
 
 router.get("/count",async(req,res)=>{
     try{

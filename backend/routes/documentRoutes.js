@@ -158,7 +158,7 @@ router.get('/my', authenticate, async (req, res) => {
         d."uploadDate",
         d."filePath",
         s."statusName",
-        dv."VersionNum"
+        dv."VersionNum" AS "versionNum"
       FROM "Document" d
       LEFT JOIN "Category" c ON d."categoriesID" = c."categoriesID"
       LEFT JOIN "Status" s ON d."statusID" = s."statusID"
@@ -247,10 +247,10 @@ router.get('/:id/versions', authenticate, async (req, res) => {
   try {
     const pool = await getPool();
     const result = await pool.query(`
-      SELECT dv."VersionNum", dv."uploadDate", dv."filePath", dv."isLatest", dv."uploadedBy", u."UserName"
+      SELECT dv."VersionNum" AS "versionNum", dv."uploadDate", dv."filePath", dv."isLatest", dv."uploadedBy", u."UserName"
       FROM "DocumentVersion" dv
       LEFT JOIN "Users" u ON dv."uploadedBy" = u."UserID"
-      WHERE "DocumentID" = $1
+      WHERE dv."DocumentID" = $1
       ORDER BY dv."VersionNum" DESC
     `, [documentID]);
     res.json({ success: true, versions: result.rows });

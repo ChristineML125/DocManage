@@ -30,7 +30,7 @@ export async function listDocuments(filters = {}) {
       d."uploadDate",
       d."filePath",
       s."statusName",
-      dv."VersionNum"
+      dv."VersionNum" AS "versionNum"
     FROM "Document" d
     LEFT JOIN "Department" dept ON d."departmentID" = dept."departmentID"
     LEFT JOIN "Category" c ON d."categoriesID" = c."categoriesID"

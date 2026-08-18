@@ -132,6 +132,13 @@ export async function changePassword(data){
 
 }
 
+export async function updateProfile(UserName, Email) {
+    return http('/users/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ UserName, Email })
+    });
+}
+
 export async function sendTemporaryPassword(id) {
     return http(`/users/${id}/send-temp-password`, { method: 'POST' });
 }

@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { changePassword, getUser, uploadAvatar } from '../api/userAPI.js';
+import { changePassword, getUser, uploadAvatar, updateProfile } from '../api/userAPI.js';
 import { getFileUrl } from '../api/http.js';
 
 export class AllSetting extends LitElement {
@@ -11,7 +11,10 @@ export class AllSetting extends LitElement {
         confirmPassword: { type: String },
         message: { type: String },
         isError: { type: Boolean },
-        isSaving: { type: Boolean }
+        isSaving: { type: Boolean },
+        editingProfile: { type: Boolean },
+        editUserName: { type: String },
+        editEmail: { type: String }
     };
 
     static styles = css`
@@ -208,6 +211,9 @@ export class AllSetting extends LitElement {
         this.message = '';
         this.isError = false;
         this.isSaving = false;
+        this.editingProfile = false;
+        this.editUserName = '';
+        this.editEmail = '';
         this.openPhotoPicker = this.openPhotoPicker.bind(this);
         this.handleAvatarChange = this.handleAvatarChange.bind(this);
         this.handleChangePassword = this.handleChangePassword.bind(this);
@@ -320,6 +326,95 @@ export class AllSetting extends LitElement {
             : html`<div class="avatar-placeholder" aria-label="Profile photo">${this.user?.UserName?.charAt(0)?.toUpperCase() || 'U'}</div>`;
     }
 
+    async saveProfile() {
+        if (!this.editUserName.trim()) {
+            this.setMessage('Username is required.', true);
+            return;
+        }
+        this.isSaving = true;
+        this.setMessage('');
+        try {
+            const result = await updateProfile(this.editUserName.trim(), this.editEmail.trim());
+            if (result.success) {
+                this.user = { ...this.user, UserName: this.editUserName.trim(), Email: this.editEmail.trim() };
+                this.saveCurrentUser(this.user);
+                this.editingProfile = false;
+                this.setMessage('Profile updated successfully.');
+            } else {
+                this.setMessage(result.message || 'Update failed.', true);
+            }
+        } catch (error) {
+            this.setMessage(error.message || 'Unable to update profile.', true);
+        } finally {
+            this.isSaving = false;
+        }
+    }
+
+    renderProfile() {
+        if (this.editingProfile) {
+            return html`
+                <div class="details">
+                    <div class="field">
+                        <label>Username</label>
+                        <input type="text" .value=${this.editUserName} @input=${e => this.editUserName = e.target.value}>
+                    </div>
+                    <div class="field">
+                        <label>Email</label>
+                        <input type="email" .value=${this.editEmail} @input=${e => this.editEmail = e.target.value}>
+                    </div>
+                    <div class="field">
+                        <label>Role</label>
+                        <div class="value">${this.user.role || '—'}</div>
+                    </div>
+                    <div class="field">
+                        <label>Department</label>
+                        <div class="value">${this.user.departmentName || 'Not assigned'}</div>
+                    </div>
+                    <div class="field">
+                        <label>Account status</label>
+                        <div class="value">${this.user.StatusName || 'Active'}</div>
+                    </div>
+                </div>
+                <div class="actions" style="margin-top:16px;">
+                    <button class="outline-btn" @click=${() => { this.editingProfile = false; this.setMessage(''); }}>Cancel</button>
+                    <button class="save-btn" @click=${this.saveProfile} ?disabled=${this.isSaving}>${this.isSaving ? 'Saving…' : 'Save profile'}</button>
+                </div>
+            `;
+        }
+        return html`
+            <div class="details">
+                <div class="field">
+                    <label>Username</label>
+                    <div class="value">${this.user.UserName || '—'}</div>
+                </div>
+                <div class="field">
+                    <label>Email</label>
+                    <div class="value">${this.user.Email || 'Not available'}</div>
+                </div>
+                <div class="field">
+                    <label>Role</label>
+                    <div class="value">${this.user.role || '—'}</div>
+                </div>
+                <div class="field">
+                    <label>Department</label>
+                    <div class="value">${this.user.departmentName || 'Not assigned'}</div>
+                </div>
+                <div class="field">
+                    <label>Account status</label>
+                    <div class="value">${this.user.StatusName || 'Active'}</div>
+                </div>
+            </div>
+            <div class="actions" style="margin-top:16px;">
+                <button class="outline-btn" @click=${() => {
+                    this.editingProfile = true;
+                    this.editUserName = this.user.UserName || '';
+                    this.editEmail = this.user.Email || '';
+                    this.setMessage('');
+                }}>Edit profile</button>
+            </div>
+        `;
+    }
+
     render() {
         if (!this.user) return html`<div class="container"><p class="loading">Loading profile…</p></div>`;
         return html`
@@ -353,35 +448,7 @@ export class AllSetting extends LitElement {
                                 >
                             </div>
                         </div>
-                        <div class="details">
-                            <div class="field">
-                                <label>Username</label>
-                                <div class="value">${this.user.UserName || '—'}</div>
-                            </div>
-
-                            <div class="field">
-                                <label>Email</label>
-                                <div class="value">
-                                  ${this.user.Email || 'Not available'}
-                                </div>
-                            </div>
-
-                            <div class="field">
-                              <label>Role</label>
-                              <div class="value">${this.user.role || '—'}</div>
-                            </div>
-
-                            <div class="field">
-                              <label>Department</label>
-                              <div class="value">
-                                ${this.user.departmentName || 'Not assigned'}
-                              </div>
-                            </div>
-                            <div class="field">
-                              <label>Account status</label>
-                              <div class="value">${this.user.StatusName || 'Active'}</div>
-                            </div>
-                        </div>
+                        ${this.renderProfile()}
                     </section>
                     <section class="card">
                         <div class="section-title">
