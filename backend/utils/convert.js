@@ -5,9 +5,24 @@ import path from "path";
 import { PDFParse } from "pdf-parse";
 import fs from "fs";
 import { exec } from "child_process";
+import os from "os";
 
-export function convertDocxToPdf(filename){
-    return new Promise((resolve,reject)=>{
+function getLibreOfficePath() {
+    const platform = os.platform();
+    if (platform === "win32") {
+        return '"C:\\Program Files\\LibreOffice\\program\\soffice.exe"';
+    }
+    return "libreoffice";
+}
+
+function hasLibreOffice() {
+    return new Promise((resolve) => {
+        const cmd = `${getLibreOfficePath()} --version`;
+        exec(cmd, (error) => resolve(!error));
+    });
+}
+
+export async function convertDocxToPdf(filename){
         const storageDir = path.join(
             process.cwd(),
             "..",
@@ -22,33 +37,39 @@ export function convertDocxToPdf(filename){
         console.log("PDF output folder:", storageDir);
         console.log("Input file:", inputFile);
 
+        const available = await hasLibreOffice();
+        if (!available) {
+            console.warn("LibreOffice not available, skipping DOCX to PDF conversion");
+            return null;
+        }
+
         const command =
-            `"C:\\Program Files\\LibreOffice\\program\\soffice.exe" --headless --convert-to pdf --outdir "${storageDir}" "${inputFile}"`;
+            `${getLibreOfficePath()} --headless --convert-to pdf --outdir "${storageDir}" "${inputFile}"`;
 
         console.log("Command:", command);
 
-        exec(command,(error,stdout,stderr)=>{
-            console.log("LibreOffice stdout:", stdout);
-            console.log("LibreOffice stderr:", stderr);
+        return new Promise((resolve, reject) => {
+            exec(command,(error,stdout,stderr)=>{
+                console.log("LibreOffice stdout:", stdout);
+                console.log("LibreOffice stderr:", stderr);
 
-            if(error){
-                console.error("LibreOffice error:", error);
-                return reject(error);
-            }
+                if(error){
+                    console.error("LibreOffice error:", error);
+                    return resolve(null);
+                }
 
-            const pdfName =
-                filename.replace(
-                    /\.docx$/i,
-                    ".pdf"
-                );
+                const pdfName =
+                    filename.replace(
+                        /\.docx$/i,
+                        ".pdf"
+                    );
 
-            resolve(pdfName);
+                resolve(pdfName);
+            });
         });
-    });
 }
 
-export function convertPdfToDocx(filename){
-    return new Promise((resolve,reject)=>{
+export async function convertPdfToDocx(filename){
         const storageDir = path.join(
             process.cwd(),
             "..",
@@ -64,64 +85,60 @@ export function convertPdfToDocx(filename){
 
         const outputPath = path.join(storageDir, outputFile);
 
-        const pythonPath = "C:\\Users\\USER\\AppData\\Local\\Python\\bin\\python.exe";
+        const available = await hasLibreOffice();
+        if (!available) {
+            console.warn("LibreOffice not available, skipping PDF to DOCX conversion");
+            return null;
+        }
 
-        const command = `"${pythonPath}" convert.py "${inputFile}" "${outputPath}"`;
+        const command = `${getLibreOfficePath()} --headless --convert-to docx --outdir "${storageDir}" "${inputFile}"`;
 
         console.log("Command:", command);
 
-        exec(command,(error,stdout,stderr)=>{
+        return new Promise((resolve,reject) => {
+            exec(command,(error,stdout,stderr)=>{
+                console.log(stdout);
+                console.log(stderr);
 
-            console.log(stdout);
-            console.log(stderr);
-
-            if(error){
-                console.error("LibreOffice error:", error);
-                reject(error);
-                return;
-            }
-                
-            resolve(outputFile);
+                if(error){
+                    console.error("LibreOffice error:", error);
+                    return resolve(null);
+                }
+                    
+                resolve(outputFile);
+            });
         });
-    });
 }
 
-export function convertXlsxToPdf(filename){
-    return new Promise( async(resolve,reject)=>{
-
+export async function convertXlsxToPdf(filename){
         if(typeof filename !== "string"){
-            return reject(
-                new Error("convertXlsxToPdf expects filename string")
-            );
+            throw new Error("convertXlsxToPdf expects filename string");
         }
 
-        const storageDir = path.join(
-            process.cwd(),
-            "..",
-            "storage"
-        );
-
-        const inputFile = path.join(
-            storageDir,
-            filename
-        );
+        const storageDir = path.join(process.cwd(), "..", "storage");
+        const inputFile = path.join(storageDir, filename);
 
         console.log("PDF output folder:", storageDir);
         console.log("Input file:", inputFile);
 
-        const command =
-            `"C:\\Program Files\\LibreOffice\\program\\soffice.exe" --headless --convert-to pdf --outdir "${storageDir}" "${inputFile}"`;
+        const available = await hasLibreOffice();
+        if (!available) {
+            console.warn("LibreOffice not available, skipping XLSX to PDF conversion");
+            return null;
+        }
 
+        const command = `${getLibreOfficePath()} --headless --convert-to pdf --outdir "${storageDir}" "${inputFile}"`;
         console.log("Command:", command);
 
-        exec(command,(error,stdout,stderr)=>{
-            console.log("LibreOffice stdout:", stdout);
-            console.log("LibreOffice stderr:", stderr);
+        return new Promise((resolve, reject) => {
+            exec(command,(error,stdout,stderr)=>{
+                console.log("LibreOffice stdout:", stdout);
+                console.log("LibreOffice stderr:", stderr);
 
-            if(error){
-                console.error("LibreOffice error:", error);
-                return reject(error);
-            }
+                if(error){
+                    console.error("LibreOffice error:", error);
+                    return resolve(null);
+                }
 
             const pdfName =
                 filename.replace(
