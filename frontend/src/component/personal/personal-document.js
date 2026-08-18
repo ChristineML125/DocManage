@@ -147,26 +147,26 @@ export class PersonalDocumentPage extends LitElement {
     }
 
     .icon-btn {
-      width: 30px;
-      height: 30px;
+      background: transparent;
       border: none;
+      cursor: pointer;
+      color: #8a9aa8;
+      padding: 4px 8px;
       border-radius: 6px;
+      transition: all 0.2s;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      background: transparent;
-      transition: background 0.15s;
     }
     .icon-btn .material-symbols-outlined {
       font-size: 18px;
     }
     .edit-btn:hover {
-      background: #e0e7ff;
-      color: #4338ca;
+      background: rgba(108, 99, 255, 0.08);
+      color: #6c63ff;
     }
     .delete-btn:hover {
-      background: #fee2e2;
+      background: rgba(220, 38, 38, 0.08);
       color: #dc2626;
     }
 

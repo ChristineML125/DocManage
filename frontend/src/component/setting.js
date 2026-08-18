@@ -362,6 +362,25 @@ export class AllSetting extends LitElement {
                         <label>Email</label>
                         <input type="email" .value=${this.editEmail} @input=${e => this.editEmail = e.target.value}>
                     </div>
+                </div>
+                <div class="actions" style="margin-top:16px;">
+                    <button class="outline-btn" @click=${() => { this.editingProfile = false; this.setMessage(''); }}>Cancel</button>
+                    <button class="save-btn" @click=${this.saveProfile} ?disabled=${this.isSaving}>${this.isSaving ? 'Saving…' : 'Save profile'}</button>
+                </div>
+            `;
+        }
+        const isPersonal = this.user?.userType === 'personal';
+        return html`
+            <div class="details">
+                <div class="field">
+                    <label>Username</label>
+                    <div class="value">${this.user.UserName || '—'}</div>
+                </div>
+                <div class="field">
+                    <label>Email</label>
+                    <div class="value">${this.user.Email || 'Not available'}</div>
+                </div>
+                ${!isPersonal ? html`
                     <div class="field">
                         <label>Role</label>
                         <div class="value">${this.user.role || '—'}</div>
@@ -374,35 +393,7 @@ export class AllSetting extends LitElement {
                         <label>Account status</label>
                         <div class="value">${this.user.StatusName || 'Active'}</div>
                     </div>
-                </div>
-                <div class="actions" style="margin-top:16px;">
-                    <button class="outline-btn" @click=${() => { this.editingProfile = false; this.setMessage(''); }}>Cancel</button>
-                    <button class="save-btn" @click=${this.saveProfile} ?disabled=${this.isSaving}>${this.isSaving ? 'Saving…' : 'Save profile'}</button>
-                </div>
-            `;
-        }
-        return html`
-            <div class="details">
-                <div class="field">
-                    <label>Username</label>
-                    <div class="value">${this.user.UserName || '—'}</div>
-                </div>
-                <div class="field">
-                    <label>Email</label>
-                    <div class="value">${this.user.Email || 'Not available'}</div>
-                </div>
-                <div class="field">
-                    <label>Role</label>
-                    <div class="value">${this.user.role || '—'}</div>
-                </div>
-                <div class="field">
-                    <label>Department</label>
-                    <div class="value">${this.user.departmentName || 'Not assigned'}</div>
-                </div>
-                <div class="field">
-                    <label>Account status</label>
-                    <div class="value">${this.user.StatusName || 'Active'}</div>
-                </div>
+                ` : ''}
             </div>
             <div class="actions" style="margin-top:16px;">
                 <button class="outline-btn" @click=${() => {
