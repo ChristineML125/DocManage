@@ -1,7 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { changePassword, getUser, uploadAvatar } from '../api/userAPI.js';
-
-const API_BASE_URL = 'http://localhost:3000';
+import { getFileUrl } from '../api/http.js';
 
 export class AllSetting extends LitElement {
     static properties = {
@@ -223,6 +222,7 @@ export class AllSetting extends LitElement {
 
         const adminUser = sessionStorage.getItem('adminUser');
         const staffUser = sessionStorage.getItem('staffUser');
+        const personalUser = sessionStorage.getItem('personalUser');
 
         if(adminUser){
             return JSON.parse(adminUser);
@@ -230,6 +230,10 @@ export class AllSetting extends LitElement {
 
         if(staffUser){
             return JSON.parse(staffUser);
+        }
+
+        if(personalUser){
+            return JSON.parse(personalUser);
         }
 
         return null;
@@ -249,13 +253,13 @@ export class AllSetting extends LitElement {
     }
 
     saveCurrentUser(user) {
-        const key = user.role === 'admin' ? 'adminUser' : 'staffUser';
+        const key = user.userType === 'personal' ? 'personalUser' : user.role === 'admin' ? 'adminUser' : 'staffUser';
         const existing = this.getStoredUser() || {};
         sessionStorage.setItem(key, JSON.stringify({ ...existing, ...user }));
     }
 
     avatarUrl() {
-        return this.user?.AvatarPath ? `${API_BASE_URL}/files/${encodeURIComponent(this.user.AvatarPath)}` : '';
+        return this.user?.AvatarPath ? getFileUrl(this.user.AvatarPath) : '';
     }
 
     setMessage(message, isError = false) {
