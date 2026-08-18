@@ -15,6 +15,7 @@ import categoriesRoutes from './routes/categoriesRoutes.js';
 import departmentRoutes from './routes/departmentRoutes.js';
 import auditLogsRoutes from './routes/auditLogsRoutes.js';
 import { authenticate } from './middleware/auth.js';
+import { isConfigured as supabaseConfigured, getPublicUrl } from './config/storage.js';
 
 dotenv.config();
 
@@ -37,17 +38,26 @@ app.use(cors({
     }
 }));
 app.use(express.json());
-// Serve static files from the frontend build directory
-const storagePath = path.join(process.cwd(), "..", "storage");
-console.log("Storage folder:", storagePath);
-// Older releases stored reset requests in this folder. Never expose that file
-// while existing installations are migrated to backend/data.
-app.use("/files/password-reset-requests.json", (_req, res) => {
-    res.status(404).end();
-});
-app.use("/files", authenticate, express.static(storagePath));
-// If file not found in storage, return 404 instead of falling through to SPA
-app.use("/files", (_req, res) => res.status(404).json({ error: "File not found" }));
+// Serve uploaded files
+if (supabaseConfigured()) {
+    console.log("Using Supabase Storage for files");
+    app.use("/files", authenticate, (req, res) => {
+        const filename = req.path.replace(/^\//, '');
+        if (!filename || filename === 'password-reset-requests.json') {
+            return res.status(404).end();
+        }
+        res.redirect(302, getPublicUrl(filename));
+    });
+} else {
+    console.log("Using local storage for files");
+    const storagePath = path.join(process.cwd(), "..", "storage");
+    console.log("Storage folder:", storagePath);
+    app.use("/files/password-reset-requests.json", (_req, res) => {
+        res.status(404).end();
+    });
+    app.use("/files", authenticate, express.static(storagePath));
+    app.use("/files", (_req, res) => res.status(404).json({ error: "File not found" }));
+}
 
 app.use("/api/documents", documentRoutes);
 app.use("/api/users", userRoutes);

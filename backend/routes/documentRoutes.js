@@ -23,6 +23,9 @@ import {
 import { authenticate } from '../middleware/auth.js';
 import { getPool } from '../config/db.js';
 
+import { isConfigured, uploadFile, deleteFile, getPublicUrl } from '../config/storage.js';
+import { generateUniqueFilename } from '../middleware/upload.js';
+
 const router = express.Router();
 
 router.get("/count", authenticate, async(req,res)=>{
@@ -143,9 +146,21 @@ router.post("/:id/version", authenticate, upload.single("file"), async (req, res
       return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
+    let filename;
+    if (isConfigured()) {
+      filename = generateUniqueFilename(req.file.originalname);
+      await uploadFile(req.file.buffer, filename, req.file.mimetype);
+    } else {
+      const fs = await import('fs');
+      const storagePath = (await import('path')).join(process.cwd(), '..', 'storage');
+      if (!fs.existsSync(storagePath)) fs.mkdirSync(storagePath, { recursive: true });
+      filename = generateUniqueFilename(req.file.originalname);
+      fs.writeFileSync((await import('path')).join(storagePath, filename), req.file.buffer);
+    }
+
     const result = await addNewVersion({
       documentID,
-      filePath: req.file.filename,
+      filePath: filename,
       uploadedBy: req.user.UserID
     });
 
@@ -332,6 +347,18 @@ router.post("/upload", authenticate, upload.single('file'), async (req, res) => 
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
+    let filename;
+    if (isConfigured()) {
+      filename = generateUniqueFilename(file.originalname);
+      await uploadFile(file.buffer, filename, file.mimetype);
+    } else {
+      const fs = await import('fs');
+      const storagePath = (await import('path')).join(process.cwd(), '..', 'storage');
+      if (!fs.existsSync(storagePath)) fs.mkdirSync(storagePath, { recursive: true });
+      filename = generateUniqueFilename(file.originalname);
+      fs.writeFileSync((await import('path')).join(storagePath, filename), file.buffer);
+    }
+
     const parsedCategoryId = parseInt(categoryId ?? categoriesID, 10);
     const parsedDepartmentId = parseInt(departmentId ?? departmentID, 10);
     const parsedBranchId = parseInt(branchId ?? branchID ?? 1, 10);
@@ -339,7 +366,7 @@ router.post("/upload", authenticate, upload.single('file'), async (req, res) => 
 
     const result = await uploadDocument({
       originalname: file.originalname,
-      filename: file.filename,
+      filename: filename,
       categoryId: parsedCategoryId,
       departmentId: parsedDepartmentId,
       branchId: parsedBranchId,

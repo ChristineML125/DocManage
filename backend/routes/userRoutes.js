@@ -1,7 +1,8 @@
 import express from "express";
 import crypto from "crypto";
 import { getPool } from "../config/db.js";
-import { avatarUpload } from "../middleware/upload.js";
+import { avatarUpload, generateUniqueFilename } from "../middleware/upload.js";
+import { isConfigured, uploadFile } from "../config/storage.js";
 import { getAvatarPath, saveAvatarPath } from "../services/profileService.js";
 import {
     completePasswordResetRequest,
@@ -290,8 +291,19 @@ router.post("/:id/avatar",
             return res.status(403).json({ success: false, message: 'You can only update your own profile photo.' });
         }
         try{
-            await saveAvatarPath(userID, req.file.filename);
-            res.json({ success:true, avatarPath:req.file.filename });
+            let filename;
+            if (isConfigured()) {
+                filename = generateUniqueFilename(req.file.originalname);
+                await uploadFile(req.file.buffer, filename, req.file.mimetype);
+            } else {
+                const fs = await import('fs');
+                const storagePath = (await import('path')).join(process.cwd(), '..', 'storage');
+                if (!fs.existsSync(storagePath)) fs.mkdirSync(storagePath, { recursive: true });
+                filename = generateUniqueFilename(req.file.originalname);
+                fs.writeFileSync((await import('path')).join(storagePath, filename), req.file.buffer);
+            }
+            await saveAvatarPath(userID, filename);
+            res.json({ success:true, avatarPath:filename });
         }catch(err){
             res.status(500).json({ success:false, message:err.message });
         }
