@@ -18,7 +18,8 @@ import {
     changePassword,
     getUser,
     allUserList,
-    getCount
+    getCount,
+    registerPersonalUser
 } from "../services/usersService.js";
 import jwt from "jsonwebtoken";
 import { authenticate } from "../middleware/auth.js";
@@ -85,7 +86,8 @@ router.post("/login", async(req,res)=>{
             UserID:user.UserID,
             UserName:user.UserName,
             Email:user.Email,
-            role:user.role
+            role:user.role,
+            userType:user.userType || 'company'
         },
         process.env.JWT_SECRET,{
             expiresIn:"8h"
@@ -99,7 +101,8 @@ router.post("/login", async(req,res)=>{
                 UserID:user.UserID,
                 UserName:user.UserName,
                 Email:user.Email,
-                role:user.role
+                role:user.role,
+                userType:user.userType || 'company'
             }
         });
 
@@ -112,7 +115,45 @@ router.post("/login", async(req,res)=>{
 });
 
 
-router.put("/change-password", authenticate, async(req,res)=>{
+router.post("/register", async(req,res)=>{
+    const { UserName, Password, Email } = req.body;
+
+    if(!UserName || !Password || !Email){
+        return res.status(400).json({
+            success:false,
+            message:"Please fill in all fields"
+        });
+    }
+
+    try{
+        const pool = await getPool();
+
+        const existing = await pool.query(
+            `SELECT "UserID" FROM "Users" WHERE "UserName"=$1`,
+            [UserName]
+        );
+
+        if(existing.rows.length > 0){
+            return res.status(409).json({
+                success:false,
+                message:"Username already exists"
+            });
+        }
+
+        const userID = await registerPersonalUser(UserName, Password, Email);
+
+        res.json({
+            success:true,
+            message:"Account created successfully. You can now login.",
+            userID
+        });
+    }catch(err){
+        res.status(500).json({
+            success:false,
+            message:err.message
+        });
+    }
+});
     const {
         userID,
         currentPassword,

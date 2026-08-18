@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS "Users" (
     "role" VARCHAR(50) NOT NULL DEFAULT 'staff',
     "UserStatusID" INT REFERENCES "UserStatus"("UserStatusID"),
     "MustChangePassword" BOOLEAN DEFAULT false,
+    "userType" VARCHAR(20) DEFAULT 'company',
     "CreatedAt" TIMESTAMP DEFAULT NOW(),
     "LastLogin" TIMESTAMP
 );

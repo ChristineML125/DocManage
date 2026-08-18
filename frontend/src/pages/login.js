@@ -121,7 +121,7 @@ export class LoginPage extends LitElement {
 
           <section class="left">
             <h1>Document Management</h1>
-            <p>Secure, efficient, and professional document management for the modern workplace.</p>
+            <p>Secure, efficient, and professional document management for individuals and organizations.</p>
             <img class="logo-img" src="/img/docly-logo.png" alt="Docly logo">
           </section>
 

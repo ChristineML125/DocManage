@@ -17,6 +17,11 @@ import './pages/admin-page/UserManagement.js'
 import './pages/admin-page/AuditLogs.js'
 import './pages/admin-page/admin-setting.js'
 
+import './pages/personal-page/personal-dashboard.js'
+import './pages/personal-page/personal-documents.js'
+import './pages/personal-page/personal-upload.js'
+import './pages/personal-page/personal-setting.js'
+
 
 class AppRoot extends LitElement {
     render() {
@@ -44,6 +49,11 @@ class AppRoot extends LitElement {
             { path: '/UserManagement', component: 'user-management-page'},
             { path: '/AuditLogs', component: 'audit-logs-page'},
             { path: '/admin-setting', component: 'admin-setting-page'},
+
+            { path: '/personal-dashboard', component: 'personal-dashboard-page'},
+            { path: '/personal-documents', component: 'personal-documents-page'},
+            { path: '/personal-upload', component: 'personal-upload-page'},
+            { path: '/personal-setting', component: 'personal-setting-page'},
 
         ])
     }

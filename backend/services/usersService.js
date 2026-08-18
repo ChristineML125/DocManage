@@ -310,3 +310,33 @@ export async function getCount(){
 
     return result.rows[0];
 }
+
+
+export async function registerPersonalUser(userName, password, email) {
+
+    const hashedPassword = crypto
+        .createHash("sha256")
+        .update(password)
+        .digest("hex");
+
+    const pool = await getPool();
+
+    const result = await pool.query(`
+        INSERT INTO "Users"
+        (
+            "UserName",
+            "Password",
+            "Email",
+            "role",
+            "UserStatusID",
+            "userType",
+            "MustChangePassword",
+            "CreatedAt"
+        )
+        VALUES ($1, $2, $3, 'staff', 1, 'personal', false, NOW())
+        RETURNING "UserID" AS id
+    `,
+    [userName, hashedPassword, email]);
+
+    return result.rows[0].id;
+}

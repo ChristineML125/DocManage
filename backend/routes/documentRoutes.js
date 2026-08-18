@@ -120,6 +120,97 @@ router.post('/:documentID/generate-summary', authenticate, async (req, res) => {
 
 console.log("VERSION ROUTE REGISTERED");
 
+router.get('/my', authenticate, async (req, res) => {
+  try {
+    const pool = await getPool();
+    const keyword = req.query.keyword || null;
+
+    const result = await pool.query(`
+      SELECT
+        d."documentID",
+        d."documentName",
+        d."categoriesName",
+        d."uploadDate",
+        d."filePath",
+        s."statusName",
+        dv."VersionNum"
+      FROM "Document" d
+      LEFT JOIN "Status" s ON d."statusID" = s."statusID"
+      LEFT JOIN "DocumentVersion" dv ON d."documentID" = dv."DocumentID" AND dv."filePath" = d."filePath"
+      WHERE d."uploadedBy" = $1
+        AND ($2::text IS NULL OR d."documentName" LIKE '%' || $2 || '%')
+      ORDER BY d."uploadDate" DESC
+    `, [req.user.UserID, keyword]);
+
+    return res.json({ success: true, documents: result.rows });
+  } catch (err) {
+    console.error('Get personal documents failed', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.get('/my/count', authenticate, async (req, res) => {
+  try {
+    const pool = await getPool();
+    const result = await pool.query(`
+      SELECT
+        (SELECT COUNT(*) FROM "Document" WHERE "uploadedBy" = $1) AS "totalDocument",
+        (SELECT COUNT(*) FROM "Document" d
+          INNER JOIN "Status" s ON d."statusID" = s."statusID"
+          WHERE d."uploadedBy" = $1 AND s."statusName" = 'Active') AS "activeCount",
+        (SELECT COUNT(*) FROM "Document" d
+          INNER JOIN "Status" s ON d."statusID" = s."statusID"
+          WHERE d."uploadedBy" = $1 AND s."statusName" = 'Archived') AS "archivedCount"
+    `, [req.user.UserID]);
+
+    return res.json({ success: true, ...result.rows[0] });
+  } catch (err) {
+    console.error('Get personal doc count failed', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.post('/personal/upload', authenticate, upload.single('file'), async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    let filename;
+    if (isConfigured()) {
+      filename = generateUniqueFilename(file.originalname);
+      await uploadFile(file.buffer, filename, file.mimetype);
+    } else {
+      const fs = await import('fs');
+      const storagePath = (await import('path')).join(process.cwd(), '..', 'storage');
+      if (!fs.existsSync(storagePath)) fs.mkdirSync(storagePath, { recursive: true });
+      filename = generateUniqueFilename(file.originalname);
+      fs.writeFileSync((await import('path')).join(storagePath, filename), file.buffer);
+    }
+
+    const result = await uploadDocument({
+      originalname: file.originalname,
+      filename: filename,
+      categoryId: null,
+      departmentId: null,
+      branchId: 1,
+      uploadedById: req.user.UserID,
+      statusId: 1
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Document uploaded successfully",
+      id: result.id,
+      filePath: result.filePath
+    });
+  } catch (err) {
+    console.error('Personal upload failed:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 router.get('/:id/versions', authenticate, async (req, res) => {
   const documentID = parseInt(req.params.id, 10);
   try {
