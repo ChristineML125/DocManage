@@ -23,6 +23,7 @@ import {
 } from '../services/documentService.js';
 import { authenticate } from '../middleware/auth.js';
 import { getPool } from '../config/db.js';
+import { addAuditLog } from '../services/auditLogsService.js';
 
 import { isConfigured, uploadFile, deleteFile, getPublicUrl } from '../config/storage.js';
 import { generateUniqueFilename } from '../middleware/upload.js';
@@ -262,6 +263,16 @@ router.post('/export', authenticate, async (req, res) => {
       pdfFile = filename;
     }
     const downloadUrl = `/files/${pdfFile}?download=1&name=${encodeURIComponent(doc.documentName + '.pdf')}`;
+
+    await addAuditLog({
+      userID: req.user.UserID,
+      action: "Export Document",
+      targetEntity: "Document",
+      targetID: documentID,
+      documentID: documentID,
+      description: `Export Document ${doc.documentName} as PDF`
+    });
+
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);
@@ -295,6 +306,16 @@ router.post('/export-docx', authenticate, async (req, res) => {
       docxName = filename;
     }
     const downloadUrl = `/files/${docxName}?download=1&name=${encodeURIComponent(doc.documentName + '.docx')}`;
+
+    await addAuditLog({
+      userID: req.user.UserID,
+      action: "Export Document",
+      targetEntity: "Document",
+      targetID: documentID,
+      documentID: documentID,
+      description: `Export Document ${doc.documentName} as DOCX`
+    });
+
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);

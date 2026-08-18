@@ -1,10 +1,9 @@
 services:
   - type: web
     name: docmanage-backend
-    runtime: node
-    region: oregon
-    buildCommand: cd frontend && npm install && npm run build && cd ../backend && npm install
-    startCommand: cd backend && node server.js
+    runtime: image
+    image:
+      url: .
     envVars:
       - key: DATABASE_URL
         sync: false
@@ -14,3 +13,9 @@ services:
         sync: false
       - key: NODE_ENV
         value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        sync: false
