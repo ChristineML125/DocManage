@@ -232,21 +232,24 @@ router.post('/export', authenticate, async (req, res) => {
     const ext = path.extname(filename).toLowerCase();
     let pdfFile;
 
-    if (ext === ".docx") {
+    if (ext === ".pdf") {
+      pdfFile = filename;
+    } else if (ext === ".docx") {
       pdfFile = await convertDocxToPdf(filename);
     } else if (ext === ".xlsx") {
       pdfFile = await convertXlsxToPdf(filename);
-    } else if (ext === ".pdf") {
-      pdfFile = filename;
     } else {
       return res.status(400).json({ success: false, message: "Unsupported file type" });
     }
 
+    if (!pdfFile) {
+      return res.json({ success: true, documentName: doc.documentName, downloadUrl: `${req.protocol}://${req.get('host')}/files/${filename}`, fallback: true });
+    }
     const downloadUrl = `${req.protocol}://${req.get('host')}/files/${pdfFile}`;
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);
-    return res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -262,22 +265,24 @@ router.post('/export-docx', authenticate, async (req, res) => {
     const ext = path.extname(filename).toLowerCase();
     let docxName;
 
-    if (ext === ".pdf") {
-      docxName = await convertPdfToDocx(filename);
-    } else if (ext === ".docx") {
+    if (ext === ".docx") {
       docxName = filename;
+    } else if (ext === ".pdf") {
+      docxName = await convertPdfToDocx(filename);
     } else if (ext === ".xlsx") {
-      const pdfFile = await convertXlsxToPdf(filename);
-      docxName = await convertPdfToDocx(pdfFile);
+      docxName = await convertDocxToXlsx(filename);
     } else {
       return res.status(400).json({ success: false, message: "Unsupported file type" });
     }
 
+    if (!docxName) {
+      return res.json({ success: true, documentName: doc.documentName, downloadUrl: `${req.protocol}://${req.get('host')}/files/${filename}`, fallback: true });
+    }
     const downloadUrl = `${req.protocol}://${req.get('host')}/files/${docxName}`;
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);
-    return res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -293,7 +298,9 @@ router.post('/export-xlsx', authenticate, async (req, res) => {
     const ext = path.extname(filename).toLowerCase();
     let xlsxFile;
 
-    if (ext === ".docx") {
+    if (ext === ".xlsx") {
+      xlsxFile = filename;
+    } else if (ext === ".docx") {
       xlsxFile = await convertDocxToXlsx(filename);
     } else if (ext === ".pdf") {
       xlsxFile = await convertPdfToXlSX(filename);
@@ -301,11 +308,14 @@ router.post('/export-xlsx', authenticate, async (req, res) => {
       return res.status(400).json({ success: false, message: "Unsupported file type" });
     }
 
+    if (!xlsxFile) {
+      return res.json({ success: true, documentName: doc.documentName, downloadUrl: `${req.protocol}://${req.get('host')}/files/${filename}`, fallback: true });
+    }
     const downloadUrl = `${req.protocol}://${req.get('host')}/files/${xlsxFile}`;
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);
-    return res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
