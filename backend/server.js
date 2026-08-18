@@ -15,7 +15,7 @@ import categoriesRoutes from './routes/categoriesRoutes.js';
 import departmentRoutes from './routes/departmentRoutes.js';
 import auditLogsRoutes from './routes/auditLogsRoutes.js';
 import { authenticate } from './middleware/auth.js';
-import { isConfigured as supabaseConfigured, getPublicUrl } from './config/storage.js';
+import { isConfigured as supabaseConfigured, getPublicUrl, getSupabase } from './config/storage.js';
 
 dotenv.config();
 
@@ -41,12 +41,40 @@ app.use(express.json());
 // Serve uploaded files
 if (supabaseConfigured()) {
     console.log("Using Supabase Storage for files");
-    app.use("/files", authenticate, (req, res) => {
+    app.use("/files", authenticate, async (req, res) => {
         const filename = req.path.replace(/^\//, '');
         if (!filename || filename === 'password-reset-requests.json') {
             return res.status(404).end();
         }
-        res.redirect(302, getPublicUrl(filename));
+        try {
+            const client = getSupabase();
+            const { data, error } = await client.storage
+                .from(process.env.SUPABASE_BUCKET || 'documents')
+                .download(filename);
+            if (error || !data) {
+                return res.status(404).json({ error: "File not found" });
+            }
+            const buffer = Buffer.from(await data.arrayBuffer());
+            const ext = filename.split('.').pop().toLowerCase();
+            const mimeTypes = {
+                pdf: 'application/pdf',
+                docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                doc: 'application/msword',
+                xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                xls: 'application/vnd.ms-excel',
+                txt: 'text/plain',
+                png: 'image/png',
+                jpg: 'image/jpeg',
+                jpeg: 'image/jpeg',
+                webp: 'image/webp',
+            };
+            res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
+            res.setHeader('Content-Length', buffer.length);
+            res.send(buffer);
+        } catch (err) {
+            console.error("File proxy error:", err);
+            res.status(500).json({ error: "Failed to fetch file" });
+        }
     });
 } else {
     console.log("Using local storage for files");
