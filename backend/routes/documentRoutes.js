@@ -6,7 +6,8 @@ import {
   convertPdfToDocx,
   convertXlsxToPdf,
   convertDocxToXlsx,
-  convertPdfToXlSX
+  convertPdfToXlSX,
+  convertXlsxToDocx
 } from "../utils/convert.js";
 import { generateSummary as generateAISummary } from '../services/aiService.js';
 import {
@@ -285,7 +286,7 @@ router.post('/export-docx', authenticate, async (req, res) => {
     } else if (ext === ".pdf") {
       docxName = await convertPdfToDocx(filename);
     } else if (ext === ".xlsx") {
-      docxName = await convertDocxToXlsx(filename);
+      docxName = await convertXlsxToDocx(filename);
     } else {
       return res.status(400).json({ success: false, message: "Unsupported file type" });
     }
