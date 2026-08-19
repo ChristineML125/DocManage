@@ -12,6 +12,9 @@ export class RegisterPage extends LitElement {
   };
 
   static styles = css`
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
+
     :host {
       display: flex;
       min-height: 100vh;
@@ -420,7 +423,7 @@ export class RegisterPage extends LitElement {
       <div class="main-card">
         <section class="left-panel">
           <div class="left-content">
-            <h2 class="brand-title">MedAdmin</h2>
+            <h2 class="brand-title">Docly</h2>
             <p class="brand-desc">Streamline your administrative workflow, manage patient records securely, and access vital audit logs instantly with our professional platform.</p>
           </div>
           <div class="brand-bg"></div>
@@ -441,7 +444,7 @@ export class RegisterPage extends LitElement {
 
           <div class="desktop-header">
             <h2>Create Account</h2>
-            <p>Join MedAdmin to manage your clinical workflow securely.</p>
+            <p>Join Docly to manage your clinical workflow securely.</p>
           </div>
 
           <div class="toggle-wrap">

@@ -315,7 +315,7 @@ export class LoginForm extends LitElement {
 
         ${this.mode === 'personal' ? html`
           <div class="register-section">
-            Don't have an account? <a @click=${() => { this.mode = 'register'; this.errorMsg = ''; }}>Register</a>
+            Don't have an account? <a @click=${() => Router.go('/register')}>Register</a>
           </div>
         ` : ''}
       </form>
@@ -323,47 +323,7 @@ export class LoginForm extends LitElement {
   }
 
   renderRegisterForm() {
-    return html`
-      <form class="register-form" @submit=${this.handleRegister}>
-        <p>Username</p>
-        <div class="input-groups">
-          <span class="material-symbols-outlined icon">person</span>
-          <input type="text" placeholder="Choose a username"
-            .value=${this.regUsername}
-            @input=${e => this.regUsername = e.target.value}
-          />
-        </div>
-
-        <p>Email</p>
-        <div class="input-groups">
-          <span class="material-symbols-outlined icon">email</span>
-          <input type="email" placeholder="your@email.com"
-            .value=${this.regEmail}
-            @input=${e => this.regEmail = e.target.value}
-          />
-        </div>
-
-        <p>Password</p>
-        <div class="input-groups">
-          <span class="material-symbols-outlined icon">lock</span>
-          <input type="password" placeholder="Choose a password"
-            .value=${this.regPassword}
-            @input=${e => this.regPassword = e.target.value}
-          />
-        </div>
-
-        <button type="submit" ?disabled=${this.regLoading}>
-          ${this.regLoading ? 'Creating account...' : 'Create Account'}
-        </button>
-
-        ${this.regError ? html`<p style="color: red;">${this.regError}</p>` : ''}
-        ${this.regSuccess ? html`<p style="color: #12632d;">${this.regSuccess}</p>` : ''}
-
-        <button type="button" class="back-link" @click=${() => { this.mode = 'personal'; this.regError = ''; this.regSuccess = ''; }}>
-          Back to Login
-        </button>
-      </form>
-    `;
+    return html``;
   }
 
   render() {
@@ -373,13 +333,13 @@ export class LoginForm extends LitElement {
           @click=${() => { this.mode = 'company'; this.errorMsg = ''; this.resetMsg = ''; }}>
           Company
         </button>
-        <button class="${this.mode === 'personal' || this.mode === 'register' ? 'active' : ''}"
+        <button class="${this.mode === 'personal' ? 'active' : ''}"
           @click=${() => { this.mode = 'personal'; this.errorMsg = ''; this.resetMsg = ''; }}>
           Personal
         </button>
       </div>
 
-      ${this.mode === 'register' ? this.renderRegisterForm() : this.renderLoginForm()}
+      ${this.renderLoginForm()}
     `;
   }
 }
