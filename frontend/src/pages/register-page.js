@@ -424,12 +424,12 @@ export class RegisterPage extends LitElement {
         <section class="left-panel">
           <div class="left-content">
             <h2 class="brand-title">Docly</h2>
-            <p class="brand-desc">Streamline your administrative workflow, manage patient records securely, and access vital audit logs instantly with our professional platform.</p>
+            <p class="brand-desc">Organize, manage, and secure all your important documents in one centralized platform. Upload, track versions, and access files anytime, anywhere.</p>
           </div>
           <div class="brand-bg"></div>
           <div class="brand-footer">
-            <span class="material-symbols-outlined">health_and_safety</span>
-            <span class="label">HIPAA Compliant Infrastructure</span>
+            <span class="material-symbols-outlined">shield</span>
+            <span class="label">Secure & Reliable Document Management</span>
           </div>
         </section>
 
