@@ -158,6 +158,11 @@ export class PersonalDocumentPage extends LitElement {
       align-items: center;
       justify-content: center;
     }
+    .actions-cell {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
     .icon-btn .material-symbols-outlined {
       font-size: 18px;
     }
@@ -2217,15 +2222,14 @@ export class PersonalDocumentPage extends LitElement {
                   <th>File Type</th>
                   <th>Status</th>
                   <th>Version</th>
-                  <th>Edit</th>
-                  <th>Delete</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 ${this.filteredDocs.length === 0
                   ? html`
                       <tr>
-                        <td colspan="6">
+                        <td colspan="5">
                           <div class="empty-placeholder">
                             <div class="material-symbols-outlined icon">inbox</div>
                             <p>No documents available</p>
@@ -2256,12 +2260,10 @@ export class PersonalDocumentPage extends LitElement {
                         <td><span class="badge">${ext}</span></td>
                         <td><span class="status-badge ${this.getStatusClass(doc.statusName)}">${doc.statusName}</span></td>
                         <td><span class="badge-version">V ${doc.versionNum}.0</span></td>
-                        <td>
+                        <td class="actions-cell">
                           <button class="icon-btn edit-btn" title="Edit name" @click=${(e) => { e.stopPropagation(); this.startEdit(doc); }}>
                             <span class="material-symbols-outlined">edit</span>
                           </button>
-                        </td>
-                        <td>
                           <button class="icon-btn delete-btn" title="Delete document" @click=${(e) => { e.stopPropagation(); this.confirmDelete(doc); }}>
                             <span class="material-symbols-outlined">delete</span>
                           </button>

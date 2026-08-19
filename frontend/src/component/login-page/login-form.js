@@ -212,7 +212,7 @@ export class LoginForm extends LitElement {
     return html`
       <form class="form" @submit=${this.handleLogin}>
         <div class="field">
-          <label>Email Address</label>
+          <label>Email Address / Username</label>
           <div class="input-wrap">
             <span class="icon material-symbols-outlined">mail</span>
             <input type="text" placeholder="dr.smith@hospital.org"

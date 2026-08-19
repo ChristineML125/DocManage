@@ -149,6 +149,7 @@ router.get('/my', authenticate, async (req, res) => {
   try {
     const pool = await getPool();
     const keyword = req.query.keyword || null;
+    const limit = req.query.limit ? parseInt(req.query.limit) : null;
 
     const result = await pool.query(`
       SELECT
@@ -166,6 +167,7 @@ router.get('/my', authenticate, async (req, res) => {
       WHERE d."uploadedBy" = $1
         AND ($2::text IS NULL OR d."documentName" LIKE '%' || $2 || '%')
       ORDER BY d."uploadDate" DESC
+      ${limit ? `LIMIT ${limit}` : ''}
     `, [req.user.UserID, keyword]);
 
     return res.json({ success: true, documents: result.rows });

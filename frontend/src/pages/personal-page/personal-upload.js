@@ -91,10 +91,49 @@ export class PersonalUploadPage extends LitElement {
       max-width: 600px;
       margin: 0 auto;
     }
-    .recent-section h3 {
-      font-size: 16px; font-weight: 700;
-      margin: 0 0 16px; color: #071e27;
+    .recent-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      gap: 12px;
     }
+    .recent-header h3 {
+      font-size: 16px; font-weight: 700;
+      margin: 0; color: #071e27;
+    }
+
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 280px;
+      background: white;
+      border: 1px solid #bdc9c5;
+      border-radius: 8px;
+      padding: 0 12px;
+      transition: border-color 0.2s;
+    }
+    .search-wrap:focus-within {
+      border-color: #005e53;
+      box-shadow: 0 0 0 1px #005e53;
+    }
+    .search-wrap .icon {
+      font-size: 20px;
+      color: #6e7a76;
+    }
+    .search-wrap input {
+      flex: 1;
+      height: 36px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-family: inherit;
+      color: #071e27;
+      outline: none;
+    }
+    .search-wrap input::placeholder { color: #bdc9c5; }
 
     .doc-list { display: flex; flex-direction: column; gap: 8px; }
 
@@ -146,7 +185,8 @@ export class PersonalUploadPage extends LitElement {
     uploading: { type: Boolean },
     success: { type: String },
     error: { type: String },
-    recentDocs: { type: Array }
+    recentDocs: { type: Array },
+    searchKeyword: { type: String }
   };
 
   constructor() {
@@ -156,6 +196,8 @@ export class PersonalUploadPage extends LitElement {
     this.success = '';
     this.error = '';
     this.recentDocs = [];
+    this.searchKeyword = '';
+    this._searchTimer = null;
   }
 
   connectedCallback() {
@@ -165,13 +207,22 @@ export class PersonalUploadPage extends LitElement {
     this.loadRecentDocs();
   }
 
-  async loadRecentDocs() {
+  async loadRecentDocs(keyword) {
     try {
-      const res = await http('/documents/my?limit=5');
+      const qs = keyword ? `/documents/my?keyword=${encodeURIComponent(keyword)}` : '/documents/my?limit=5';
+      const res = await http(qs);
       this.recentDocs = res.documents || res || [];
     } catch (e) {
       this.recentDocs = [];
     }
+  }
+
+  onSearchInput(e) {
+    this.searchKeyword = e.target.value;
+    clearTimeout(this._searchTimer);
+    this._searchTimer = setTimeout(() => {
+      this.loadRecentDocs(this.searchKeyword || null);
+    }, 300);
   }
 
   handleDrop(e) {
@@ -292,7 +343,15 @@ export class PersonalUploadPage extends LitElement {
             </div>
 
             <div class="recent-section">
-              <h3>Recent Documents</h3>
+              <div class="recent-header">
+                <h3>Recent Documents</h3>
+                <div class="search-wrap">
+                  <span class="material-symbols-outlined icon">search</span>
+                  <input type="text" placeholder="Search documents..."
+                    .value=${this.searchKeyword}
+                    @input=${this.onSearchInput}>
+                </div>
+              </div>
               ${this.recentDocs.length === 0
                 ? html`<div class="empty-state">No documents uploaded yet.</div>`
                 : html`
