@@ -23,6 +23,11 @@ export class RegisterPage extends LitElement {
       padding: 16px;
     }
 
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
     .main-card {
       width: 100%;
       max-width: 1100px;
