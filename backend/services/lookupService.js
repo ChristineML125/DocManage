@@ -7,7 +7,7 @@ export async function getAllLookup() {
     const department = await pool.query(`SELECT "departmentID" AS id, "departmentName" AS name FROM "Department" ORDER BY "departmentName"`);
     const branch = await pool.query(`SELECT "branchID" AS id, "branchName" AS name FROM "Branch" ORDER BY "branchName"`);
     const status = await pool.query(`SELECT "statusID" AS id, "statusName" AS name FROM "Status" ORDER BY "statusName"`);
-    const users = await pool.query(`SELECT "UserID" AS id, "UserName" AS name FROM "Users" ORDER BY "UserName"`);
+    const users = await pool.query(`SELECT "UserID" AS id, "UserName" AS name FROM "Users" WHERE "userType" IS NULL OR "userType" = 'company' ORDER BY "UserName"`);
 
     return {
         categories: category.rows,

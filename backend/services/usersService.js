@@ -71,6 +71,7 @@ export async function allUserList(){
         ON u."DepartmentID"=d."departmentID"
         LEFT JOIN "UserStatus" us
         ON u."UserStatusID"=us."UserStatusID"
+        WHERE u."userType" IS NULL OR u."userType" = 'company'
         ORDER BY u."UserName"
     `);
 
@@ -305,6 +306,7 @@ export async function getCount(){
         JOIN "UserStatus" us
         ON u."UserStatusID"=us."UserStatusID"
         WHERE us."StatusName"='Active'
+        AND (u."userType" IS NULL OR u."userType" = 'company')
     `);
 
 

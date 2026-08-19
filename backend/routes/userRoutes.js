@@ -327,6 +327,12 @@ router.post("/:id/reset-password", authenticate, requireAdmin, async(req,res)=>{
             return res.status(400).json({ success:false, message:"Invalid User ID" });
         }
 
+        const pool = await getPool();
+        const check = await pool.query(`SELECT "userType" FROM "Users" WHERE "UserID"=$1`, [userID]);
+        if (check.rows[0]?.userType === 'personal') {
+            return res.status(403).json({ success:false, message:"Cannot reset password for personal users" });
+        }
+
         const tempPassword=Math.floor(100000+Math.random()*900000).toString();
         await resetPassword(userID, tempPassword, req.user.UserID);
         res.json({ success:true, tempPassword });
@@ -341,6 +347,12 @@ router.post("/:id/send-temp-password", authenticate, requireAdmin, async(req,res
         return res.status(400).json({ success: false, message: 'Invalid User ID' });
     }
     try {
+        const pool = await getPool();
+        const check = await pool.query(`SELECT "userType" FROM "Users" WHERE "UserID"=$1`, [userID]);
+        if (check.rows[0]?.userType === 'personal') {
+            return res.status(403).json({ success: false, message: 'Cannot send temp password to personal users' });
+        }
+
         const user = await getUser(userID);
         if (!user.Email) {
             return res.status(400).json({ success: false, message: 'This user does not have an email address.' });
