@@ -8,9 +8,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
 
       manifest: {
-        name: 'Document Management System',
-        short_name: 'DocManage',
-        description: 'Document Management System with AI Summary',
+        name: 'Docly',
+        short_name: 'Docly',
+        description: 'Smart Document Management with AI Summary',
 
         theme_color: '#ffffff',
         background_color: '#ffffff',
@@ -22,6 +22,11 @@ export default defineConfig({
             src: '/favicon.svg',
             sizes: 'any',
             type: 'image/svg+xml'
+          },
+          {
+            src: '/img/docly-logo.png',
+            sizes: '192x192',
+            type: 'image/png'
           }
         ]
       }

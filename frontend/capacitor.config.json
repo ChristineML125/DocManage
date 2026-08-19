@@ -1,6 +1,6 @@
 {
   "appId": "com.christine.docmanage",
-  "appName": "DocManage",
+  "appName": "Docly",
   "webDir": "dist",
   "server": {
     "cleartext": true,
