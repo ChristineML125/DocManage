@@ -4,9 +4,6 @@ import '../component/login-page/login-form.js';
 export class LoginPage extends LitElement {
 
   static styles = css`
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-
     :host {
       display: flex;
       min-height: 100vh;

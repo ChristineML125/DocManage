@@ -16,8 +16,6 @@ export class LoginForm extends LitElement {
   };
 
   static styles = css`
-    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-
     :host { display: block; }
 
     .material-symbols-outlined {

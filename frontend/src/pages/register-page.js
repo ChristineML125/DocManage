@@ -12,9 +12,6 @@ export class RegisterPage extends LitElement {
   };
 
   static styles = css`
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
-
     :host {
       display: flex;
       min-height: 100vh;
