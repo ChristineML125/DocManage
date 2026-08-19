@@ -14,17 +14,20 @@ export class PersonalUploadPage extends LitElement {
 
     .upload-card {
       max-width: 600px;
-      margin: 0 auto;
+      margin: 0 auto 32px;
       background: white;
-      border: 1px solid #eef2f6;
+      border: 1px solid #bdc9c5;
       border-radius: 12px;
       padding: 32px;
     }
 
-    .upload-card h2 { margin: 0 0 20px; }
+    .upload-card h2 {
+      margin: 0 0 20px;
+      font-size: 18px; font-weight: 700;
+    }
 
     .drop-zone {
-      border: 2px dashed #c5c6cd;
+      border: 2px dashed #bdc9c5;
       border-radius: 10px;
       padding: 40px;
       text-align: center;
@@ -34,16 +37,16 @@ export class PersonalUploadPage extends LitElement {
     }
 
     .drop-zone:hover, .drop-zone.dragover {
-      border-color: #6c63ff;
-      background: #f5f3ff;
+      border-color: #005e53;
+      background: #e6f6ff;
     }
 
-    .drop-zone p { margin: 8px 0; color: #7a8a9a; }
-    .drop-zone .icon { font-size: 48px; color: #c5c6cd; }
+    .drop-zone p { margin: 8px 0; color: #6e7a76; }
+    .drop-zone .icon { font-size: 48px; color: #bdc9c5; }
 
     .file-preview {
-      background: #fafbff;
-      border: 1px solid #eef2f6;
+      background: #f3faff;
+      border: 1px solid #bdc9c5;
       border-radius: 8px;
       padding: 12px 16px;
       display: flex;
@@ -57,7 +60,7 @@ export class PersonalUploadPage extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      color: #ef4444;
+      color: #ba1a1a;
       font-size: 18px;
     }
 
@@ -72,16 +75,69 @@ export class PersonalUploadPage extends LitElement {
       width: 100%;
     }
 
-    .btn-primary { background: #6c63ff; color: white; }
-    .btn-primary:hover { background: #5b4ed4; }
-    .btn-primary:disabled { background: #c5c6cd; cursor: not-allowed; }
+    .btn-primary { background: #005e53; color: white; }
+    .btn-primary:hover { background: #005047; }
+    .btn-primary:disabled { background: #bdc9c5; cursor: not-allowed; }
 
     .success-msg { color: #166534; background: #dcfce7; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; }
-    .error-msg { color: #991b1b; background: #fee2e2; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; }
+    .error-msg { color: #93000a; background: #ffdad6; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; }
 
     .material-symbols-outlined {
       font-family: "Material Symbols Outlined";
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .recent-section {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .recent-section h3 {
+      font-size: 16px; font-weight: 700;
+      margin: 0 0 16px; color: #071e27;
+    }
+
+    .doc-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .doc-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      background: white;
+      border: 1px solid #bdc9c5;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+    .doc-row:hover { background: #f3faff; }
+
+    .doc-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .doc-icon.pdf { background: #ffdad6; color: #ba1a1a; }
+    .doc-icon.docx { background: #d4e3ff; color: #005faf; }
+    .doc-icon.xlsx { background: #dcfce7; color: #166534; }
+    .doc-icon.txt { background: #e6f6ff; color: #005e53; }
+    .doc-icon.other { background: #cfe6f2; color: #3e4946; }
+
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-name {
+      font-size: 14px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .doc-meta { font-size: 12px; color: #6e7a76; margin-top: 2px; }
+
+    .doc-status {
+      font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 9999px;
+    }
+    .status-active { background: #dcfce7; color: #166534; }
+    .status-pending { background: #ffedd5; color: #9a3412; }
+    .status-archived { background: #ffdad6; color: #93000a; }
+
+    .empty-state {
+      text-align: center; padding: 32px;
+      color: #6e7a76; font-size: 14px;
     }
   `;
 
@@ -89,7 +145,8 @@ export class PersonalUploadPage extends LitElement {
     file: { type: Object },
     uploading: { type: Boolean },
     success: { type: String },
-    error: { type: String }
+    error: { type: String },
+    recentDocs: { type: Array }
   };
 
   constructor() {
@@ -98,12 +155,23 @@ export class PersonalUploadPage extends LitElement {
     this.uploading = false;
     this.success = '';
     this.error = '';
+    this.recentDocs = [];
   }
 
   connectedCallback() {
     super.connectedCallback();
     const user = sessionStorage.getItem('personalUser');
     if (!user) Router.go('/login');
+    this.loadRecentDocs();
+  }
+
+  async loadRecentDocs() {
+    try {
+      const res = await http('/documents/my?limit=5');
+      this.recentDocs = res.documents || res || [];
+    } catch (e) {
+      this.recentDocs = [];
+    }
   }
 
   handleDrop(e) {
@@ -137,6 +205,7 @@ export class PersonalUploadPage extends LitElement {
       if (res.success) {
         this.success = 'Document uploaded successfully!';
         this.file = null;
+        this.loadRecentDocs();
       } else {
         this.error = res.message || 'Upload failed.';
       }
@@ -145,6 +214,42 @@ export class PersonalUploadPage extends LitElement {
     } finally {
       this.uploading = false;
     }
+  }
+
+  getFileExt(name) {
+    return (name || '').split('.').pop().toLowerCase();
+  }
+
+  getDocIconClass(name) {
+    const ext = this.getFileExt(name);
+    if (ext === 'pdf') return 'pdf';
+    if (['doc', 'docx'].includes(ext)) return 'docx';
+    if (['xls', 'xlsx'].includes(ext)) return 'xlsx';
+    if (ext === 'txt') return 'txt';
+    return 'other';
+  }
+
+  getDocIcon(name) {
+    const ext = this.getFileExt(name);
+    if (ext === 'pdf') return 'picture_as_pdf';
+    if (['doc', 'docx'].includes(ext)) return 'description';
+    if (['xls', 'xlsx'].includes(ext)) return 'table_chart';
+    if (ext === 'txt') return 'text_snippet';
+    return 'insert_drive_file';
+  }
+
+  formatDate(d) {
+    if (!d) return '';
+    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  getStatusClass(s) {
+    if (!s) return '';
+    const n = s.toLowerCase();
+    if (n === 'active') return 'status-active';
+    if (n === 'pending') return 'status-pending';
+    if (n === 'archived') return 'status-archived';
+    return '';
   }
 
   render() {
@@ -184,6 +289,30 @@ export class PersonalUploadPage extends LitElement {
                 ?disabled=${!this.file || this.uploading}>
                 ${this.uploading ? 'Uploading...' : 'Upload Document'}
               </button>
+            </div>
+
+            <div class="recent-section">
+              <h3>Recent Documents</h3>
+              ${this.recentDocs.length === 0
+                ? html`<div class="empty-state">No documents uploaded yet.</div>`
+                : html`
+                  <div class="doc-list">
+                    ${this.recentDocs.map(doc => html`
+                      <div class="doc-row">
+                        <div class="doc-icon ${this.getDocIconClass(doc.documentName)}">
+                          <span class="material-symbols-outlined">${this.getDocIcon(doc.documentName)}</span>
+                        </div>
+                        <div class="doc-info">
+                          <div class="doc-name">${doc.documentName}</div>
+                          <div class="doc-meta">${this.formatDate(doc.uploadDate)}${doc.versionNum ? ' · v' + doc.versionNum : ''}</div>
+                        </div>
+                        ${doc.statusName ? html`
+                          <span class="doc-status ${this.getStatusClass(doc.statusName)}">${doc.statusName}</span>
+                        ` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                `}
             </div>
           </div>
         </div>

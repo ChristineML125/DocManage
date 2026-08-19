@@ -66,7 +66,6 @@ export class LoginPage extends LitElement {
         <login-form></login-form>
       </div>
       <div class="meta-footer">
-        <p>Secure Clinical Environment</p>
       </div>
     `;
   }

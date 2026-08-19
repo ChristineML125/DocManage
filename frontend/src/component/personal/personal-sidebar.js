@@ -53,8 +53,8 @@ export class PersonalSidebar extends LitElement {
     .mode-badge {
       font-size: 10px;
       font-weight: 700;
-      color: #6c63ff;
-      background: #ede9ff;
+      color: #005e53;
+      background: #d5ecf8;
       padding: 2px 8px;
       border-radius: 12px;
       margin-top: 2px;
@@ -82,10 +82,10 @@ export class PersonalSidebar extends LitElement {
       font-family: inherit;
     }
 
-    .nav-link:hover { background: #d3e4fe; }
+    .nav-link:hover { background: #e6f6ff; }
 
     .nav-link.active {
-      background: #6c63ff;
+      background: #005e53;
       color: #f4fffc;
       font-weight: 700;
       transform: scale(0.98);

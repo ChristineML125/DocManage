@@ -11,12 +11,12 @@ export class PersonalDocumentPage extends LitElement {
       display: flex;
       height: 100%;
       width: 100%;
-      background: #f7f9fb;
-      font-family: 'Inter', sans-serif;
-      color: #191c1e;
-      --accent: #6c63ff;
-      --accent-light: rgba(108, 99, 255, 0.08);
-      --accent-lighter: rgba(108, 99, 255, 0.12);
+      background: #f3faff;
+      font-family: 'Manrope', sans-serif;
+      color: #071e27;
+      --accent: #005e53;
+      --accent-light: rgba(0, 94, 83, 0.08);
+      --accent-lighter: rgba(0, 94, 83, 0.12);
       --border: #eef2f6;
     }
 
@@ -162,8 +162,8 @@ export class PersonalDocumentPage extends LitElement {
       font-size: 18px;
     }
     .edit-btn:hover {
-      background: rgba(108, 99, 255, 0.08);
-      color: #6c63ff;
+      background: rgba(0, 94, 83, 0.08);
+      color: #005e53;
     }
     .delete-btn:hover {
       background: rgba(220, 38, 38, 0.08);

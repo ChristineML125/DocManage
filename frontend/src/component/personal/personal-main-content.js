@@ -84,7 +84,7 @@ export class PersonalMainContent extends LitElement {
     .preview-btn {
       background: none;
       border: none;
-      color: #6c63ff;
+      color: #005e53;
       cursor: pointer;
       font-weight: 600;
       font-size: 13px;

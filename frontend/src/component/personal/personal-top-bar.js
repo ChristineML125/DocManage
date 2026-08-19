@@ -73,9 +73,9 @@ export class PersonalTopBar extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #ede9ff;
-      border: 1px solid #bcc9c6;
-      color: #6c63ff;
+      background: #d5ecf8;
+      border: 1px solid #bdc9c5;
+      color: #005e53;
       font-weight: 700;
     }
 
