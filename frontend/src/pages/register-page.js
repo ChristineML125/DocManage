@@ -356,14 +356,14 @@ export class RegisterPage extends LitElement {
         <label>Company Name (Required)</label>
         <div class="input-wrap">
           <span class="icon material-symbols-outlined">business</span>
-          <input type="text" name="companyName" placeholder="MedHealth Partners" required>
+          <input type="text" name="companyName" placeholder="Enter company name" required>
         </div>
       </div>
       <div class="field">
         <label>Company Email</label>
         <div class="input-wrap">
           <span class="icon material-symbols-outlined">mail</span>
-          <input type="email" name="companyEmail" placeholder="contact@medhealth.com">
+          <input type="email" name="companyEmail" placeholder="company@email.com">
         </div>
       </div>
       <div class="field-row">
@@ -371,14 +371,14 @@ export class RegisterPage extends LitElement {
           <label>Phone (Optional)</label>
           <div class="input-wrap">
             <span class="icon material-symbols-outlined">call</span>
-            <input type="tel" name="companyPhone" placeholder="+60 12-345 6789">
+            <input type="tel" name="companyPhone" placeholder="Phone number">
           </div>
         </div>
         <div class="field">
           <label>Address (Optional)</label>
           <div class="input-wrap">
             <span class="icon material-symbols-outlined">location_on</span>
-            <input type="text" name="companyAddress" placeholder="City, State">
+            <input type="text" name="companyAddress" placeholder="Company address">
           </div>
         </div>
       </div>
@@ -388,14 +388,14 @@ export class RegisterPage extends LitElement {
         <label>Admin Name (Required)</label>
         <div class="input-wrap">
           <span class="icon material-symbols-outlined">person</span>
-          <input type="text" name="adminName" placeholder="John Smith" required>
+          <input type="text" name="adminName" placeholder="Admin full name" required>
         </div>
       </div>
       <div class="field">
         <label>Admin Email (Required)</label>
         <div class="input-wrap">
           <span class="icon material-symbols-outlined">work</span>
-          <input type="email" name="adminEmail" placeholder="admin@medhealth.com" required>
+          <input type="email" name="adminEmail" placeholder="admin@email.com" required>
         </div>
       </div>
       <div class="field-row">
