@@ -2,6 +2,16 @@
 -- Run this once to create all tables
 
 -- Lookup / reference tables
+CREATE TABLE IF NOT EXISTS "Companies" (
+    "CompanyID" SERIAL PRIMARY KEY,
+    "CompanyName" VARCHAR(255) NOT NULL,
+    "CompanyEmail" VARCHAR(255),
+    "CompanyPhone" VARCHAR(100),
+    "CompanyAddress" VARCHAR(500),
+    "CreatedAt" TIMESTAMP DEFAULT NOW(),
+    "Status" VARCHAR(50) DEFAULT 'Active'
+);
+
 CREATE TABLE IF NOT EXISTS "Department" (
     "departmentID" SERIAL PRIMARY KEY,
     "departmentName" VARCHAR(100) NOT NULL
@@ -39,6 +49,7 @@ CREATE TABLE IF NOT EXISTS "Users" (
     "UserStatusID" INT REFERENCES "UserStatus"("UserStatusID"),
     "MustChangePassword" BOOLEAN DEFAULT false,
     "userType" VARCHAR(20) DEFAULT 'company',
+    "CompanyID" INT REFERENCES "Companies"("CompanyID"),
     "CreatedAt" TIMESTAMP DEFAULT NOW(),
     "LastLogin" TIMESTAMP
 );

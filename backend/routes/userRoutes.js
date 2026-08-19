@@ -87,7 +87,8 @@ router.post("/login", async(req,res)=>{
             UserName:user.UserName,
             Email:user.Email,
             role:user.role,
-            userType:user.userType || 'company'
+            userType:user.userType || 'company',
+            CompanyID:user.CompanyID || null
         },
         process.env.JWT_SECRET,{
             expiresIn:"8h"
@@ -102,7 +103,8 @@ router.post("/login", async(req,res)=>{
                 UserName:user.UserName,
                 Email:user.Email,
                 role:user.role,
-                userType:user.userType || 'company'
+                userType:user.userType || 'company',
+                CompanyID:user.CompanyID || null
             }
         });
 
@@ -115,43 +117,82 @@ router.post("/login", async(req,res)=>{
 });
 
 
-router.post("/register", async(req,res)=>{
+router.post("/register/personal", async(req,res)=>{
     const { UserName, Password, Email } = req.body;
 
     if(!UserName || !Password || !Email){
-        return res.status(400).json({
-            success:false,
-            message:"Please fill in all fields"
-        });
+        return res.status(400).json({ success:false, message:"Please fill in all fields" });
     }
 
     try{
         const pool = await getPool();
 
         const existing = await pool.query(
-            `SELECT "UserID" FROM "Users" WHERE "UserName"=$1`,
-            [UserName]
+            `SELECT "UserID" FROM "Users" WHERE "UserName"=$1`, [UserName]
         );
-
         if(existing.rows.length > 0){
-            return res.status(409).json({
-                success:false,
-                message:"Username already exists"
-            });
+            return res.status(409).json({ success:false, message:"Username already exists" });
+        }
+
+        const emailCheck = await pool.query(
+            `SELECT "UserID" FROM "Users" WHERE "Email"=$1`, [Email]
+        );
+        if(emailCheck.rows.length > 0){
+            return res.status(409).json({ success:false, message:"Email already exists" });
         }
 
         const userID = await registerPersonalUser(UserName, Password, Email);
 
-        res.json({
-            success:true,
-            message:"Account created successfully. You can now login.",
-            userID
-        });
+        res.json({ success:true, message:"Account created successfully. You can now login.", userID });
     }catch(err){
-        res.status(500).json({
-            success:false,
-            message:err.message
-        });
+        res.status(500).json({ success:false, message:err.message });
+    }
+});
+
+router.post("/register/company", async(req,res)=>{
+    const { CompanyName, CompanyEmail, CompanyPhone, CompanyAddress, AdminName, AdminEmail, Password } = req.body;
+
+    if(!CompanyName || !AdminName || !AdminEmail || !Password){
+        return res.status(400).json({ success:false, message:"Please fill in all required fields" });
+    }
+
+    try{
+        const pool = await getPool();
+
+        const userCheck = await pool.query(
+            `SELECT "UserID" FROM "Users" WHERE "UserName"=$1`, [AdminName]
+        );
+        if(userCheck.rows.length > 0){
+            return res.status(409).json({ success:false, message:"Admin name already exists" });
+        }
+
+        const emailCheck = await pool.query(
+            `SELECT "UserID" FROM "Users" WHERE "Email"=$1`, [AdminEmail]
+        );
+        if(emailCheck.rows.length > 0){
+            return res.status(409).json({ success:false, message:"Email already exists" });
+        }
+
+        const companyResult = await pool.query(
+            `INSERT INTO "Companies" ("CompanyName", "CompanyEmail", "CompanyPhone", "CompanyAddress")
+             VALUES ($1, $2, $3, $4) RETURNING "CompanyID"`,
+            [CompanyName, CompanyEmail || null, CompanyPhone || null, CompanyAddress || null]
+        );
+        const companyID = companyResult.rows[0].CompanyID;
+
+        const crypto = await import('crypto');
+        const hash = crypto.default.createHash("sha256").update(Password).digest("hex");
+
+        const userResult = await pool.query(
+            `INSERT INTO "Users" ("UserName", "Password", "Email", "role", "userType", "CompanyID", "UserStatusID", "CreatedAt")
+             VALUES ($1, $2, $3, 'admin', 'company', $4, 1, NOW())
+             RETURNING "UserID"`,
+            [AdminName, hash, AdminEmail, companyID]
+        );
+
+        res.json({ success:true, message:"Company account created successfully. You can now login.", userID: userResult.rows[0].UserID, companyID });
+    }catch(err){
+        res.status(500).json({ success:false, message:err.message });
     }
 });
 

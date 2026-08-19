@@ -129,6 +129,9 @@ export class LoginPage extends LitElement {
             <h2>Login</h2>
             <p>Access your Document Management dashboard</p>
             <login-form></login-form>
+            <p style="text-align:center;margin-top:24px;font-size:14px;color:#5f6773;">
+              Don't have an account?<a href="/register" style="color:#00685f;font-weight:600;text-decoration:none;margin-left:4px;">Register</a>
+            </p>
           </section>
         </div>
     </main>

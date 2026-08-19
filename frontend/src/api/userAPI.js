@@ -1,5 +1,19 @@
 import { http } from './http.js';
 
+export async function registerPersonal(data) {
+    return http('/users/register/personal', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
+}
+
+export async function registerCompany(data) {
+    return http('/users/register/company', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
+}
+
 export async function loginUser(UserName, Password){
     try{
         return http(`/users/login`, {
