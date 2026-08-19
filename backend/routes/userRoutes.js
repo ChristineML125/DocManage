@@ -363,14 +363,14 @@ router.post("/:id/send-temp-password", authenticate, requireAdmin, async(req,res
 router.post("/forgot-password", async (req, res) => {
     const { UserName } = req.body;
     if (!UserName) {
-        return res.status(400).json({ success: false, message: "Please enter your username" });
+        return res.status(400).json({ success: false, message: "Please enter your username or email" });
     }
     try {
         const pool = await getPool();
         const result = await pool.query(`
             SELECT "UserID", "UserName", "Email"
             FROM "Users"
-            WHERE "UserName" = $1
+            WHERE ("UserName" = $1 OR "Email" = $1)
             AND "UserStatusID" = 1
         `, [UserName]);
 

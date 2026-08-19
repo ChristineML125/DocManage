@@ -7,7 +7,6 @@ export class LoginForm extends LitElement {
   static properties = {
     loginType: { type: String },
     username: { type: String },
-    email: { type: String },
     password: { type: String },
     rememberMe: { type: Boolean },
     loading: { type: Boolean },
@@ -157,7 +156,6 @@ export class LoginForm extends LitElement {
     super();
     this.loginType = 'personal';
     this.username = '';
-    this.email = '';
     this.password = '';
     this.rememberMe = false;
     this.loading = false;
@@ -173,9 +171,8 @@ export class LoginForm extends LitElement {
 
   async handleLogin(e) {
     e.preventDefault();
-    const loginId = this.email || this.username;
-    if (!loginId || !this.password) {
-      this.errorMsg = 'Please enter email/username and password.';
+    if (!this.username || !this.password) {
+      this.errorMsg = 'Please enter username/email and password.';
       return;
     }
     this.loading = true;
@@ -183,7 +180,7 @@ export class LoginForm extends LitElement {
     this.resetMsg = '';
 
     try {
-      const res = await loginUser(loginId, this.password);
+      const res = await loginUser(this.username, this.password);
 
       if (res.success) {
         const role = res.user.role;
@@ -215,16 +212,15 @@ export class LoginForm extends LitElement {
   }
 
   async handleForgotPassword() {
-    const id = this.email || this.username;
-    if (!id.trim()) {
-      this.errorMsg = 'Enter your email or username first, then click Forgot Password.';
+    if (!this.username.trim()) {
+      this.errorMsg = 'Enter your username or email first, then click Forgot Password.';
       return;
     }
     this.loading = true;
     this.errorMsg = '';
     this.resetMsg = '';
     try {
-      const result = await requestPasswordReset(id.trim());
+      const result = await requestPasswordReset(this.username.trim());
       this.resetMsg = result.message;
       this._showForgot = false;
     } catch (error) {
@@ -249,20 +245,11 @@ export class LoginForm extends LitElement {
         </div>
 
         <div class="field" style="margin-top:16px;">
-          <label>Username</label>
+          <label>Username or Email</label>
           <div class="input-wrap">
             <span class="icon material-symbols-outlined">person</span>
-            <input type="text" placeholder="Enter username"
-              .value=${this.username} @input=${e => this.username = e.target.value}>
-          </div>
-        </div>
-
-        <div class="field" style="margin-top:12px;">
-          <label>Email Address</label>
-          <div class="input-wrap">
-            <span class="icon material-symbols-outlined">mail</span>
-            <input type="email" placeholder="admin@docly.health"
-              .value=${this.email} @input=${e => this.email = e.target.value}>
+            <input type="text" placeholder="Enter username or email"
+              .value=${this.username} @input=${e => this.username = e.target.value} required>
           </div>
         </div>
 
