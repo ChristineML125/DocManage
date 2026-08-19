@@ -50,7 +50,7 @@ router.post("/login", async(req,res)=>{
         const result=await pool.query(`
             SELECT *
             FROM "Users"
-            WHERE "UserName"=$1
+            WHERE ("UserName"=$1 OR "Email"=$1)
             AND "UserStatusID"=1
         `,
         [UserName]);
