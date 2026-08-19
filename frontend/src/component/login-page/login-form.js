@@ -5,7 +5,6 @@ import { Router } from '@vaadin/router';
 export class LoginForm extends LitElement {
 
   static properties = {
-    loginType: { type: String },
     username: { type: String },
     password: { type: String },
     rememberMe: { type: Boolean },
@@ -22,32 +21,6 @@ export class LoginForm extends LitElement {
       font-family: 'Material Symbols Outlined';
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
-
-    .toggle-bar {
-      display: flex; padding: 4px;
-      background: #e6f6ff; border-radius: 9999px;
-      position: relative;
-    }
-    .toggle-slider {
-      position: absolute; inset-y: 1px; left: 1px;
-      width: calc(50% - 2px); background: #fff;
-      border-radius: 9999px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      transition: transform 0.3s ease-in-out;
-    }
-    .toggle-slider.company { transform: translateX(100%); }
-
-    .toggle-btn {
-      flex: 1; padding: 8px 0; border: none;
-      background: transparent; cursor: pointer;
-      font-size: 12px; line-height: 16px; letter-spacing: 0.05em;
-      font-weight: 600; font-family: inherit;
-      position: relative; z-index: 10;
-      transition: color 0.3s;
-    }
-    .toggle-btn.active { color: #005e53; }
-    .toggle-btn:not(.active) { color: #3e4946; }
-    .toggle-btn:not(.active):hover { color: #071e27; }
 
     .form { display: flex; flex-direction: column; gap: 24px; }
 
@@ -160,7 +133,6 @@ export class LoginForm extends LitElement {
 
   constructor() {
     super();
-    this.loginType = 'personal';
     this.username = '';
     this.password = '';
     this.rememberMe = false;
@@ -238,18 +210,6 @@ export class LoginForm extends LitElement {
 
   render() {
     return html`
-      <div class="toggle-bar">
-        <div class="toggle-slider ${this.loginType === 'company' ? 'company' : ''}"></div>
-        <button type="button" class="toggle-btn ${this.loginType === 'personal' ? 'active' : ''}"
-          @click=${() => { this.loginType = 'personal'; this.errorMsg = ''; this.resetMsg = ''; }}>
-          Personal
-        </button>
-        <button type="button" class="toggle-btn ${this.loginType === 'company' ? 'active' : ''}"
-          @click=${() => { this.loginType = 'company'; this.errorMsg = ''; this.resetMsg = ''; }}>
-          Company
-        </button>
-      </div>
-
       <form class="form" @submit=${this.handleLogin}>
         <div class="field">
           <label>Email Address</label>
