@@ -1600,19 +1600,18 @@ export class StaffAllDocument extends LitElement {
    }
  
    async fetchDocumentsByKeyword(keyword) {
-     console.log('🔍 fetchDocumentsByKeyword started, keyword:', keyword); 
      try {
          const data = await getDocumentsList({ keyword });
-         console.log('📋 API response for search:', data); 
          if (data.success) {
              this.documents = data.documents || [];
-             console.log('✅ Assigned documents:', this.documents.length); 
+             this.filteredDocs = [...this.documents];
+             this.selectedDoc = this.documents.length > 0 ? this.documents[0] : null;
+             this.currentPage = 1;
+             this.updatePagination();
              this.requestUpdate(); 
-         } else {
-             console.warn('API success false, message:', data.message);
          }
      } catch (err) {
-         console.error('❌ Search failed:', err);
+         console.error('Search failed:', err);
      } finally {
          this.loading = false;
      }
@@ -1624,7 +1623,10 @@ export class StaffAllDocument extends LitElement {
          const data = await getDocumentsList({ keyword });
          if (data.success) {
              this.documents = data.documents;
+             this.filteredDocs = [...this.documents];
              this.selectedDoc = this.documents.length > 0 ? this.documents[0] : null;
+             this.currentPage = 1;
+             this.updatePagination();
              this.requestUpdate();
          }
      } catch (err) {
