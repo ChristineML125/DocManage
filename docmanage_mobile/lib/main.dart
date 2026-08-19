@@ -1,33 +1,44 @@
 import 'package:flutter/material.dart';
 
+import 'api/http_service.dart';
 import 'pages/login_page.dart';
+import 'pages/dashboard.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await HttpService.init();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final hasToken = HttpService.token != null;
+    final user = HttpService.savedUser;
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Docly',
 
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
 
-      initialRoute: '/login',
+      initialRoute: hasToken ? '/dashboard' : '/login',
       routes: {
         '/login': (context) => const LoginPage(),
-
+        '/dashboard': (context) => Dashboard(
+          username: user?['UserName'] ?? '',
+          role: user?['role'] ?? 'staff',
+          userId: user?['UserID'] is int
+              ? user!['UserID']
+              : int.parse('${user?['UserID'] ?? 0}'),
+          mustChangePassword: user?['mustChangePassword'] == true,
+        ),
       },
-
     );
   }
 }

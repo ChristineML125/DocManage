@@ -180,8 +180,9 @@ _setMessage('Profile photo updated.');
     }
   }
 
-  void _logout() {
-    HttpService.token = null;
+  void _logout() async {
+    await HttpService.clearSession();
+    if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginPage()),
       (_) => false,

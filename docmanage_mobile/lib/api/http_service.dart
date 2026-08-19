@@ -1,9 +1,40 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HttpService {
   static const String baseUrl =
       'https://docmanage-1.onrender.com/api';
+  static const String _tokenKey = 'auth_token';
+  static const String _userKey = 'auth_user';
+
+  static String? token;
+  static Map<String, dynamic>? savedUser;
+
+  static Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    token = prefs.getString(_tokenKey);
+    final userStr = prefs.getString(_userKey);
+    if (userStr != null) {
+      savedUser = jsonDecode(userStr);
+    }
+  }
+
+  static Future<void> saveSession(String tokenValue, Map<String, dynamic> user) async {
+    token = tokenValue;
+    savedUser = user;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, tokenValue);
+    await prefs.setString(_userKey, jsonEncode(user));
+  }
+
+  static Future<void> clearSession() async {
+    token = null;
+    savedUser = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_userKey);
+  }
 
   static String getFileUrl(String fileUrl) {
     if (fileUrl.trim().isEmpty) {
@@ -33,8 +64,6 @@ class HttpService {
     // Bare filename
     return '$serverUrl/files/$file';
   }  
-    
-  static String? token;
 
   static Map<String, String>
       get authorizationHeaders => {

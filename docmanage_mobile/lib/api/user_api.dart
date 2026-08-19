@@ -15,7 +15,13 @@ class UserApi {
         },
       );
       if (response['token'] != null) {
-        HttpService.token = response['token'];
+        final user = response['user'] ?? {};
+        await HttpService.saveSession(response['token'], {
+          'UserID': user['UserID'],
+          'UserName': user['UserName'],
+          'role': user['role'],
+          'mustChangePassword': response['mustChangePassword'],
+        });
       }
       return response;
     } catch (e) {
@@ -120,5 +126,35 @@ class UserApi {
   // Reuse department API
   static Future<dynamic> getDepartments() async {
     return DepartmentApi.getDepartmentLoad();
+  }
+
+  static Future<Map<String, dynamic>> registerPersonal({
+    required String username,
+    required String password,
+    required String email,
+  }) async {
+    try {
+      final response = await HttpService.request(
+        '/users/register/personal',
+        method: 'POST',
+        body: {
+          'UserName': username,
+          'Password': password,
+          'Email': email,
+        },
+      );
+      if (response['token'] != null) {
+        final user = response['user'] ?? {};
+        await HttpService.saveSession(response['token'], {
+          'UserID': user['UserID'],
+          'UserName': user['UserName'],
+          'role': user['role'],
+          'mustChangePassword': response['mustChangePassword'],
+        });
+      }
+      return response;
+    } catch (e) {
+      throw Exception('Failed to register: $e');
+    }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../api/user_api.dart';
 import '../pages/dashboard.dart';
+import '../pages/register_page.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -171,7 +172,7 @@ class _LoginFormState extends State<LoginForm> {
           child: ElevatedButton(
             onPressed: loading ? null : _login, // Disable button when loading
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0058BE), 
+              backgroundColor: const Color(0xFF005e53), 
               foregroundColor: Colors.white,
             ),
             
@@ -196,6 +197,26 @@ class _LoginFormState extends State<LoginForm> {
           const SizedBox(height: 8),
           Text(resetMsg!, style: const TextStyle(color: Color(0xFF12632D))),
         ],
+
+        const SizedBox(height: 20),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text("Don't have an account? ",
+                style: TextStyle(fontSize: 13, color: Color(0xFF6e7a76))),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RegisterPage()),
+                );
+              },
+              child: const Text("Sign Up",
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF005e53))),
+            ),
+          ],
+        ),
         
       ],
     );
