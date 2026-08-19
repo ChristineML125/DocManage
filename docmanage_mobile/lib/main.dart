@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
           userId: user?['UserID'] is int
               ? user!['UserID']
               : int.parse('${user?['UserID'] ?? 0}'),
+          userType: user?['userType'] ?? 'company',
           mustChangePassword: user?['mustChangePassword'] == true,
         ),
       },

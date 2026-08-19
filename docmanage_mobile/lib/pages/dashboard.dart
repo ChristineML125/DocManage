@@ -22,6 +22,7 @@ class Dashboard extends StatefulWidget {
   final String role;
   final String username;
   final int userId;
+  final String userType;
   final bool mustChangePassword;
 
   const Dashboard({
@@ -29,6 +30,7 @@ class Dashboard extends StatefulWidget {
     required this.role,
     required this.username,
     required this.userId,
+    this.userType = 'company',
     this.mustChangePassword = false,
   });
 
@@ -54,6 +56,9 @@ class _DashboardState extends State<Dashboard> {
 
   bool get isAdmin =>
       widget.role.toLowerCase() == "admin";
+
+  bool get isPersonal =>
+      widget.userType == 'personal';
 
 
   List<Map<String,dynamic>> departments = [];
@@ -104,6 +109,23 @@ class _DashboardState extends State<Dashboard> {
 
 
   Future loadDashboard() async {
+
+    if (isPersonal) {
+      final countResponse = await DocumentApi.getPersonalDocCount();
+      final docListResponse = await DocumentApi.getPersonalDocumentList();
+
+      setState(() {
+        totalDocuments = countResponse["totalDocument"] ?? 0;
+        activeDocuments = countResponse["activeCount"] ?? 0;
+        archivedDocuments = countResponse["archivedCount"] ?? 0;
+        totalCategories = 0;
+        departments = [];
+        recentDocuments = List<Map<String,dynamic>>.from(
+          docListResponse["documents"] ?? []
+        );
+      });
+      return;
+    }
 
     final documentResponse =
         await DocumentApi.getDocuments();
@@ -213,7 +235,7 @@ class _DashboardState extends State<Dashboard> {
                   color:Colors.green,
                 ),
 
-                SummaryCard(
+                if (!isPersonal) SummaryCard(
                   icon:Icons.category,
                   title:"Categories",
                   value:totalCategories.toString(),
@@ -232,12 +254,16 @@ class _DashboardState extends State<Dashboard> {
             ),
 
 
-            const SizedBox(height:20),
+            if (!isPersonal) ...[
+
+              const SizedBox(height:20),
 
 
-            DepartmentLoad(
-              departments: departments,
-            ),
+              DepartmentLoad(
+                departments: departments,
+              ),
+
+            ],
 
 
             const SizedBox(height:20),
@@ -266,15 +292,18 @@ class _DashboardState extends State<Dashboard> {
 
     Document(
       role: widget.role,
+      userType: widget.userType,
     ),
 
     UploadPage(
-      role: widget.role
+      role: widget.role,
+      userType: widget.userType,
     ),
 
-    CategoriesPage(
-      role: widget.role
-    ),
+    if (!isPersonal)
+      CategoriesPage(
+        role: widget.role
+      ),
 
     if(isAdmin)
       AdminPage(
@@ -390,6 +419,8 @@ class _DashboardState extends State<Dashboard> {
         onTap:changePage,
 
         isAdmin:isAdmin,
+
+        isPersonal:isPersonal,
 
       ),
 

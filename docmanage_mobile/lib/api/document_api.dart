@@ -12,11 +12,25 @@ class DocumentApi {
     );
   }
 
+  static Future getPersonalDocCount() async {
+    return HttpService.request(
+      '/documents/my/count',
+      method: 'GET',
+    );
+  }
+
   static Future getDocumentList(
     Map<String, dynamic> params,
   ) async {
     return HttpService.request(
       '/documents/list',
+      method: 'GET',
+    );
+  }
+
+  static Future getPersonalDocumentList() async {
+    return HttpService.request(
+      '/documents/my',
       method: 'GET',
     );
   }
@@ -47,6 +61,16 @@ class DocumentApi {
         'categoryId': categoryId,
         'departmentId': departmentId,
       },
+    );
+  }
+
+  static Future uploadPersonalDocument({
+    required String filePath,
+  }) async {
+    return HttpService.uploadMultipart(
+      '/documents/personal/upload',
+      filePath: filePath,
+      fileField: 'file',
     );
   }
 

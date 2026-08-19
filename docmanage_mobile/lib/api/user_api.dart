@@ -20,6 +20,7 @@ class UserApi {
           'UserID': user['UserID'],
           'UserName': user['UserName'],
           'role': user['role'],
+          'userType': user['userType'] ?? 'company',
           'mustChangePassword': response['mustChangePassword'],
         });
       }
@@ -149,6 +150,7 @@ class UserApi {
           'UserID': user['UserID'],
           'UserName': user['UserName'],
           'role': user['role'],
+          'userType': user['userType'] ?? 'personal',
           'mustChangePassword': response['mustChangePassword'],
         });
       }

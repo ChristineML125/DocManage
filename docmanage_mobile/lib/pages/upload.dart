@@ -14,10 +14,12 @@ import 'document.dart';
 class UploadPage extends StatefulWidget {
 
   final String role;
+  final String userType;
 
   const UploadPage({
     Key? key,
     required this.role,
+    this.userType = 'company',
   }) : super(key: key);
 
 
@@ -45,6 +47,7 @@ class _UploadPageState extends State<UploadPage> {
 
 
   bool get isAdmin => widget.role.toLowerCase() == 'admin';
+  bool get isPersonal => widget.userType == 'personal';
 
 
   @override
@@ -56,6 +59,17 @@ class _UploadPageState extends State<UploadPage> {
 
   Future<void> _loadData() async {
     try {
+
+      if (isPersonal) {
+        final docsRes = await DocumentApi.getPersonalDocumentList();
+        setState(() {
+          _recentDocs = List<Map<String, dynamic>>.from(
+            docsRes['documents'] ?? [],
+          );
+          _loading = false;
+        });
+        return;
+      }
 
       final docsRes = await DocumentApi.getDocumentList({});
       final categoriesRes = await CategoryApi.getCategories();
@@ -247,27 +261,37 @@ class _UploadPageState extends State<UploadPage> {
       return;
     }
 
-    if (_categoryId == null || _categoryId!.isEmpty) {
-      _showMsg('Please select a category');
-      return;
-    }
+    if (!isPersonal) {
+      if (_categoryId == null || _categoryId!.isEmpty) {
+        _showMsg('Please select a category');
+        return;
+      }
 
-    if (_departmentId == null || _departmentId!.isEmpty) {
-      _showMsg('Please select a department');
-      return;
+      if (_departmentId == null || _departmentId!.isEmpty) {
+        _showMsg('Please select a department');
+        return;
+      }
     }
 
     setState(() => _uploading = true);
 
     try {
 
-      await DocumentApi.uploadDocument(
-        filePath: _file!.path!,
-        categoryId: _categoryId!,
-        departmentId: _departmentId!,
-      );
+      if (isPersonal) {
+        await DocumentApi.uploadPersonalDocument(
+          filePath: _file!.path!,
+        );
+      } else {
+        await DocumentApi.uploadDocument(
+          filePath: _file!.path!,
+          categoryId: _categoryId!,
+          departmentId: _departmentId!,
+        );
+      }
 
-      final docsRes = await DocumentApi.getDocumentList({});
+      final docsRes = isPersonal
+          ? await DocumentApi.getPersonalDocumentList()
+          : await DocumentApi.getDocumentList({});
 
       setState(() {
 

@@ -6,6 +6,7 @@ class BottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
   final bool isAdmin;
+  final bool isPersonal;
 
 
   const BottomNav({
@@ -13,6 +14,7 @@ class BottomNav extends StatelessWidget {
     required this.currentIndex,
     required this.onTap,
     required this.isAdmin,
+    this.isPersonal = false,
   });
 
 
@@ -32,11 +34,14 @@ class BottomNav extends StatelessWidget {
         'icon': Icons.cloud_upload,
         'label': 'Upload',
       },
-      const {
+    ];
+
+    if (!isPersonal) {
+      destinations.add(const {
         'icon': Icons.category,
         'label': 'Categories',
-      },
-    ];
+      });
+    }
 
 
     if (isAdmin) {

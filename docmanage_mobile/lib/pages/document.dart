@@ -4,10 +4,12 @@ import '../widget/document_card.dart';
 
 class Document extends StatefulWidget {
   final String role;
+  final String userType;
 
   const Document({
     super.key,
     required this.role,
+    this.userType = 'company',
   });
 
   @override
@@ -23,6 +25,7 @@ class _DocumentState extends State<Document> {
   String selectedStatus = "All";
 
   bool get isAdmin => widget.role.toLowerCase() == "admin";
+  bool get isPersonal => widget.userType == 'personal';
 
   @override
   void initState() {
@@ -31,7 +34,9 @@ class _DocumentState extends State<Document> {
   }
 
   Future loadDocuments() async {
-    final response = await DocumentApi.getDocumentList({});
+    final response = isPersonal
+        ? await DocumentApi.getPersonalDocumentList()
+        : await DocumentApi.getDocumentList({});
     setState(() {
       documents = List<Map<String, dynamic>>.from(response["documents"] ?? []);
       filteredDocuments = documents;
