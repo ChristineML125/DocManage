@@ -306,7 +306,7 @@ export class PersonalUploadPage extends LitElement {
                           <span class="doc-status ${this.getStatusClass(doc.statusName)}">${doc.statusName}</span>
                         ` : ''}
                       </div>
-                    `).join('')}
+                    `)}
                   </div>
                 `}
             </div>
