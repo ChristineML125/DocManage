@@ -163,7 +163,7 @@ router.get('/my', authenticate, async (req, res) => {
       FROM "Document" d
       LEFT JOIN "Category" c ON d."categoriesID" = c."categoriesID"
       LEFT JOIN "Status" s ON d."statusID" = s."statusID"
-      LEFT JOIN "DocumentVersion" dv ON d."documentID" = dv."DocumentID" AND dv."filePath" = d."filePath"
+      LEFT JOIN "DocumentVersion" dv ON d."documentID" = dv."documentID" AND dv."filePath" = d."filePath"
       WHERE d."uploadedBy" = $1
         AND ($2::text IS NULL OR d."documentName" LIKE '%' || $2 || '%')
       ORDER BY d."uploadDate" DESC
@@ -252,7 +252,7 @@ router.get('/:id/versions', authenticate, async (req, res) => {
       SELECT dv."VersionNum" AS "versionNum", dv."uploadDate", dv."filePath", dv."isLatest", dv."uploadedBy", u."UserName"
       FROM "DocumentVersion" dv
       LEFT JOIN "Users" u ON dv."uploadedBy" = u."UserID"
-      WHERE dv."DocumentID" = $1
+      WHERE dv."documentID" = $1
       ORDER BY dv."VersionNum" DESC
     `, [documentID]);
     res.json({ success: true, versions: result.rows });
