@@ -1491,6 +1491,13 @@ export class PersonalDocumentPage extends LitElement {
     window.addEventListener('mouseup', this._onMouseUp);
     this.fetchDocuments();
 
+    const params = new URLSearchParams(window.location.search);
+    const urlKeyword = params.get('keyword') || '';
+    if (urlKeyword) {
+      this.keyword = urlKeyword;
+      setTimeout(() => this.filterDocuments(), 300);
+    }
+
     this.resizeObserver = new ResizeObserver(() => {
       this.recalculateScale();
     });

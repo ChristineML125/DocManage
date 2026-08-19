@@ -31,7 +31,7 @@ export class PersonalTopBar extends LitElement {
       transition: box-shadow 0.2s;
     }
 
-    .search-box:focus-within { box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2); }
+    .search-box:focus-within { box-shadow: 0 0 0 2px rgba(0, 94, 83, 0.2); }
     .search-box .icon { color: #3d4947; margin-right: 8px; font-size: 20px; }
 
     .search-box input {
@@ -47,6 +47,21 @@ export class PersonalTopBar extends LitElement {
     }
 
     .search-box input::placeholder { color: #3d4947; }
+
+    .action-btn {
+      padding: 4px 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: #8a9aa8;
+      transition: color 0.2s;
+      border-radius: 6px;
+    }
+    .action-btn:hover {
+      color: #005e53;
+      background: rgba(0, 94, 83, 0.06);
+    }
+    .action-btn .icon { font-size: 18px; }
 
     .user-info {
       display: flex;
@@ -128,12 +143,12 @@ export class PersonalTopBar extends LitElement {
           <h1>${this.pageTitle}</h1>
         </div>
         <div class="search-box">
-          <input type="text" placeholder="Search your documents..."
+          <input type="text" placeholder="Search files, ID, or department..."
             .value=${this.searchValue}
             @input=${this._onInput}
             @keydown=${(e) => e.key === 'Enter' && this._handleSearch()}
           />
-          <button style="background:none;border:none;cursor:pointer;" @click=${this._handleSearch}>
+          <button class="action-btn" @click=${this._handleSearch}>
             <span class="material-symbols-outlined icon">search</span>
           </button>
         </div>

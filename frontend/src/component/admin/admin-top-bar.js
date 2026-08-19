@@ -31,7 +31,7 @@ export class TopBar extends LitElement {
     .search-box {
       display: flex;
       align-items: center;
-      background: #e5eeff;
+      background: #e6f6ff;
       border-radius: 20px;
       padding: 4px 14px;
       width: 60%;
@@ -39,7 +39,7 @@ export class TopBar extends LitElement {
     }
 
     .search-box:focus-within {
-      box-shadow: 0 0 0 2px rgba(0, 104, 95, 0.2);
+      box-shadow: 0 0 0 2px rgba(0, 94, 83, 0.2);
     }
 
     .search-box .icon {
@@ -166,9 +166,9 @@ export class TopBar extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #e5eeff;
-      border: 1px solid #bcc9c6;
-      color: #0058be;
+      background: #d5ecf8;
+      border: 1px solid #bdc9c5;
+      color: #005e53;
       font-weight: 700;
     }
 
