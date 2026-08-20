@@ -26,11 +26,14 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _loading = true;
   bool _saving = false;
   bool _showChangePassword = false;
+  bool _showEditProfile = false;
   bool _passwordChanged = false;
 
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _editUsernameController = TextEditingController();
+  final _editEmailController = TextEditingController();
 
   String? _message;
   bool _isError = false;
@@ -47,6 +50,8 @@ class _SettingsPageState extends State<SettingsPage> {
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
+    _editUsernameController.dispose();
+    _editEmailController.dispose();
     super.dispose();
   }
 
@@ -58,6 +63,8 @@ class _SettingsPageState extends State<SettingsPage> {
       setState(() {
         _user = Map<String, dynamic>.from(result['user'] ?? {});
         _loading = false;
+        _editUsernameController.text = _user?['UserName'] ?? '';
+        _editEmailController.text = _user?['Email'] ?? '';
       });
     } catch (e) {
       setState(() => _loading = false);
@@ -124,8 +131,6 @@ class _SettingsPageState extends State<SettingsPage> {
       });
 
 _setMessage('Profile photo updated.');
-
-      _setMessage('Profile photo updated.');
     } catch (e) {
       _setMessage(_parseError(e), isError: true);
     } finally {
@@ -187,6 +192,44 @@ _setMessage('Profile photo updated.');
       MaterialPageRoute(builder: (_) => const LoginPage()),
       (_) => false,
     );
+  }
+
+  Future<void> _saveProfile() async {
+    final username = _editUsernameController.text.trim();
+    final email = _editEmailController.text.trim();
+
+    if (username.isEmpty || email.isEmpty) {
+      _setMessage('Username and email cannot be empty.', isError: true);
+      return;
+    }
+
+    setState(() => _saving = true);
+    _setMessage('');
+
+    try {
+      final result = await UserApi.updateUser(widget.userId.toString(), {
+        'UserName': username,
+        'Email': email,
+      });
+
+      if (result['success'] == true) {
+        setState(() {
+          _showEditProfile = false;
+          _user = {
+            ...?_user,
+            'UserName': username,
+            'Email': email,
+          };
+        });
+        _setMessage('Profile updated successfully.');
+      } else {
+        _setMessage(result['message'] ?? 'Failed to update profile.', isError: true);
+      }
+    } catch (e) {
+      _setMessage(_parseError(e), isError: true);
+    } finally {
+      setState(() => _saving = false);
+    }
   }
 
   bool get _canLeave =>
@@ -325,7 +368,7 @@ _setMessage('Profile photo updated.');
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF0058BE),
+                            color: Color(0xFF005e53),
                           ),
                         )
                       : null,
@@ -426,7 +469,7 @@ _setMessage('Profile photo updated.');
           width: 44,
           height: 44,
           decoration: const BoxDecoration(
-            color: Color(0xFF0058BE),
+            color: Color(0xFF005e53),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: Colors.white, size: 22),
@@ -468,20 +511,62 @@ _setMessage('Profile photo updated.');
           ],
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _detailField('Role', _user?['role'] ?? '—')),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _detailField(
-                'Department',
-                _user?['departmentName'] ?? 'Not assigned',
+        _detailField('Account status', _user?['StatusName'] ?? 'Active'),
+        const SizedBox(height: 16),
+        if (_showEditProfile) ...[
+          const Divider(height: 1),
+          const SizedBox(height: 16),
+          _editField('Username', _editUsernameController),
+          const SizedBox(height: 12),
+          _editField('Email', _editEmailController),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OutlinedButton(
+                onPressed: _saving
+                    ? null
+                    : () {
+                        setState(() {
+                          _showEditProfile = false;
+                          _editUsernameController.text = _user?['UserName'] ?? '';
+                          _editEmailController.text = _user?['Email'] ?? '';
+                        });
+                      },
+                child: const Text('Cancel'),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed: _saving ? null : _saveProfile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF005e53),
+                  foregroundColor: Colors.white,
+                ),
+                child: Text(_saving ? 'Saving...' : 'Save changes'),
+              ),
+            ],
+          ),
+        ] else ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                setState(() {
+                  _showEditProfile = true;
+                  _message = null;
+                });
+              },
+              icon: const Icon(Icons.edit, size: 18),
+              label: const Text('Edit Profile'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF005e53),
+                side: const BorderSide(color: Color(0xFF005e53)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _detailField('Account status', _user?['StatusName'] ?? 'Active'),
+          ),
+        ],
       ],
     );
   }
@@ -508,6 +593,32 @@ _setMessage('Profile photo updated.');
             border: Border.all(color: Color(0xFFCFD4DC)),
           ),
           child: Text(value),
+        ),
+      ],
+    );
+  }
+
+  Widget _editField(String label, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF5F6773),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          ),
         ),
       ],
     );

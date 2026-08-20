@@ -35,7 +35,7 @@ class UserApi {
   }
 
   static Future<dynamic> updateUser(String userId, Map<String, dynamic> userData) async {
-    return HttpService.request('/users/$userId', method: 'PUT', body: userData);
+    return HttpService.request('/users/profile', method: 'PUT', body: userData);
   }
 
   static Future<dynamic> deleteUser(String userId) async {

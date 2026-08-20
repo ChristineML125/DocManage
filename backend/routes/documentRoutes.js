@@ -182,13 +182,13 @@ router.get('/my/count', authenticate, async (req, res) => {
     const pool = await getPool();
     const result = await pool.query(`
       SELECT
-        (SELECT COUNT(*) FROM "Document" WHERE "uploadedBy" = $1) AS "totalDocument",
+        (SELECT COUNT(*) FROM "Document" WHERE "uploadedBy" = $1)::int AS "totalDocument",
         (SELECT COUNT(*) FROM "Document" d
           INNER JOIN "Status" s ON d."statusID" = s."statusID"
-          WHERE d."uploadedBy" = $1 AND s."statusName" = 'Active') AS "activeCount",
+          WHERE d."uploadedBy" = $1 AND s."statusName" = 'Active')::int AS "activeCount",
         (SELECT COUNT(*) FROM "Document" d
           INNER JOIN "Status" s ON d."statusID" = s."statusID"
-          WHERE d."uploadedBy" = $1 AND s."statusName" = 'Archived') AS "archivedCount"
+          WHERE d."uploadedBy" = $1 AND s."statusName" = 'Archived')::int AS "archivedCount"
     `, [req.user.UserID]);
 
     return res.json({ success: true, ...result.rows[0] });

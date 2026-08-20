@@ -115,9 +115,9 @@ class _DashboardState extends State<Dashboard> {
       final docListResponse = await DocumentApi.getPersonalDocumentList();
 
       setState(() {
-        totalDocuments = countResponse["totalDocument"] ?? 0;
-        activeDocuments = countResponse["activeCount"] ?? 0;
-        archivedDocuments = countResponse["archivedCount"] ?? 0;
+        totalDocuments = int.tryParse(countResponse["totalDocument"].toString()) ?? 0;
+        activeDocuments = int.tryParse(countResponse["activeCount"].toString()) ?? 0;
+        archivedDocuments = int.tryParse(countResponse["archivedCount"].toString()) ?? 0;
         totalCategories = 0;
         departments = [];
         recentDocuments = List<Map<String,dynamic>>.from(
@@ -139,16 +139,16 @@ class _DashboardState extends State<Dashboard> {
     setState(() {
 
       totalDocuments =
-          documentResponse["totalDocument"] ?? 0;
+          int.tryParse(documentResponse["totalDocument"].toString()) ?? 0;
 
       totalCategories =
-          documentResponse["category"] ?? 0;
+          int.tryParse(documentResponse["category"].toString()) ?? 0;
 
       activeDocuments =
-          documentResponse["activeCount"] ?? 0;
+          int.tryParse(documentResponse["activeCount"].toString()) ?? 0;
 
       archivedDocuments =
-          documentResponse["archivedCount"] ?? 0;
+          int.tryParse(documentResponse["archivedCount"].toString()) ?? 0;
 
 
       departments =

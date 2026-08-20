@@ -509,17 +509,17 @@ export async function getCountDoc(){
 
     const result = await pool.query(`
         SELECT
-          (SELECT COUNT(*) FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company') AS "totalDocument",
-          (SELECT COUNT(DISTINCT d."departmentID") FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company') AS "department",
-          (SELECT COUNT(DISTINCT d."categoriesID") FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company') AS "category",
+          (SELECT COUNT(*) FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company')::int AS "totalDocument",
+          (SELECT COUNT(DISTINCT d."departmentID") FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company')::int AS "department",
+          (SELECT COUNT(DISTINCT d."categoriesID") FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company')::int AS "category",
           (SELECT COUNT(*) FROM "Document" d
             INNER JOIN "Status" s ON d."statusID" = s."statusID"
             LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID"
-            WHERE s."statusName" = 'Active' AND (u."userType" IS NULL OR u."userType" = 'company')) AS "activeCount",
+            WHERE s."statusName" = 'Active' AND (u."userType" IS NULL OR u."userType" = 'company'))::int AS "activeCount",
           (SELECT COUNT(*) FROM "Document" d
             INNER JOIN "Status" s ON d."statusID" = s."statusID"
             LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID"
-            WHERE s."statusName" = 'Archived' AND (u."userType" IS NULL OR u."userType" = 'company')) AS "archivedCount"
+            WHERE s."statusName" = 'Archived' AND (u."userType" IS NULL OR u."userType" = 'company'))::int AS "archivedCount"
     `);
 
     return result.rows[0];
