@@ -107,6 +107,10 @@ class _DashboardState extends State<Dashboard> {
       currentIndex = index;
     });
 
+    if (index == 0) {
+      loadDashboard();
+    }
+
   }
 
 

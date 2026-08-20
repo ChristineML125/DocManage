@@ -182,6 +182,7 @@ class _DocumentState extends State<Document> {
                           return DocumentCard(
                             document: doc,
                             isAdmin: isAdmin,
+                            onUpdated: loadDocuments,
                             isPersonal: isPersonal,
                             isFavorited: docId != null && favoriteIds.contains(docId),
                             onToggleFavorite: isPersonal && docId != null
