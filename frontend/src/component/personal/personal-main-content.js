@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { Router } from '@vaadin/router';
-import { getDocuments, getDocumentsList } from '../../api/documentAPI.js';
+import { getDocuments, getDocumentsList, getFavorites, toggleFavorite } from '../../api/documentAPI.js';
 import { getFileUrl, fetchFile } from '../../api/http.js';
 
 export class PersonalMainContent extends LitElement {
@@ -52,6 +52,19 @@ export class PersonalMainContent extends LitElement {
 
     .table-header h2 { margin: 0; font-size: 16px; }
 
+    .view-all-btn {
+      background: none;
+      border: none;
+      color: #005e53;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      font-family: inherit;
+      text-decoration: none;
+    }
+
+    .view-all-btn:hover { text-decoration: underline; }
+
     table { width: 100%; border-collapse: collapse; }
     th {
       text-align: left;
@@ -91,13 +104,38 @@ export class PersonalMainContent extends LitElement {
       font-family: inherit;
     }
 
+    .star-btn {
+      color: #cbd5e1;
+      transition: all 0.2s;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .star-btn:hover {
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .star-btn.starred { color: #f59e0b; }
+
+    .star-btn .material-symbols-outlined {
+      font-size: 18px;
+    }
+
     .empty { text-align: center; padding: 40px; color: #7a8a9a; }
   `;
 
   static properties = {
     documents: { type: Array },
     stats: { type: Object },
-    loading: { type: Boolean }
+    loading: { type: Boolean },
+    favorites: { type: Set }
   };
 
   constructor() {
@@ -105,11 +143,13 @@ export class PersonalMainContent extends LitElement {
     this.documents = [];
     this.stats = {};
     this.loading = true;
+    this.favorites = new Set();
   }
 
   async connectedCallback() {
     super.connectedCallback();
     await this.loadData();
+    this.loadFavorites();
   }
 
   async loadData() {
@@ -127,8 +167,41 @@ export class PersonalMainContent extends LitElement {
     }
   }
 
+  async loadFavorites() {
+    try {
+      const res = await getFavorites();
+      if (res.success) {
+        this.favorites = new Set(res.favorites.map(f => f.documentID));
+      }
+    } catch (err) {
+      console.error('Failed to load favorites', err);
+    }
+  }
+
+  async handleToggleFavorite(doc, e) {
+    e.stopPropagation();
+    try {
+      const res = await toggleFavorite(doc.documentID);
+      if (res.success) {
+        if (res.favorited) {
+          this.favorites = new Set([...this.favorites, doc.documentID]);
+        } else {
+          const next = new Set(this.favorites);
+          next.delete(doc.documentID);
+          this.favorites = next;
+        }
+      }
+    } catch (err) {
+      console.error('Toggle favorite failed', err);
+    }
+  }
+
   previewDocument(doc) {
     Router.go(`/personal-documents?preview=${doc.documentID}`);
+  }
+
+  goToDocuments() {
+    Router.go('/personal-documents');
   }
 
   render() {
@@ -151,6 +224,7 @@ export class PersonalMainContent extends LitElement {
       <div class="table-card">
         <div class="table-header">
           <h2>Recent Documents</h2>
+          <button class="view-all-btn" @click=${() => this.goToDocuments()}>View All</button>
         </div>
         ${this.documents.length === 0
           ? html`<div class="empty">No documents yet. Upload your first document!</div>`
@@ -162,6 +236,7 @@ export class PersonalMainContent extends LitElement {
                   <th>Version</th>
                   <th>Status</th>
                   <th>Upload Date</th>
+                  <th style="width:40px"></th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -169,13 +244,20 @@ export class PersonalMainContent extends LitElement {
                 ${this.documents.slice(0, 5).map(doc => html`
                   <tr>
                     <td>${doc.documentName}</td>
-                    <td>v${doc.VersionNum || 1}</td>
+                    <td>v${doc.versionNum || 1}</td>
                     <td>
                       <span class="badge ${doc.statusName === 'Active' ? 'badge-active' : 'badge-archived'}">
                         ${doc.statusName}
                       </span>
                     </td>
                     <td>${doc.uploadDate ? new Date(doc.uploadDate).toLocaleDateString() : '-'}</td>
+                    <td style="text-align:center">
+                      <button class="star-btn ${this.favorites.has(doc.documentID) ? 'starred' : ''}"
+                        @click=${(e) => this.handleToggleFavorite(doc, e)}
+                        title="${this.favorites.has(doc.documentID) ? 'Remove from favorites' : 'Add to favorites'}">
+                        <span class="material-symbols-outlined">${this.favorites.has(doc.documentID) ? 'star' : 'star_border'}</span>
+                      </button>
+                    </td>
                     <td>
                       <button class="preview-btn" @click=${() => this.previewDocument(doc)}>View</button>
                     </td>

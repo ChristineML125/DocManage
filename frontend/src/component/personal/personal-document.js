@@ -2275,11 +2275,11 @@ export class PersonalDocumentPage extends LitElement {
             <table>
               <thead>
                 <tr>
-                  <th style="width:40px"></th>
                   <th>Document Title</th>
                   <th>File Type</th>
                   <th>Status</th>
                   <th>Version</th>
+                  <th style="width:40px"></th>
                   <th></th>
                 </tr>
               </thead>
@@ -2307,13 +2307,6 @@ export class PersonalDocumentPage extends LitElement {
                         }}
                         title="Double-click to view the full content"
                       >
-                        <td style="text-align:center">
-                          <button class="icon-btn star-btn ${this.favorites.has(doc.documentID) ? 'starred' : ''}"
-                            @click=${(e) => this.handleToggleFavorite(doc, e)}
-                            title="${this.favorites.has(doc.documentID) ? 'Remove from favorites' : 'Add to favorites'}">
-                            <span class="material-symbols-outlined">${this.favorites.has(doc.documentID) ? 'star' : 'star_border'}</span>
-                          </button>
-                        </td>
                         <td class="doc-name">
                           <div class="doc-info">
                             <div class="doc-avatar">
@@ -2325,6 +2318,13 @@ export class PersonalDocumentPage extends LitElement {
                         <td><span class="badge">${ext}</span></td>
                         <td><span class="status-badge ${this.getStatusClass(doc.statusName)}">${doc.statusName}</span></td>
                         <td><span class="badge-version">V ${doc.versionNum}.0</span></td>
+                        <td style="text-align:center">
+                          <button class="icon-btn star-btn ${this.favorites.has(doc.documentID) ? 'starred' : ''}"
+                            @click=${(e) => this.handleToggleFavorite(doc, e)}
+                            title="${this.favorites.has(doc.documentID) ? 'Remove from favorites' : 'Add to favorites'}">
+                            <span class="material-symbols-outlined">${this.favorites.has(doc.documentID) ? 'star' : 'star_border'}</span>
+                          </button>
+                        </td>
                         <td class="actions-cell">
                           <button class="icon-btn edit-btn" title="Edit name" @click=${(e) => { e.stopPropagation(); this.startEdit(doc); }}>
                             <span class="material-symbols-outlined">edit</span>

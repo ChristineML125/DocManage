@@ -48,6 +48,12 @@ export class Sidebar extends LitElement {
       justify-content: center;
     }
 
+    .brand-icon img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
     .brand-icon .icon {
       color: #ffffff;
       font-size: 24px;
@@ -199,10 +205,10 @@ export class Sidebar extends LitElement {
     return html`
        <div class="brand">
         <div class="brand-icon">
-          <span class="material-symbols-outlined icon" style="font-variation-settings: 'FILL' 1;">description</span>
+           <img src="/img/docly-logo.png">
         </div>
         <div class="brand-text">
-          <span class="brand-name">Doc Management</span>
+          <span class="brand-name">Docly</span>
         </div>
       </div>
 
