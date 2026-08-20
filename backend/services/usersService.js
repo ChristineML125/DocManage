@@ -299,9 +299,9 @@ export async function getCount(){
 
     const result = await pool.query(`
         SELECT
-            COUNT(*) AS "totalUsers",
-            SUM(CASE WHEN "role"='admin' THEN 1 ELSE 0 END) AS "adminCount",
-            SUM(CASE WHEN "role"='staff' THEN 1 ELSE 0 END) AS "staffCount"
+            COUNT(*)::int AS "totalUsers",
+            SUM(CASE WHEN "role"='admin' THEN 1 ELSE 0 END)::int AS "adminCount",
+            SUM(CASE WHEN "role"='staff' THEN 1 ELSE 0 END)::int AS "staffCount"
         FROM "Users" u
         JOIN "UserStatus" us
         ON u."UserStatusID"=us."UserStatusID"

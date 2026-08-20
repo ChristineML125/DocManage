@@ -197,7 +197,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
       children: [
         ..._categories.map((cat) => CategoryCard(
               name: cat['name'] ?? '',
-              docCount: cat['docCount'] ?? 0,
+              docCount: int.tryParse(cat['docCount'].toString()) ?? 0,
               isAdmin: isAdmin,
               onDelete: () {
                 final rawId = cat['id'];
@@ -219,7 +219,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
       children: [
         ..._departments.map((dept) => DepartmentCard(
               name: dept['departmentName'] ?? '',
-              docCount: dept['documentCount'] ?? 0,
+              docCount: int.tryParse(dept['documentCount'].toString()) ?? 0,
               isAdmin: isAdmin,
               onDelete: () => _deleteDepartment(dept['id']?.toString() ?? ''),
             )),

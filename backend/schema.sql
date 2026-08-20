@@ -103,6 +103,14 @@ CREATE TABLE IF NOT EXISTS "UsersDocument" (
     PRIMARY KEY ("UserID", "documentID")
 );
 
+CREATE TABLE IF NOT EXISTS "Favorites" (
+    "FavoriteID" SERIAL PRIMARY KEY,
+    "UserID" INT REFERENCES "Users"("UserID") ON DELETE CASCADE,
+    "documentID" INT REFERENCES "Document"("documentID") ON DELETE CASCADE,
+    "createdAt" TIMESTAMP DEFAULT NOW(),
+    UNIQUE ("UserID", "documentID")
+);
+
 CREATE TABLE IF NOT EXISTS "OneTimePassword" (
     "id" SERIAL PRIMARY KEY,
     "UserID" INT REFERENCES "Users"("UserID"),
@@ -172,3 +180,5 @@ CREATE INDEX IF NOT EXISTS idx_document_status ON "Document"("statusID");
 CREATE INDEX IF NOT EXISTS idx_documentversion_docid ON "DocumentVersion"("DocumentID");
 CREATE INDEX IF NOT EXISTS idx_auditlog_userid ON "AuditLog"("UserID");
 CREATE INDEX IF NOT EXISTS idx_auditlog_timestamp ON "AuditLog"("timestamp");
+CREATE INDEX IF NOT EXISTS idx_favorites_userid ON "Favorites"("UserID");
+CREATE INDEX IF NOT EXISTS idx_favorites_docid ON "Favorites"("documentID");

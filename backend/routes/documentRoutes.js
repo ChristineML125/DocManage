@@ -198,6 +198,34 @@ router.get('/my/count', authenticate, async (req, res) => {
   }
 });
 
+router.get('/favorites', authenticate, async (req, res) => {
+  try {
+    const pool = await getPool();
+    const result = await pool.query(`
+      SELECT
+        d."documentID",
+        d."documentName",
+        c."categoriesName",
+        d."uploadDate",
+        d."filePath",
+        s."statusName",
+        dv."VersionNum" AS "versionNum",
+        f."createdAt" AS "favoritedAt"
+      FROM "Favorites" f
+      INNER JOIN "Document" d ON f."documentID" = d."documentID"
+      LEFT JOIN "Category" c ON d."categoriesID" = c."categoriesID"
+      LEFT JOIN "Status" s ON d."statusID" = s."statusID"
+      LEFT JOIN "DocumentVersion" dv ON d."documentID" = dv."DocumentID" AND dv."filePath" = d."filePath"
+      WHERE f."UserID" = $1
+      ORDER BY f."createdAt" DESC
+    `, [req.user.UserID]);
+    return res.json({ success: true, favorites: result.rows });
+  } catch (err) {
+    console.error('Get favorites failed', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 router.post('/personal/upload', authenticate, upload.single('file'), async (req, res) => {
   try {
     const file = req.file;
@@ -620,6 +648,60 @@ router.post("/:id/preview", authenticate, async(req,res)=>{
         console.error(err);
         res.status(500).json({ success:false, message:err.message });
     }
+});
+
+router.post('/:documentID/favorite', authenticate, async (req, res) => {
+  try {
+    const documentID = parseInt(req.params.documentID, 10);
+    if (isNaN(documentID)) {
+      return res.status(400).json({ success: false, message: 'Invalid document ID' });
+    }
+    const own = await checkDocumentOwnership(documentID, req.user);
+    if (!own.allowed) {
+      if (own.reason === 'not_found') return res.status(404).json({ success: false, message: 'Document not found' });
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+    const pool = await getPool();
+    const existing = await pool.query(
+      `SELECT "FavoriteID" FROM "Favorites" WHERE "UserID" = $1 AND "documentID" = $2`,
+      [req.user.UserID, documentID]
+    );
+
+    if (existing.rows.length > 0) {
+      await pool.query(
+        `DELETE FROM "Favorites" WHERE "UserID" = $1 AND "documentID" = $2`,
+        [req.user.UserID, documentID]
+      );
+      return res.json({ success: true, favorited: false });
+    } else {
+      await pool.query(
+        `INSERT INTO "Favorites" ("UserID", "documentID") VALUES ($1, $2)`,
+        [req.user.UserID, documentID]
+      );
+      return res.json({ success: true, favorited: true });
+    }
+  } catch (err) {
+    console.error('Toggle favorite failed', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.get('/:documentID/is-favorite', authenticate, async (req, res) => {
+  try {
+    const documentID = parseInt(req.params.documentID, 10);
+    if (isNaN(documentID)) {
+      return res.status(400).json({ success: false, message: 'Invalid document ID' });
+    }
+    const pool = await getPool();
+    const result = await pool.query(
+      `SELECT "FavoriteID" FROM "Favorites" WHERE "UserID" = $1 AND "documentID" = $2`,
+      [req.user.UserID, documentID]
+    );
+    return res.json({ success: true, favorited: result.rows.length > 0 });
+  } catch (err) {
+    console.error('Check favorite failed', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 export default router;

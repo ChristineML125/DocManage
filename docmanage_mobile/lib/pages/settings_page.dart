@@ -10,11 +10,13 @@ import 'login_page.dart';
 class SettingsPage extends StatefulWidget {
   final int userId;
   final bool forcePasswordChange;
+  final String userType;
 
   const SettingsPage({
     super.key,
     required this.userId,
     this.forcePasswordChange = false,
+    this.userType = 'company',
   });
 
   @override
@@ -37,6 +39,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   String? _message;
   bool _isError = false;
+
+  bool get _isPersonal => widget.userType == 'personal';
 
   @override
   void initState() {
@@ -510,6 +514,21 @@ _setMessage('Profile photo updated.');
             Expanded(child: _detailField('Email', _user?['Email'] ?? 'Not available')),
           ],
         ),
+        if (!_isPersonal) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _detailField('Role', _user?['role'] ?? '—')),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _detailField(
+                  'Department',
+                  _user?['departmentName'] ?? 'Not assigned',
+                ),
+              ),
+            ],
+          ),
+        ],
         const SizedBox(height: 12),
         _detailField('Account status', _user?['StatusName'] ?? 'Active'),
         const SizedBox(height: 16),

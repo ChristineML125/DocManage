@@ -6,7 +6,7 @@ export async function listCategories() {
         SELECT 
             c."categoriesID" AS id, 
             c."categoriesName" AS name,
-            COUNT(d."documentID") AS "docCount",
+            COUNT(d."documentID")::int AS "docCount",
             COALESCE(c."description", '') AS description
         FROM "Category" c
         LEFT JOIN "Document" d ON c."categoriesID" = d."categoriesID"

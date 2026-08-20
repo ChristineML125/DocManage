@@ -6,13 +6,19 @@ import '../api/document_api.dart';
 class DocumentCard extends StatelessWidget {
   final Map<String, dynamic> document;
   final bool isAdmin;
+  final bool isPersonal;
   final VoidCallback? onUpdated;
+  final bool isFavorited;
+  final VoidCallback? onToggleFavorite;
 
   const DocumentCard({
     super.key,
     required this.document,
     required this.isAdmin,
+    this.isPersonal = false,
     this.onUpdated,
+    this.isFavorited = false,
+    this.onToggleFavorite,
   });
 
   Icon getFileIcon(String filePath) {
@@ -270,6 +276,18 @@ class DocumentCard extends StatelessWidget {
                       ],
                     ),
                   ),
+
+                  if (isPersonal && onToggleFavorite != null)
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      iconSize: 22,
+                      icon: Icon(
+                        isFavorited ? Icons.star : Icons.star_border,
+                        color: isFavorited ? Colors.amber : Colors.grey,
+                      ),
+                      onPressed: onToggleFavorite,
+                    ),
 
                   if (isAdmin)
                     PopupMenuButton<String>(

@@ -43,6 +43,13 @@ class BottomNav extends StatelessWidget {
       });
     }
 
+    if (isPersonal) {
+      destinations.add(const {
+        'icon': Icons.star,
+        'label': 'Favorites',
+      });
+    }
+
 
     if (isAdmin) {
 

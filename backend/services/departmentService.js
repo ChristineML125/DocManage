@@ -6,7 +6,7 @@ export async function getDepartmentLoad() {
         SELECT 
             d."departmentID" AS id,
             d."departmentName" AS "departmentName",
-            COUNT(doc."documentID") AS "documentCount"
+            COUNT(doc."documentID")::int AS "documentCount"
         FROM "Department" d
         LEFT JOIN "Document" doc ON d."departmentID" = doc."departmentID"
         GROUP BY d."departmentID", d."departmentName"

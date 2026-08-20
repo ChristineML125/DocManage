@@ -23,6 +23,7 @@ class _DocumentState extends State<Document> {
   List<Map<String, dynamic>> filteredDocuments = [];
 
   String selectedStatus = "All";
+  Set<int> favoriteIds = {};
 
   bool get isAdmin => widget.role.toLowerCase() == "admin";
   bool get isPersonal => widget.userType == 'personal';
@@ -31,6 +32,7 @@ class _DocumentState extends State<Document> {
   void initState() {
     super.initState();
     loadDocuments();
+    if (isPersonal) loadFavorites();
   }
 
   Future loadDocuments() async {
@@ -41,6 +43,37 @@ class _DocumentState extends State<Document> {
       documents = List<Map<String, dynamic>>.from(response["documents"] ?? []);
       filteredDocuments = documents;
     });
+  }
+
+  Future loadFavorites() async {
+    try {
+      final response = await DocumentApi.getFavorites();
+      if (response["success"] == true) {
+        final favs = List<Map<String, dynamic>>.from(response["favorites"] ?? []);
+        setState(() {
+          favoriteIds = favs.map((f) => f["documentID"] as int).toSet();
+        });
+      }
+    } catch (e) {
+      debugPrint("Failed to load favorites: $e");
+    }
+  }
+
+  Future toggleFavorite(int documentId) async {
+    try {
+      final response = await DocumentApi.toggleFavorite(documentId.toString());
+      if (response["success"] == true) {
+        setState(() {
+          if (response["favorited"] == true) {
+            favoriteIds.add(documentId);
+          } else {
+            favoriteIds.remove(documentId);
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint("Toggle favorite failed: $e");
+    }
   }
 
   void searchDocuments(String query) {
@@ -144,9 +177,16 @@ class _DocumentState extends State<Document> {
                     : ListView.builder(
                         itemCount: filteredDocuments.length,
                         itemBuilder: (context, index) {
+                          final doc = filteredDocuments[index];
+                          final docId = doc["documentID"];
                           return DocumentCard(
-                            document: filteredDocuments[index],
+                            document: doc,
                             isAdmin: isAdmin,
+                            isPersonal: isPersonal,
+                            isFavorited: docId != null && favoriteIds.contains(docId),
+                            onToggleFavorite: isPersonal && docId != null
+                                ? () => toggleFavorite(docId)
+                                : null,
                           );
                         },
                       ),

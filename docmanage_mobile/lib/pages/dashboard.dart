@@ -15,6 +15,7 @@ import 'document.dart';
 import 'upload.dart';
 import 'categories_page.dart';
 import 'settings_page.dart';
+import 'favorites_page.dart';
 
 
 class Dashboard extends StatefulWidget {
@@ -89,6 +90,7 @@ class _DashboardState extends State<Dashboard> {
         builder: (_) => SettingsPage(
           userId: widget.userId,
           forcePasswordChange: forcePasswordChange,
+          userType: widget.userType,
         ),
       ),
     );
@@ -304,6 +306,12 @@ class _DashboardState extends State<Dashboard> {
     if (!isPersonal)
       CategoriesPage(
         role: widget.role
+      ),
+
+    if (isPersonal)
+      FavoritesPage(
+        role: widget.role,
+        userType: widget.userType,
       ),
 
     if(isAdmin)

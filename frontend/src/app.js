@@ -22,6 +22,7 @@ import './pages/personal-page/personal-dashboard.js'
 import './pages/personal-page/personal-documents.js'
 import './pages/personal-page/personal-upload.js'
 import './pages/personal-page/personal-setting.js'
+import './pages/personal-page/personal-favorites.js'
 
 
 class AppRoot extends LitElement {
@@ -54,6 +55,7 @@ class AppRoot extends LitElement {
 
             { path: '/personal-dashboard', component: 'personal-dashboard-page'},
             { path: '/personal-documents', component: 'personal-documents-page'},
+            { path: '/personal-favorites', component: 'personal-favorites-page-wrapper'},
             { path: '/personal-upload', component: 'personal-upload-page'},
             { path: '/personal-setting', component: 'personal-setting-page'},
 

@@ -174,6 +174,12 @@ export class PersonalSidebar extends LitElement {
           My Documents
         </button>
 
+        <button class="nav-link ${this.isActive('/personal-favorites') ? 'active' : ''}"
+          @click=${() => this.go('/personal-favorites')}>
+          <span class="material-symbols-outlined icon">star</span>
+          Favorites
+        </button>
+
         <button class="nav-link ${this.isActive('/personal-upload') ? 'active' : ''}"
           @click=${() => this.go('/personal-upload')}>
           <span class="material-symbols-outlined icon">upload_file</span>

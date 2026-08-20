@@ -252,4 +252,29 @@ class DocumentApi {
       versionNum,
     );
   }
+
+  // =========================================================
+  // FAVORITES
+  // =========================================================
+
+  static Future getFavorites() async {
+    return HttpService.request(
+      '/documents/favorites',
+      method: 'GET',
+    );
+  }
+
+  static Future toggleFavorite(String documentId) async {
+    return HttpService.request(
+      '/documents/$documentId/favorite',
+      method: 'POST',
+    );
+  }
+
+  static Future isFavorite(String documentId) async {
+    return HttpService.request(
+      '/documents/$documentId/is-favorite',
+      method: 'GET',
+    );
+  }
 }

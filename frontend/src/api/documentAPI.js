@@ -232,3 +232,29 @@ export async function previewDocument(documentID) {
         };
     }
 }
+
+export async function toggleFavorite(documentID) {
+    try {
+        return await http(`/documents/${documentID}/favorite`, {
+            method: "POST"
+        });
+    } catch (err) {
+        return { success: false, message: err.message };
+    }
+}
+
+export async function getFavorites() {
+    try {
+        return await http('/documents/favorites');
+    } catch (err) {
+        return { success: false, message: err.message };
+    }
+}
+
+export async function isFavorite(documentID) {
+    try {
+        return await http(`/documents/${documentID}/is-favorite`);
+    } catch (err) {
+        return { success: false, message: err.message };
+    }
+}

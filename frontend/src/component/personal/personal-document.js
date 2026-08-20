@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { getDocumentsList, getDocument, getVersionList, generateAISummary, exportPDF, exportDocx, exportXlsx, uploadNewVersion } from '../../api/documentAPI.js';
+import { getDocumentsList, getDocument, getVersionList, generateAISummary, exportPDF, exportDocx, exportXlsx, uploadNewVersion, toggleFavorite, getFavorites } from '../../api/documentAPI.js';
 import { getFileUrl, fetchFile, http } from '../../api/http.js';
 import { renderAsync } from 'docx-preview';
 import * as XLSX from 'xlsx';
@@ -439,6 +439,24 @@ export class PersonalDocumentPage extends LitElement {
     .icon-btn:hover {
       background: var(--accent-light);
       color: var(--accent);
+    }
+
+    .star-btn {
+      color: #cbd5e1;
+      transition: all 0.2s;
+    }
+
+    .star-btn:hover {
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .star-btn.starred {
+      color: #f59e0b;
+    }
+
+    .star-btn.starred:hover {
+      background: rgba(245, 158, 11, 0.12);
     }
 
     .icon-btn .material-symbols-outlined {
@@ -1444,7 +1462,8 @@ export class PersonalDocumentPage extends LitElement {
     isDragging: { type: Boolean },
     editingDoc: { type: Object },
     editName: { type: String },
-    deletingDoc: { type: Object }
+    deletingDoc: { type: Object },
+    favorites: { type: Set }
   };
 
   constructor() {
@@ -1476,6 +1495,7 @@ export class PersonalDocumentPage extends LitElement {
     this.editingDoc = null;
     this.editName = '';
     this.deletingDoc = null;
+    this.favorites = new Set();
 
     this._onMouseMove = this._onMouseMove.bind(this);
     this._onMouseUp = this._onMouseUp.bind(this);
@@ -1490,6 +1510,7 @@ export class PersonalDocumentPage extends LitElement {
     window.addEventListener('mousemove', this._onMouseMove);
     window.addEventListener('mouseup', this._onMouseUp);
     this.fetchDocuments();
+    this.loadFavorites();
 
     const params = new URLSearchParams(window.location.search);
     const urlKeyword = params.get('keyword') || '';
@@ -1579,6 +1600,35 @@ export class PersonalDocumentPage extends LitElement {
   onKeywordInput(e) {
     this.keyword = e.target.value;
     this.filterDocuments();
+  }
+
+  async loadFavorites() {
+    try {
+      const res = await getFavorites();
+      if (res.success) {
+        this.favorites = new Set(res.favorites.map(f => f.documentID));
+      }
+    } catch (err) {
+      console.error('Failed to load favorites', err);
+    }
+  }
+
+  async handleToggleFavorite(doc, e) {
+    e.stopPropagation();
+    try {
+      const res = await toggleFavorite(doc.documentID);
+      if (res.success) {
+        if (res.favorited) {
+          this.favorites = new Set([...this.favorites, doc.documentID]);
+        } else {
+          const next = new Set(this.favorites);
+          next.delete(doc.documentID);
+          this.favorites = next;
+        }
+      }
+    } catch (err) {
+      console.error('Toggle favorite failed', err);
+    }
   }
 
   previousPage() {
@@ -2225,6 +2275,7 @@ export class PersonalDocumentPage extends LitElement {
             <table>
               <thead>
                 <tr>
+                  <th style="width:40px"></th>
                   <th>Document Title</th>
                   <th>File Type</th>
                   <th>Status</th>
@@ -2236,7 +2287,7 @@ export class PersonalDocumentPage extends LitElement {
                 ${this.filteredDocs.length === 0
                   ? html`
                       <tr>
-                        <td colspan="5">
+                        <td colspan="6">
                           <div class="empty-placeholder">
                             <div class="material-symbols-outlined icon">inbox</div>
                             <p>No documents available</p>
@@ -2256,6 +2307,13 @@ export class PersonalDocumentPage extends LitElement {
                         }}
                         title="Double-click to view the full content"
                       >
+                        <td style="text-align:center">
+                          <button class="icon-btn star-btn ${this.favorites.has(doc.documentID) ? 'starred' : ''}"
+                            @click=${(e) => this.handleToggleFavorite(doc, e)}
+                            title="${this.favorites.has(doc.documentID) ? 'Remove from favorites' : 'Add to favorites'}">
+                            <span class="material-symbols-outlined">${this.favorites.has(doc.documentID) ? 'star' : 'star_border'}</span>
+                          </button>
+                        </td>
                         <td class="doc-name">
                           <div class="doc-info">
                             <div class="doc-avatar">
