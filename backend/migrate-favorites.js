@@ -1,34 +1,22 @@
-import pg from 'pg';
+import { getPool } from './config/db.js';
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_gwMoiuLG9B6V@ep-frosty-moon-aytvjr8j-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require';
+export default async function migrateFavorites() {
+  const pool = await getPool();
 
-const pool = new pg.Pool({
-    connectionString: DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-});
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "Favorites" (
+      "FavoriteID" SERIAL PRIMARY KEY,
+      "UserID" INT REFERENCES "Users"("UserID") ON DELETE CASCADE,
+      "documentID" INT REFERENCES "Document"("documentID") ON DELETE CASCADE,
+      "createdAt" TIMESTAMP DEFAULT NOW(),
+      UNIQUE ("UserID", "documentID")
+    )
+  `);
+  console.log('✓ Favorites table ensured');
 
-try {
-    const r1 = await pool.query(`
-        CREATE TABLE IF NOT EXISTS "Favorites" (
-            "FavoriteID" SERIAL PRIMARY KEY,
-            "UserID" INT REFERENCES "Users"("UserID") ON DELETE CASCADE,
-            "documentID" INT REFERENCES "Document"("documentID") ON DELETE CASCADE,
-            "createdAt" TIMESTAMP DEFAULT NOW(),
-            UNIQUE ("UserID", "documentID")
-        )
-    `);
-    console.log('Favorites table:', r1.command === 'CREATE TABLE' ? 'created' : 'already exists');
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_favorites_userid ON "Favorites"("UserID")`);
+  console.log('✓ Favorites index on UserID');
 
-    const r2 = await pool.query(`CREATE INDEX IF NOT EXISTS idx_favorites_userid ON "Favorites"("UserID")`);
-    console.log('Index on UserID:', r2.command === 'CREATE INDEX' ? 'created' : 'already exists');
-
-    const r3 = await pool.query(`CREATE INDEX IF NOT EXISTS idx_favorites_docid ON "Favorites"("documentID")`);
-    console.log('Index on documentID:', r3.command === 'CREATE INDEX' ? 'created' : 'already exists');
-
-    await pool.end();
-    console.log('Favorites migration complete!');
-} catch (err) {
-    console.error('Migration failed:', err.message);
-    await pool.end();
-    process.exit(1);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_favorites_docid ON "Favorites"("documentID")`);
+  console.log('✓ Favorites index on documentID');
 }
