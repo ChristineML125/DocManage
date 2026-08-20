@@ -17,6 +17,7 @@ class UploadForm extends StatelessWidget {
   final VoidCallback onSubmit;
   final List<Map<String, dynamic>> recentDocs;
   final bool isAdmin;
+  final bool isPersonal;
 
   const UploadForm({
     Key? key,
@@ -34,6 +35,7 @@ class UploadForm extends StatelessWidget {
     required this.onSubmit,
     required this.recentDocs,
     required this.isAdmin,
+    this.isPersonal = false,
   }) : super(key: key);
 
   @override
@@ -110,50 +112,52 @@ class UploadForm extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _label('Document Category'),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value: selectedCategoryId,
-                          decoration: _decoration('Select Category'),
-                          items: categories
-                              .map((c) => DropdownMenuItem<String>(
-                                    value: c['id']?.toString(),
-                                    child: Text(c['name'] ?? ''),
-                                  ))
-                              .toList(),
-                          onChanged: (v) => onCategoryChanged(v!),
+                  if (!isPersonal) ...[
+                    _label('Document Category'),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: selectedCategoryId,
+                            decoration: _decoration('Select Category'),
+                            items: categories
+                                .map((c) => DropdownMenuItem<String>(
+                                      value: c['id']?.toString(),
+                                      child: Text(c['name'] ?? ''),
+                                    ))
+                                .toList(),
+                            onChanged: (v) => onCategoryChanged(v!),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      _iconBtn(Icons.add, onCreateCategory),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _label('Assign to Department'),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value: selectedDepartmentId,
-                          decoration: _decoration('Select Department'),
-                          items: departments
-                              .map((d) => DropdownMenuItem<String>(
-                                    value: d['id']?.toString(),
-                                    child: Text(d['departmentName'] ?? d['name'] ?? ''),
-                                  ))
-                              .toList(),
-                          onChanged: (v) => onDepartmentChanged(v!),
+                        const SizedBox(width: 8),
+                        _iconBtn(Icons.add, onCreateCategory),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _label('Assign to Department'),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: selectedDepartmentId,
+                            decoration: _decoration('Select Department'),
+                            items: departments
+                                .map((d) => DropdownMenuItem<String>(
+                                      value: d['id']?.toString(),
+                                      child: Text(d['departmentName'] ?? d['name'] ?? ''),
+                                    ))
+                                .toList(),
+                            onChanged: (v) => onDepartmentChanged(v!),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      _iconBtn(Icons.add, onCreateDepartment),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
+                        const SizedBox(width: 8),
+                        _iconBtn(Icons.add, onCreateDepartment),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                   SizedBox(
                     width: double.infinity,
                     height: 48,

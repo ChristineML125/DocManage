@@ -175,6 +175,14 @@ export async function convertPdfToXlSX(filename) {
 
 // ====== DOCX → XLSX ======
 export async function convertDocxToXlsx(filename) {
+    const xlsxName = filename.replace(/\.docx$/i, ".xlsx");
+
+    if (await hasLibreOffice()) {
+        const localFile = await downloadToLocal(filename);
+        const result = await libreOfficeConvertAndSave(localFile, xlsxName, "xlsx");
+        if (result) return result;
+    }
+
     const buffer = await getFileBuffer(filename);
     const result = await mammoth.convertToHtml({ buffer });
     const html = result.value;
@@ -207,13 +215,20 @@ export async function convertDocxToXlsx(filename) {
     const worksheet = XLSX.utils.aoa_to_sheet(allRows);
     XLSX.utils.book_append_sheet(workbook, worksheet, "Document");
     const xlsxBuffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
-    const xlsxName = filename.replace(/\.docx$/i, ".xlsx");
     await saveConvertedFile(xlsxBuffer, xlsxName);
     return xlsxName;
 }
 
 // ====== XLSX → DOCX ======
 export async function convertXlsxToDocx(filename) {
+    const docxName = filename.replace(/\.xlsx$/i, ".docx");
+
+    if (await hasLibreOffice()) {
+        const localFile = await downloadToLocal(filename);
+        const result = await libreOfficeConvertAndSave(localFile, docxName, "docx");
+        if (result) return result;
+    }
+
     const buffer = await getFileBuffer(filename);
     const workbook = XLSX.read(buffer, { type: "buffer" });
     const allChildren = [];
@@ -254,9 +269,11 @@ export async function convertXlsxToDocx(filename) {
         allChildren.push(new Paragraph({ children: [new TextRun({ text: "No content found", size: 24 })] }));
     }
 
-    return Packer.toBuffer(new Document({
+    const docxBuffer = await Packer.toBuffer(new Document({
         sections: [{ properties: {}, children: allChildren }]
     }));
+    await saveConvertedFile(docxBuffer, docxName);
+    return docxName;
 }
 
 // ====== PDF fallback helpers ======

@@ -1024,7 +1024,7 @@ class _DocumentPreviewState extends State<DocumentPreview> {
 
       final downloadResponse =
           await http.get(
-        Uri.parse(downloadUrl),
+        Uri.parse(HttpService.getFileUrl(downloadUrl)),
         headers:
             HttpService.authorizationHeaders,
       );

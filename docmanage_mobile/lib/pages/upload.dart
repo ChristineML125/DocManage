@@ -465,10 +465,10 @@ class _UploadPageState extends State<UploadPage> {
                   lastUploaded: _lastUploaded,
                   recentDocs: _recentDocs,
                   isAdmin: isAdmin,
-                  onViewAll: () => Navigator.push(
+                   onViewAll: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => Document(role: widget.role),
+                      builder: (_) => Document(role: widget.role, userType: widget.userType),
                     ),
                   ),
                   onReset: _reset,
@@ -492,6 +492,7 @@ class _UploadPageState extends State<UploadPage> {
                   onSubmit: _handleUpload,
                   recentDocs: _recentDocs,
                   isAdmin: isAdmin,
+                  isPersonal: isPersonal,
                 ),
 
     );
