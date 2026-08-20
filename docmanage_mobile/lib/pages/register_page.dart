@@ -71,6 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
               userId: user['UserID'] is int
                   ? user['UserID']
                   : int.parse('${user['UserID'] ?? 0}'),
+              userType: user['userType'] ?? 'personal',
               mustChangePassword: response['mustChangePassword'] == true,
             ),
           ),

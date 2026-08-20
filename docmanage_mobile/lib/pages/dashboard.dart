@@ -272,6 +272,7 @@ class _DashboardState extends State<Dashboard> {
             RecentDocuments(
               documents: recentDocuments,
               role: widget.role,
+              userType: widget.userType,
             ),
 
           ],

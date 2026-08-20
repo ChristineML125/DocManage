@@ -81,8 +81,8 @@ class _LoginFormState extends State<LoginForm> {
               userId: user["UserID"] is int
                   ? user["UserID"]
                   : int.parse(user["UserID"].toString()),
+              userType: user["userType"] ?? 'company',
               mustChangePassword: response["mustChangePassword"] == true,
-
             ),
 
           ),

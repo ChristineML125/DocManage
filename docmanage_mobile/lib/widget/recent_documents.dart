@@ -4,11 +4,13 @@ import '../pages/document.dart';
 class RecentDocuments extends StatelessWidget {
   final List<Map<String, dynamic>> documents;
   final String role;
+  final String userType;
 
   const RecentDocuments({
     super.key,
     required this.documents,
     required this.role,
+    this.userType = 'company',
   });
 
   String getFileType(String filePath) {
@@ -79,7 +81,7 @@ class RecentDocuments extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => Document(role: role), 
+                        builder: (_) => Document(role: role, userType: userType), 
                       ),
                     );
                   },
