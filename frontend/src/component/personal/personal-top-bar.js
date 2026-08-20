@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { Router } from '@vaadin/router';
+import { getFileUrl } from '../../api/http.js';
 
 export class PersonalTopBar extends LitElement {
   static styles = css`
@@ -81,6 +82,15 @@ export class PersonalTopBar extends LitElement {
       margin: 0;
     }
 
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 9999px;
+      object-fit: cover;
+      border: 1px solid #bcc9c6;
+      flex-shrink: 0;
+    }
+
     .avatar-placeholder {
       width: 40px;
       height: 40px;
@@ -108,7 +118,8 @@ export class PersonalTopBar extends LitElement {
   static properties = {
     searchValue: { type: String },
     username: { type: String },
-    pageTitle: { type: String }
+    pageTitle: { type: String },
+    avatarPath: { type: String }
   };
 
   constructor() {
@@ -116,6 +127,7 @@ export class PersonalTopBar extends LitElement {
     this.searchValue = '';
     this.username = '';
     this.pageTitle = '';
+    this.avatarPath = '';
   }
 
   connectedCallback() {
@@ -124,6 +136,7 @@ export class PersonalTopBar extends LitElement {
     if (userStr) {
       const user = JSON.parse(userStr);
       this.username = user.UserName || 'User';
+      this.avatarPath = user.AvatarPath || '';
     }
   }
 
@@ -134,6 +147,23 @@ export class PersonalTopBar extends LitElement {
   _handleSearch() {
     if (!this.searchValue.trim()) return;
     Router.go(`/personal-documents?keyword=${encodeURIComponent(this.searchValue)}`);
+  }
+
+  renderAvatar() {
+    if (this.avatarPath) {
+      return html`
+        <img
+          class="avatar"
+          src="${getFileUrl(this.avatarPath)}"
+          alt="Profile photo"
+        >
+      `;
+    }
+    return html`
+      <div class="avatar-placeholder">
+        ${this.username ? this.username.charAt(0).toUpperCase() : 'U'}
+      </div>
+    `;
   }
 
   render() {
@@ -156,9 +186,7 @@ export class PersonalTopBar extends LitElement {
           <div class="user-text">
             <span class="name">Welcome, ${this.username}</span>
           </div>
-          <div class="avatar-placeholder">
-            ${this.username ? this.username.charAt(0).toUpperCase() : 'U'}
-          </div>
+          ${this.renderAvatar()}
         </div>
       </div>
     `;
