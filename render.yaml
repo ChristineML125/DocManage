@@ -26,8 +26,8 @@ services:
       - key: SMTP_SECURE
         value: "true"
       - key: SMTP_USER
-        value: ccmlppy@gmail.com
+        value: doclymanage.system@gmail.com
       - key: SMTP_PASS
         sync: false
       - key: EMAIL_FROM
-        value: ccmlppy@gmail.com
+        value: doclymanage.system@gmail.com
