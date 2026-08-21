@@ -6,9 +6,17 @@ RUN apt-get update && \
     libreoffice-writer \
     libreoffice-calc \
     libreoffice-impress \
+    python3 \
+    python3-venv \
     fonts-liberation \
     fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
+
+# LibreOffice can export DOCX, but does not reliably import PDF as an editable
+# Writer document. pdf2docx is used for the PDF -> DOCX path instead.
+RUN python3 -m venv /opt/pdf2docx-env && \
+    /opt/pdf2docx-env/bin/pip install --no-cache-dir pdf2docx
+ENV PYTHON_BIN=/opt/pdf2docx-env/bin/python
 
 WORKDIR /app
 

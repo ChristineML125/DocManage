@@ -6,10 +6,11 @@ import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, Width
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { isConfigured, getSupabase } from '../config/storage.js';
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { fileURLToPath } from "url";
 
 const BUCKET_NAME = process.env.SUPABASE_BUCKET || 'documents';
 
@@ -61,23 +62,22 @@ async function downloadToLocal(filename) {
 
 function getLibreOfficePath() {
     if (os.platform() === "win32") {
-        return '"C:\\Program Files\\LibreOffice\\program\\soffice.exe"';
+        return "C:\\Program Files\\LibreOffice\\program\\soffice.exe";
     }
     return "libreoffice";
 }
 
 function hasLibreOffice() {
     return new Promise((resolve) => {
-        const cmd = `${getLibreOfficePath()} --version`;
-        exec(cmd, (error) => resolve(!error));
+        execFile(getLibreOfficePath(), ["--version"], (error) => resolve(!error));
     });
 }
 
 function libreOfficeConvert(inputFile, format, outDir) {
     return new Promise((resolve) => {
-        const command = `${getLibreOfficePath()} --headless --convert-to ${format} --outdir "${outDir}" "${inputFile}"`;
-        console.log("LibreOffice command:", command);
-        exec(command, (error, stdout, stderr) => {
+        const args = ["--headless", "--convert-to", format, "--outdir", outDir, inputFile];
+        console.log("LibreOffice command:", getLibreOfficePath(), args);
+        execFile(getLibreOfficePath(), args, (error, stdout, stderr) => {
             console.log("LibreOffice stdout:", stdout);
             console.log("LibreOffice stderr:", stderr);
             if (error) {
@@ -91,10 +91,12 @@ function libreOfficeConvert(inputFile, format, outDir) {
 
 async function libreOfficeConvertAndSave(inputFile, outputName, format) {
     const dir = getStorageDir();
+    const outputPath = path.join(dir, outputName);
+    // Do not mistake an earlier conversion for the result of this request.
+    if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
     const ok = await libreOfficeConvert(inputFile, format, dir);
     if (!ok) return null;
-    const outputPath = path.join(dir, outputName);
-    if (!fs.existsSync(outputPath)) return null;
+    if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) return null;
     const buffer = fs.readFileSync(outputPath);
     await saveConvertedFile(buffer, outputName);
     return outputName;
@@ -122,6 +124,7 @@ export async function convertDocxToPdf(filename) {
 export async function convertPdfToDocx(filename) {
     const localFile = await downloadToLocal(filename);
     const docxName = filename.replace(/\.pdf$/i, ".docx");
+    const outputPath = path.join(getStorageDir(), docxName);
 
     console.log("=================================");
     console.log("PDF → DOCX conversion");
@@ -129,17 +132,28 @@ export async function convertPdfToDocx(filename) {
     console.log("Output:", docxName);
     console.log("=================================");
 
-    const libreOfficeAvailable = await hasLibreOffice();
-    console.log("LibreOffice available:", libreOfficeAvailable);
+    // LibreOffice supports DOCX export from Writer documents, but a PDF is not
+    // a Writer document.  Its PDF import filter cannot reliably export DOCX,
+    // especially in minimal Linux deployments.  Use the dedicated converter.
+    if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+    const python = process.env.PYTHON_BIN || (os.platform() === "win32" ? "python" : "python3");
+    const script = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "convert.py");
 
-    if (!libreOfficeAvailable) {
-        throw new Error("LibreOffice is required for PDF to DOCX conversion.");
+    await new Promise((resolve, reject) => {
+        execFile(python, [script, localFile, outputPath], (error, stdout, stderr) => {
+            console.log("pdf2docx stdout:", stdout);
+            console.log("pdf2docx stderr:", stderr);
+            if (error) return reject(new Error(`PDF to DOCX conversion failed: ${stderr || error.message}`));
+            resolve();
+        });
+    });
+
+    if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) {
+        throw new Error("PDF to DOCX conversion failed: no DOCX file was produced.");
     }
 
-    const result = await libreOfficeConvertAndSave(localFile, docxName, "docx");
-    if (!result) {
-        throw new Error("LibreOffice failed to convert PDF to DOCX.");
-    }
+    await saveConvertedFile(fs.readFileSync(outputPath), docxName);
+    const result = docxName;
 
     console.log("PDF → DOCX conversion completed:", result);
     return result;
