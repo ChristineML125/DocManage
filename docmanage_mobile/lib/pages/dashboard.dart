@@ -49,6 +49,7 @@ class _DashboardState extends State<Dashboard> {
   int totalDocuments = 0;
   int activeDocuments = 0;
   int archivedDocuments = 0;
+  int favoriteDocuments = 0;
   int totalCategories = 0;
 
   late String userName;
@@ -124,6 +125,7 @@ class _DashboardState extends State<Dashboard> {
         totalDocuments = int.tryParse(countResponse["totalDocument"].toString()) ?? 0;
         activeDocuments = int.tryParse(countResponse["activeCount"].toString()) ?? 0;
         archivedDocuments = int.tryParse(countResponse["archivedCount"].toString()) ?? 0;
+        favoriteDocuments = int.tryParse(countResponse["favoriteCount"].toString()) ?? 0;
         totalCategories = 0;
         departments = [];
         recentDocuments = List<Map<String,dynamic>>.from(
@@ -253,6 +255,13 @@ class _DashboardState extends State<Dashboard> {
                   title:"Archived",
                   value:archivedDocuments.toString(),
                   color:Colors.grey,
+                ),
+
+                SummaryCard(
+                  icon:Icons.favorite,
+                  title:"Favorites",
+                  value:favoriteDocuments.toString(),
+                  color:Colors.pink,
                 ),
 
               ],

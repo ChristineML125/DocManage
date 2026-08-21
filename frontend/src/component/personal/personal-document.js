@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { getDocumentsList, getDocument, getVersionList, generateAISummary, exportPDF, exportDocx, exportXlsx, uploadNewVersion, toggleFavorite, getFavorites } from '../../api/documentAPI.js';
+import { getDocumentsList, getDocument, getVersionList, generateAISummary, exportPDF, exportDocx, exportXlsx, uploadNewVersion, toggleFavorite, getFavorites, updateDocumentStatus } from '../../api/documentAPI.js';
 import { getFileUrl, fetchFile, http } from '../../api/http.js';
 import { renderAsync } from 'docx-preview';
 import * as XLSX from 'xlsx';
@@ -167,12 +167,16 @@ export class PersonalDocumentPage extends LitElement {
       font-size: 18px;
     }
     .edit-btn:hover {
-      background: rgba(0, 94, 83, 0.08);
-      color: #005e53;
+      background: rgba(0, 104, 95, 0.06);
+      color: #00685f;
     }
     .delete-btn:hover {
       background: rgba(220, 38, 38, 0.08);
       color: #dc2626;
+    }
+    .save-btn:hover {
+      background: rgba(0, 104, 95, 0.1);
+      color: #00685f;
     }
 
     .modal-overlay {
@@ -214,8 +218,8 @@ export class PersonalDocumentPage extends LitElement {
       outline: none;
     }
     .modal-box input[type="text"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
+      border-color: #00685f;
+      box-shadow: 0 0 0 3px rgba(0, 104, 95, 0.12);
     }
     .modal-actions {
       display: flex;
@@ -285,8 +289,8 @@ export class PersonalDocumentPage extends LitElement {
     }
 
     .action-btn:hover {
-      background: var(--accent-light);
-      color: var(--accent);
+      background: rgba(0, 104, 95, 0.06);
+      color: #00685f;
     }
 
     .pagination {
@@ -437,8 +441,8 @@ export class PersonalDocumentPage extends LitElement {
     }
 
     .icon-btn:hover {
-      background: var(--accent-light);
-      color: var(--accent);
+      background: rgba(0, 104, 95, 0.06);
+      color: #00685f;
     }
 
     .star-btn {
@@ -1463,7 +1467,8 @@ export class PersonalDocumentPage extends LitElement {
     editingDoc: { type: Object },
     editName: { type: String },
     deletingDoc: { type: Object },
-    favorites: { type: Set }
+    favorites: { type: Set },
+    editingStatusID: { type: Number }
   };
 
   constructor() {
@@ -1496,6 +1501,7 @@ export class PersonalDocumentPage extends LitElement {
     this.editName = '';
     this.deletingDoc = null;
     this.favorites = new Set();
+    this.editingStatusID = null;
 
     this._onMouseMove = this._onMouseMove.bind(this);
     this._onMouseUp = this._onMouseUp.bind(this);
@@ -1692,6 +1698,40 @@ export class PersonalDocumentPage extends LitElement {
       }
     } catch (err) {
       alert('Delete failed: ' + err.message);
+    }
+  }
+
+  handleEditStatusClick(doc) {
+    if (this.editingStatusID === doc.documentID) {
+      this.editingStatusID = null;
+    } else {
+      this.editingStatusID = doc.documentID;
+    }
+    this.requestUpdate();
+  }
+
+  toggleStatus(doc) {
+    const newStatus = doc.statusName === 'Active' ? 'Archived' : 'Active';
+    this.documents = this.documents.map(d =>
+      d.documentID === doc.documentID ? { ...d, statusName: newStatus } : d
+    );
+    this.requestUpdate();
+  }
+
+  async saveStatus(doc) {
+    try {
+      const res = await updateDocumentStatus(doc.documentID, doc.statusName);
+      if (res.success) {
+        if (this.selectedDoc?.documentID === doc.documentID) {
+          this.selectedDoc = { ...this.selectedDoc, statusName: doc.statusName };
+        }
+        this.editingStatusID = null;
+        await this.loadDocs();
+      } else {
+        alert(res.message || 'Status update failed');
+      }
+    } catch (err) {
+      alert('Status update failed: ' + err.message);
     }
   }
 
@@ -2276,6 +2316,7 @@ export class PersonalDocumentPage extends LitElement {
               <thead>
                 <tr>
                   <th>Document Title</th>
+                  <th>Category</th>
                   <th>File Type</th>
                   <th>Status</th>
                   <th>Version</th>
@@ -2287,7 +2328,7 @@ export class PersonalDocumentPage extends LitElement {
                 ${this.filteredDocs.length === 0
                   ? html`
                       <tr>
-                        <td colspan="6">
+                        <td colspan="7">
                           <div class="empty-placeholder">
                             <div class="material-symbols-outlined icon">inbox</div>
                             <p>No documents available</p>
@@ -2315,8 +2356,18 @@ export class PersonalDocumentPage extends LitElement {
                             <span class="doc-title" title="${doc.documentName}">${doc.documentName}</span>
                           </div>
                         </td>
+                        <td><span class="badge">${doc.categoriesName || 'N/A'}</span></td>
                         <td><span class="badge">${ext}</span></td>
-                        <td><span class="status-badge ${this.getStatusClass(doc.statusName)}">${doc.statusName}</span></td>
+                        <td><span class="status-badge ${this.getStatusClass(doc.statusName)}">
+                          ${this.editingStatusID === doc.documentID
+                            ? html`
+                                <button class="action-btn" @click=${(e) => { e.stopPropagation(); this.toggleStatus(doc); }}>
+                                  ${doc.statusName}
+                                </button>
+                              `
+                            : doc.statusName
+                          }
+                        </span></td>
                         <td><span class="badge-version">V ${doc.versionNum}.0</span></td>
                         <td style="text-align:center">
                           <button class="icon-btn star-btn ${this.favorites.has(doc.documentID) ? 'starred' : ''}"
@@ -2326,7 +2377,19 @@ export class PersonalDocumentPage extends LitElement {
                           </button>
                         </td>
                         <td class="actions-cell">
-                          <button class="icon-btn edit-btn" title="Edit name" @click=${(e) => { e.stopPropagation(); this.startEdit(doc); }}>
+                          ${this.editingStatusID === doc.documentID
+                            ? html`
+                                <button class="icon-btn save-btn" title="Save status" @click=${(e) => { e.stopPropagation(); this.saveStatus(doc); }}>
+                                  <span class="material-symbols-outlined">save</span>
+                                </button>
+                              `
+                            : html`
+                                <button class="icon-btn edit-btn" title="Edit status" @click=${(e) => { e.stopPropagation(); this.handleEditStatusClick(doc); }}>
+                                  <span class="material-symbols-outlined">toggle_on</span>
+                                </button>
+                              `
+                          }
+                          <button class="icon-btn edit-btn" title="Edit name" @click=${(e) => { e.stopPropagation(); this.startEdit(doc); }}">
                             <span class="material-symbols-outlined">edit</span>
                           </button>
                           <button class="icon-btn delete-btn" title="Delete document" @click=${(e) => { e.stopPropagation(); this.confirmDelete(doc); }}>

@@ -188,7 +188,8 @@ router.get('/my/count', authenticate, async (req, res) => {
           WHERE d."uploadedBy" = $1 AND s."statusName" = 'Active')::int AS "activeCount",
         (SELECT COUNT(*) FROM "Document" d
           INNER JOIN "Status" s ON d."statusID" = s."statusID"
-          WHERE d."uploadedBy" = $1 AND s."statusName" = 'Archived')::int AS "archivedCount"
+          WHERE d."uploadedBy" = $1 AND s."statusName" = 'Archived')::int AS "archivedCount",
+        (SELECT COUNT(*) FROM "Favorites" WHERE "UserID" = $1)::int AS "favoriteCount"
     `, [req.user.UserID]);
 
     return res.json({ success: true, ...result.rows[0] });

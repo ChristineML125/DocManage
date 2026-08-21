@@ -9,7 +9,7 @@ export class PersonalMainContent extends LitElement {
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 16px;
       margin-bottom: 28px;
     }
@@ -66,7 +66,7 @@ export class PersonalMainContent extends LitElement {
     }
 
     .view-all-btn {
-      color: #005e53;
+      color: #00685f;
       font-size: 13px;
       font-weight: 600;
       background: transparent;
@@ -127,7 +127,7 @@ export class PersonalMainContent extends LitElement {
     .badge-archived { background: #d3d3d3; color: #4b4b4b; }
 
     .preview-btn {
-      color: #005e53;
+      color: #00685f;
       font-size: 13px;
       font-weight: 600;
       background: transparent;
@@ -266,6 +266,10 @@ export class PersonalMainContent extends LitElement {
         <div class="stat-card">
           <p class="stat-number">${this.stats.archivedCount || 0}</p>
           <p class="stat-label">Archived</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-number">${this.stats.favoriteCount || 0}</p>
+          <p class="stat-label">Favorites</p>
         </div>
       </div>
 
