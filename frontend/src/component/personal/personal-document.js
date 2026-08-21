@@ -181,8 +181,8 @@ export class PersonalDocumentPage extends LitElement {
     }
 
     .folder-panel {
-      width: 200px;
-      min-width: 200px;
+      width: 180px;
+      min-width: 180px;
       background: #fafbfc;
       border-right: 1px solid var(--border);
       display: flex;
@@ -270,7 +270,7 @@ export class PersonalDocumentPage extends LitElement {
     }
 
     .folder-new {
-      padding: 8px 10px;
+      padding: 8px 8px;
       border-top: 1px solid var(--border);
     }
 
@@ -282,7 +282,8 @@ export class PersonalDocumentPage extends LitElement {
 
     .folder-new-row input {
       flex: 1;
-      padding: 6px 10px;
+      min-width: 0;
+      padding: 6px 8px;
       border: 1px solid var(--border);
       border-radius: 6px;
       font-size: 12px;
@@ -303,6 +304,7 @@ export class PersonalDocumentPage extends LitElement {
       font-size: 11px;
       font-weight: 600;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .folder-edit-input {
