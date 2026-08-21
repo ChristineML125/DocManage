@@ -164,6 +164,8 @@ export class PersonalMainContent extends LitElement {
     .star-btn.starred { color: #f59e0b; }
 
     .star-btn .material-symbols-outlined {
+      font-family: "Material Symbols Outlined";
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       font-size: 18px;
     }
 

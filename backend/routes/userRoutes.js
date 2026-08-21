@@ -407,7 +407,7 @@ router.post("/forgot-password", async (req, res) => {
     try {
         const pool = await getPool();
         const result = await pool.query(`
-            SELECT "UserID", "UserName", "Email"
+            SELECT "UserID", "UserName", "Email", "userType"
             FROM "Users"
             WHERE ("UserName" = $1 OR "Email" = $1)
             AND "UserStatusID" = 1
@@ -416,6 +416,21 @@ router.post("/forgot-password", async (req, res) => {
         const user = result.rows[0];
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        if (user.userType === 'personal') {
+            if (!user.Email) {
+                return res.status(400).json({ success: false, message: "This account does not have an email address. Please contact support." });
+            }
+            const tempPassword = Math.floor(100000 + Math.random() * 900000).toString();
+            await resetPassword(user.UserID, tempPassword, user.UserID);
+            await sendTemporaryPasswordEmail({
+                email: user.Email,
+                userName: user.UserName,
+                temporaryPassword: tempPassword
+            });
+            await completePasswordResetRequest(user.UserID);
+            return res.json({ success: true, message: `A temporary password has been sent to ${user.Email}. Please check your email.` });
         }
 
         await pool.query(`
