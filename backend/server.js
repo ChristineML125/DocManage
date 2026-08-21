@@ -126,6 +126,37 @@ app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(frontendDist, 'index.html'));
 });
 
+// TEMPORARY SMTP connectivity diagnostic - remove after troubleshooting.
+app.get('/api/diag-smtp-7f3a9c', async (_req, res) => {
+    const net = await import('net');
+    const targets = [
+        { host: 'smtp.gmail.com', port: 465 },
+        { host: 'smtp.gmail.com', port: 587 },
+        { host: 'smtp.gmail.com', port: 25 }
+    ];
+    const results = [];
+    for (const t of targets) {
+        results.push(await new Promise((resolve) => {
+            const started = Date.now();
+            const socket = new net.Socket();
+            const done = (state) => { socket.destroy(); resolve({ ...t, state, ms: Date.now() - started }); };
+            socket.setTimeout(8000);
+            socket.once('connect', () => done('OPEN'));
+            socket.once('timeout', () => done('TIMEOUT'));
+            socket.once('error', (err) => done(err.code || 'ERROR'));
+            socket.connect(t.port, t.host);
+        }));
+    }
+    let dnsInfo = null;
+    try {
+        const dnsMod = await import('dns');
+        dnsInfo = await dnsMod.promises.lookup('smtp.gmail.com', { all: true });
+    } catch (e) {
+        dnsInfo = String(e.message);
+    }
+    res.json({ dns: dnsInfo, tcp: results });
+});
+
 const PORT = process.env.PORT || 3000;
 // server start
 try{
