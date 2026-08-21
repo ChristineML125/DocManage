@@ -123,37 +123,26 @@ export async function convertPdfToDocx(filename) {
     const localFile = await downloadToLocal(filename);
     const docxName = filename.replace(/\.pdf$/i, ".docx");
 
-    if (await hasLibreOffice()) {
-        const result = await libreOfficeConvertAndSave(localFile, docxName, "docx");
-        if (result) return result;
+    console.log("=================================");
+    console.log("PDF → DOCX conversion");
+    console.log("Input:", localFile);
+    console.log("Output:", docxName);
+    console.log("=================================");
+
+    const libreOfficeAvailable = await hasLibreOffice();
+    console.log("LibreOffice available:", libreOfficeAvailable);
+
+    if (!libreOfficeAvailable) {
+        throw new Error("LibreOffice is required for PDF to DOCX conversion.");
     }
 
-    const buffer = await getFileBuffer(filename);
-    const parser = new PDFParse({ data: buffer });
-    const result = await parser.getText();
-    const text = result.text || "";
-    const numps = result.numpages || 1;
-
-    const paragraphs = text.split("\n").filter(line => line.trim()).map(line =>
-        new Paragraph({ children: [new TextRun({ text: line.trim(), size: 24 })] })
-    );
-
-    const pageBreaks = [];
-    const linesPerPage = Math.ceil(text.split("\n").length / Math.max(numps, 1));
-    for (let i = linesPerPage; i < paragraphs.length; i += linesPerPage) {
-        pageBreaks.push(i);
+    const result = await libreOfficeConvertAndSave(localFile, docxName, "docx");
+    if (!result) {
+        throw new Error("LibreOffice failed to convert PDF to DOCX.");
     }
-    pageBreaks.forEach(idx => {
-        if (idx < paragraphs.length) {
-            paragraphs.splice(idx, 0, new Paragraph({ children: [new TextRun({ break: 1 })], pageBreakBefore: true }));
-        }
-    });
 
-    const docxBuffer = await Packer.toBuffer(new Document({
-        sections: [{ properties: {}, children: paragraphs.length > 0 ? paragraphs : [new Paragraph({ children: [new TextRun({ text: "No content found", size: 24 })] })] }]
-    }));
-    await saveConvertedFile(docxBuffer, docxName);
-    return docxName;
+    console.log("PDF → DOCX conversion completed:", result);
+    return result;
 }
 
 // ====== XLSX → PDF ======
