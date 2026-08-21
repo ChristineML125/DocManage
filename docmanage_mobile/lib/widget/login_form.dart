@@ -40,8 +40,14 @@ class _LoginFormState extends State<LoginForm> {
         resetMsg = result['message'] ?? 'Password reset request submitted.';
       });
     } catch (e) {
+      String message = 'Unable to send password-reset request.';
+      final match =
+          RegExp(r'"message"\s*:\s*"([^"]*)"').firstMatch(e.toString());
+      if (match != null) {
+        message = match.group(1)!;
+      }
       setState(() {
-        errorMsg = 'Unable to send password-reset request.';
+        errorMsg = message;
       });
     } finally {
       setState(() {

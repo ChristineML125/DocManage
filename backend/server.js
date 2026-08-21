@@ -25,6 +25,11 @@ import migrateNotes from './migrate-notes.js';
 
 dotenv.config();
 
+if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn('⚠️  SMTP is not configured - password reset emails will fail.');
+    console.warn('   Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM in backend/.env');
+}
+
 const app = express();
 app.set('trust proxy', 1);
 // fix dirname (ES module)

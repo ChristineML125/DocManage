@@ -123,14 +123,28 @@ class HttpService {
       '${response.body}',
     );
 
+    final isHtml = response.body.trimLeft().startsWith('<!') ||
+        response.body.trimLeft().startsWith('<html');
+
     if (response.statusCode >= 400) {
-      throw Exception(
-        response.body,
-      );
+      if (isHtml) {
+        throw Exception('Server is temporarily unavailable. Please try again.');
+      }
+      try {
+        final parsed = jsonDecode(response.body);
+        throw Exception(parsed['message'] ?? 'Request failed');
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception('Request failed (${response.statusCode})');
+      }
     }
 
     if (response.body.isEmpty) {
       return null;
+    }
+
+    if (isHtml) {
+      throw Exception('Server is temporarily unavailable. Please try again.');
     }
 
     return jsonDecode(
@@ -185,14 +199,28 @@ class HttpService {
       '${response.body}',
     );
 
+    final isHtml2 = response.body.trimLeft().startsWith('<!') ||
+        response.body.trimLeft().startsWith('<html');
+
     if (response.statusCode >= 400) {
-      throw Exception(
-        response.body,
-      );
+      if (isHtml2) {
+        throw Exception('Server is temporarily unavailable. Please try again.');
+      }
+      try {
+        final parsed = jsonDecode(response.body);
+        throw Exception(parsed['message'] ?? 'Upload failed');
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception('Upload failed (${response.statusCode})');
+      }
     }
 
     if (response.body.isEmpty) {
       return null;
+    }
+
+    if (isHtml2) {
+      throw Exception('Server is temporarily unavailable. Please try again.');
     }
 
     return jsonDecode(

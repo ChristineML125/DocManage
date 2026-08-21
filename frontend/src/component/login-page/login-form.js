@@ -11,7 +11,8 @@ export class LoginForm extends LitElement {
     loading: { type: Boolean },
     errorMsg: { type: String },
     resetMsg: { type: String },
-    showPassword: { type: Boolean }
+    showPassword: { type: Boolean },
+    _showForgot: { type: Boolean, state: true }
   };
 
   static styles = css`
