@@ -57,6 +57,7 @@ class DocumentCard extends StatelessWidget {
         MaterialPageRoute(
           builder: (context) => DocumentPreview(
             document: document,
+            isPersonal: isPersonal,
           ),
         ),
       );

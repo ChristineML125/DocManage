@@ -20,10 +20,12 @@ import '../widget/add_new_version.dart';
 // DOCUMENT PREVIEW
 class DocumentPreview extends StatefulWidget {
   final Map<String, dynamic> document;
+  final bool isPersonal;
 
   const DocumentPreview({
     super.key,
     required this.document,
+    this.isPersonal = false,
   });
 
   @override
@@ -2684,7 +2686,7 @@ class _DocumentPreviewState extends State<DocumentPreview> {
                             ),
 
                             // NOTES SECTION
-                            if (isPersonal) ...[
+                            if (widget.isPersonal) ...[
                               Row(
                                 children: [
                                   const Icon(Icons.note_alt_outlined, size: 18, color: Color(0xFF00685f)),
