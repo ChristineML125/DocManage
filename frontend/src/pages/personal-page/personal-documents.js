@@ -27,7 +27,7 @@ export class PersonalDocumentsPage extends LitElement {
     .scroll-area {
       flex: 1;
       overflow-y: auto;
-      padding: 0 32px 32px 32px;
+      padding: 0;
       margin-top: 20px;
     }
   `;
