@@ -2181,6 +2181,7 @@ export class PersonalDocumentPage extends LitElement {
   async startEdit(doc) {
     this.editingDoc = doc;
     this.editName = doc.documentName;
+    this.requestUpdate();
   }
 
   async saveEdit() {
@@ -2195,7 +2196,8 @@ export class PersonalDocumentPage extends LitElement {
         }
         this.editingDoc = null;
         this.editName = '';
-        await this.loadDocs();
+        await this.fetchDocuments();
+        this.loadNoteCounts();
       } else {
         alert(res.message || 'Rename failed');
       }
@@ -2219,7 +2221,9 @@ export class PersonalDocumentPage extends LitElement {
           this.pdfBlobUrl = null;
         }
         this.deletingDoc = null;
-        await this.loadDocs();
+        await this.fetchDocuments();
+        this.loadFolders();
+        this.loadNoteCounts();
       } else {
         alert(res.message || 'Delete failed');
       }
@@ -2253,7 +2257,8 @@ export class PersonalDocumentPage extends LitElement {
           this.selectedDoc = { ...this.selectedDoc, statusName: doc.statusName };
         }
         this.editingStatusID = null;
-        await this.loadDocs();
+        await this.fetchDocuments();
+        this.loadNoteCounts();
       } else {
         alert(res.message || 'Status update failed');
       }
