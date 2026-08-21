@@ -320,7 +320,7 @@ class _VersionPreviewState extends State<VersionPreview> {
                   ElevatedButton.styleFrom(
                 backgroundColor:
                     const Color(
-                  0xFF00796B,
+                  0xFF00685f,
                 ),
                 foregroundColor:
                     Colors.white,
@@ -594,7 +594,7 @@ class _VersionPreviewState extends State<VersionPreview> {
 
                       color:
                           Color(
-                        0xFF00796B,
+                        0xFF00685f,
                       ),
                     ),
                   ),
@@ -775,7 +775,7 @@ class _VersionPreviewState extends State<VersionPreview> {
                               .styleFrom(
                         backgroundColor:
                             const Color(
-                          0xFF00796B,
+                          0xFF00685f,
                         ),
 
                         foregroundColor:

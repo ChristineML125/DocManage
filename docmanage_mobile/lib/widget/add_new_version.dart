@@ -232,7 +232,7 @@ class _AddNewVersionDialogState
                     size: 42,
 
                     color:
-                        const Color(0xFF00796B),
+                        const Color(0xFF00685f),
                   ),
 
                   const SizedBox(
@@ -312,7 +312,7 @@ class _AddNewVersionDialogState
                             FontWeight.w600,
 
                         color:
-                            Color(0xFF00796B),
+                            Color(0xFF00685f),
                       ),
                     ),
                   ),
@@ -344,7 +344,7 @@ class _AddNewVersionDialogState
           style:
               ElevatedButton.styleFrom(
             backgroundColor:
-                const Color(0xFF00796B),
+                const Color(0xFF00685f),
 
             foregroundColor:
                 Colors.white,

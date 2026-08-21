@@ -53,8 +53,8 @@ export class LoginForm extends LitElement {
     }
     .input-wrap input::placeholder { color: #6e7a76; }
     .input-wrap input:focus {
-      border-color: #005e53;
-      box-shadow: 0 0 0 1px #005e53;
+      border-color: #00685f;
+      box-shadow: 0 0 0 1px #00685f;
     }
 
     .pw-toggle {
@@ -68,7 +68,7 @@ export class LoginForm extends LitElement {
 
     .forgot-link {
       font-size: 11px; line-height: 14px; font-weight: 500;
-      color: #005e53; text-decoration: none;
+      color: #00685f; text-decoration: none;
       transition: color 0.2s;
     }
     .forgot-link:hover { color: #00796b; text-decoration: underline; }
@@ -77,7 +77,7 @@ export class LoginForm extends LitElement {
       width: 100%; height: 48px; margin-top: 8px;
       border: none; border-radius: 8px;
       font-size: 16px; font-weight: 600; font-family: inherit;
-      color: #fff; background: #005e53; cursor: pointer;
+      color: #fff; background: #00685f; cursor: pointer;
       box-shadow: 0px 4px 12px rgba(0,94,83,0.08);
       display: flex; justify-content: center; align-items: center; gap: 8px;
       transition: background 0.2s, transform 0.1s;
@@ -93,7 +93,7 @@ export class LoginForm extends LitElement {
     }
     .footer-text a {
       font-size: 16px; font-weight: 600;
-      color: #005e53; text-decoration: none;
+      color: #00685f; text-decoration: none;
     }
     .footer-text a:hover { text-decoration: underline; }
 
@@ -120,14 +120,14 @@ export class LoginForm extends LitElement {
       outline: none; box-sizing: border-box;
     }
     .forgot-form input:focus {
-      border-color: #005e53; box-shadow: 0 0 0 1px #005e53;
+      border-color: #00685f; box-shadow: 0 0 0 1px #00685f;
     }
     .forgot-actions { display: flex; gap: 8px; }
     .forgot-actions button {
       flex: 1; height: 40px; border: none; border-radius: 8px;
       font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer;
     }
-    .btn-send { background: #005e53; color: #fff; }
+    .btn-send { background: #00685f; color: #fff; }
     .btn-back { background: #e6f6ff; color: #3e4946; }
   `;
 

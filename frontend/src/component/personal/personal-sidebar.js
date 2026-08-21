@@ -52,7 +52,7 @@ export class PersonalSidebar extends LitElement {
     .mode-badge {
       font-size: 10px;
       font-weight: 700;
-      color: #005e53;
+      color: #00685f;
       background: #d5ecf8;
       padding: 2px 8px;
       border-radius: 12px;
@@ -84,7 +84,7 @@ export class PersonalSidebar extends LitElement {
     .nav-link:hover { background: #e6f6ff; }
 
     .nav-link.active {
-      background: #005e53;
+      background: #00685f;
       color: #f4fffc;
       font-weight: 700;
       transform: scale(0.98);

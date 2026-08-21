@@ -120,7 +120,7 @@ class BottomNav extends StatelessWidget {
     final selected = currentIndex == index;
 
     final color = selected
-        ? const Color(0xFF006B5E)
+        ? const Color(0xFF00685f)
         : const Color(0xFF6E7A76);
 
     return Expanded(

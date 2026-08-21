@@ -1228,7 +1228,7 @@ class _DocumentPreviewState extends State<DocumentPreview> {
                   label ==
                           "AI Summary"
                       ? const Color(
-                          0xFF006B5E,
+                          0xFF00685f,
                         )
                       : const Color(
                           0xFF3E4946,
@@ -1475,7 +1475,7 @@ class _DocumentPreviewState extends State<DocumentPreview> {
 
                     color:
                         Color(
-                      0xFF00796B,
+                      0xFF00685f,
                     ),
                   ),
                 ),
@@ -1649,7 +1649,7 @@ class _DocumentPreviewState extends State<DocumentPreview> {
 
                     color:
                         Color(
-                      0xFF00796B,
+                      0xFF00685f,
                     ),
                   ),
                 ),
@@ -1920,14 +1920,14 @@ class _DocumentPreviewState extends State<DocumentPreview> {
                   OutlinedButton.styleFrom(
                 foregroundColor:
                     const Color(
-                  0xFF00796B,
+                  0xFF00685f,
                 ),
 
                 side:
                     const BorderSide(
                   color:
                       Color(
-                    0xFF00796B,
+                    0xFF00685f,
                   ),
                 ),
 
@@ -2287,7 +2287,7 @@ class _DocumentPreviewState extends State<DocumentPreview> {
                     strokeWidth: 4,
                     color:
                         Color(
-                      0xFF00796B,
+                      0xFF00685f,
                     ),
                   ),
                 ),

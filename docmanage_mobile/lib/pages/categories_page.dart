@@ -133,7 +133,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         backgroundColor: const Color(0xFFF7F9FB),
         elevation: 0,
         title: const Text('Categories',
-            style: TextStyle(color: Color(0xFF006B5E), fontWeight: FontWeight.w600)),
+            style: TextStyle(color: Color(0xFF00685f), fontWeight: FontWeight.w600)),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -180,7 +180,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF006B5E),
+                color: const Color(0xFF00685f),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(Icons.add, color: Colors.white, size: 24),

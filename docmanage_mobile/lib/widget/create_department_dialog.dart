@@ -37,7 +37,7 @@ class _CreateDepartmentDialogState extends State<CreateDepartmentDialog> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF006B5E),
+                color: Color(0xFF00685f),
               ),
             ),
             const SizedBox(height: 24),
@@ -92,7 +92,7 @@ class _CreateDepartmentDialogState extends State<CreateDepartmentDialog> {
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF006B5E),
+                      backgroundColor: const Color(0xFF00685f),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8)),
@@ -129,7 +129,7 @@ class _CreateDepartmentDialogState extends State<CreateDepartmentDialog> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF006B5E)),
+        borderSide: const BorderSide(color: Color(0xFF00685f)),
       ),
     );
   }

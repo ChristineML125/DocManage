@@ -271,6 +271,7 @@ static styles = css`
     .preview-header {
         padding: 15px;
         border-bottom: 1px solid #eef2f6;
+        display: flex;
         align-items: center;
         justify-content: space-between;
     }
@@ -360,7 +361,7 @@ static styles = css`
     .icon-btn {
         width: 32px;
         height: 32px;
-        display: flex-end;
+        display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 6px;
@@ -391,7 +392,7 @@ static styles = css`
     .docx-wrapper {
         width: 100%;
         overflow: auto;
-        box-sizing: border-size;
+        box-sizing: border-box;
         min-height: 0;
         padding: 0;
     }
@@ -409,7 +410,7 @@ static styles = css`
     #docx-modal-container {
         width: 100%;
         min-width: 0;
-        box-sizing: border-size;
+        box-sizing: border-box;
     }
 
     .docx {

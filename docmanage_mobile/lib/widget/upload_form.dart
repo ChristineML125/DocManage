@@ -49,13 +49,13 @@ class UploadForm extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
               Text('Document Intake',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF006B5E))),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF00685f))),
               Row(
                 children: [
-                  Icon(Icons.circle, size: 8, color: Color(0xFF00796B)),
+                  Icon(Icons.circle, size: 8, color: Color(0xFF00685f)),
                   SizedBox(width: 6),
                   Text('Ready for Upload',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF006B5E))),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF00685f))),
                 ],
               ),
             ],
@@ -76,7 +76,7 @@ class UploadForm extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.cloud_upload_outlined, size: 48, color: Color(0xFF006B5E)),
+                    const Icon(Icons.cloud_upload_outlined, size: 48, color: Color(0xFF00685f)),
                     const SizedBox(height: 12),
                     const Text('Drag and drop file here',
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
@@ -86,7 +86,7 @@ class UploadForm extends StatelessWidget {
                     if (selectedFile != null) ...[
                       const SizedBox(height: 12),
                       Text(selectedFile!.name,
-                          style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF006B5E))),
+                          style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF00685f))),
                     ],
                   ],
                 ),
@@ -105,7 +105,7 @@ class UploadForm extends StatelessWidget {
                 children: [
                   Row(
                     children: const [
-                      Icon(Icons.description_outlined, color: Color(0xFF006B5E)),
+                      Icon(Icons.description_outlined, color: Color(0xFF00685f)),
                       SizedBox(width: 8),
                       Text('Document Details',
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
@@ -163,7 +163,7 @@ class UploadForm extends StatelessWidget {
                     height: 48,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00796B),
+                        backgroundColor: const Color(0xFF00685f),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -213,7 +213,7 @@ class UploadForm extends StatelessWidget {
             borderSide: const BorderSide(color: Color(0xFFBDC9C5))),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF006B5E))),
+            borderSide: const BorderSide(color: Color(0xFF00685f))),
       );
 
   Widget _iconBtn(IconData icon, VoidCallback onPressed) => SizedBox(
@@ -226,7 +226,7 @@ class UploadForm extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           onPressed: onPressed,
-          child: Icon(icon, color: const Color(0xFF006B5E)),
+          child: Icon(icon, color: const Color(0xFF00685f)),
         ),
       );
 }

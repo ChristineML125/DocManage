@@ -92,7 +92,7 @@ export class RegisterPage extends LitElement {
       background: #e6f6ff; display: flex; align-items: center; justify-content: center;
       margin-bottom: 12px;
     }
-    .mobile-header h1 { font-size: 24px; font-weight: 700; color: #005e53; margin: 0; }
+    .mobile-header h1 { font-size: 24px; font-weight: 700; color: #00685f; margin: 0; }
     .mobile-header p { font-size: 14px; color: #3e4946; margin: 4px 0 0; }
 
     /* ===== DESKTOP HEADER (hidden on mobile) ===== */
@@ -143,13 +143,13 @@ export class RegisterPage extends LitElement {
       z-index: 1;
       transition: color 0.3s;
     }
-    .toggle-btn.active { color: #005e53; }
+    .toggle-btn.active { color: #00685f; }
 
     /* ===== FORM ===== */
     .form-body { flex: 1; display: flex; flex-direction: column; }
 
     .section-heading {
-      font-size: 16px; font-weight: 600; color: #005e53;
+      font-size: 16px; font-weight: 600; color: #00685f;
       border-bottom: 1px solid #bdc9c5;
       padding-bottom: 8px;
       margin: 16px 0 12px;
@@ -195,7 +195,7 @@ export class RegisterPage extends LitElement {
       background: none; border: none; cursor: pointer;
       color: #bdc9c5; padding: 4px;
     }
-    .pw-toggle:hover { color: #005e53; }
+    .pw-toggle:hover { color: #00685f; }
 
     .field-row {
       display: grid;
@@ -209,7 +209,7 @@ export class RegisterPage extends LitElement {
       margin-top: 16px;
       border: none; border-radius: 6px;
       font-size: 16px; font-weight: 600; font-family: inherit;
-      color: #fff; background: #005e53;
+      color: #fff; background: #00685f;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,94,83,0.15);
       transition: background 0.2s, transform 0.1s;
@@ -228,7 +228,7 @@ export class RegisterPage extends LitElement {
     }
     .signin-link a {
       font-size: 16px; font-weight: 600;
-      color: #005e53; text-decoration: none;
+      color: #00685f; text-decoration: none;
       margin-left: 4px;
       transition: color 0.2s;
     }

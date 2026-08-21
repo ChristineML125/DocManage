@@ -31,18 +31,18 @@ class UploadSuccessView extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                border: const Border(left: BorderSide(color: Color(0xFF006B5E), width: 6)),
+                border: const Border(left: BorderSide(color: Color(0xFF00685f), width: 6)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle, color: Color(0xFF006B5E), size: 48),
+                  const Icon(Icons.check_circle, color: Color(0xFF00685f), size: 48),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text('Upload Successful',
-                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF006B5E))),
+                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF00685f))),
                         SizedBox(height: 4),
                         Text('The documents have been securely stored in the clinical repository.',
                             style: TextStyle(color: Color(0xFF3D4947))),
@@ -121,7 +121,7 @@ class UploadSuccessView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
-                    const Icon(Icons.insert_drive_file, size: 20, color: Color(0xFF006B5E)),
+                    const Icon(Icons.insert_drive_file, size: 20, color: Color(0xFF00685f)),
                     const SizedBox(width: 8),
                     Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600))),
                     const Text('Success',

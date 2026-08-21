@@ -23,7 +23,7 @@ class _AdminPageState extends State<AdminPage> {
         title: const Text(
           'System User Management',
           style: TextStyle(
-            color: Color(0xFF005E53),
+            color: Color(0xFF00685f),
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -65,7 +65,7 @@ class _AdminPageState extends State<AdminPage> {
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: _currentTab == 0
-                      ? const Color(0xFF005E53)
+                      ? const Color(0xFF00685f)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -90,7 +90,7 @@ class _AdminPageState extends State<AdminPage> {
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: _currentTab == 1
-                      ? const Color(0xFF005E53)
+                      ? const Color(0xFF00685f)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                 ),

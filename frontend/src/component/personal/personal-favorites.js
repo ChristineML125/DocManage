@@ -14,7 +14,7 @@ export class PersonalFavoritesPage extends LitElement {
       background: #f3faff;
       font-family: 'Manrope', sans-serif;
       color: #071e27;
-      --accent: #005e53;
+      --accent: #00685f;
       --accent-light: rgba(0, 94, 83, 0.08);
       --accent-lighter: rgba(0, 94, 83, 0.12);
       --border: #eef2f6;
@@ -186,7 +186,7 @@ export class PersonalFavoritesPage extends LitElement {
 
     .edit-btn:hover {
       background: rgba(0, 94, 83, 0.08);
-      color: #005e53;
+      color: #00685f;
     }
 
     .status-badge {

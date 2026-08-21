@@ -372,7 +372,7 @@ _setMessage('Profile photo updated.');
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF005e53),
+                            color: Color(0xFF00685f),
                           ),
                         )
                       : null,
@@ -473,7 +473,7 @@ _setMessage('Profile photo updated.');
           width: 44,
           height: 44,
           decoration: const BoxDecoration(
-            color: Color(0xFF005e53),
+            color: Color(0xFF00685f),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: Colors.white, size: 22),
@@ -558,7 +558,7 @@ _setMessage('Profile photo updated.');
               ElevatedButton(
                 onPressed: _saving ? null : _saveProfile,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF005e53),
+                  backgroundColor: const Color(0xFF00685f),
                   foregroundColor: Colors.white,
                 ),
                 child: Text(_saving ? 'Saving...' : 'Save changes'),
@@ -579,8 +579,8 @@ _setMessage('Profile photo updated.');
               icon: const Icon(Icons.edit, size: 18),
               label: const Text('Edit Profile'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF005e53),
-                side: const BorderSide(color: Color(0xFF005e53)),
+                foregroundColor: const Color(0xFF00685f),
+                side: const BorderSide(color: Color(0xFF00685f)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),

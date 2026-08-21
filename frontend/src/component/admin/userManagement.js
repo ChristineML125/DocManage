@@ -552,8 +552,8 @@ export class userManagement extends LitElement{
 
     .reg-input:focus,
     .reg-select:focus {
-        border-color: #005e53;
-        box-shadow: 0 0 0 1px #005e53;
+        border-color: #00685f;
+        box-shadow: 0 0 0 1px #00685f;
     }
 
     .reg-input.input-error,
@@ -668,7 +668,7 @@ export class userManagement extends LitElement{
     }
 
     .btn-create-reg {
-        background: #005e53;
+        background: #00685f;
         color: #ffffff;
         box-shadow: 0 4px 12px rgba(0, 94, 83, 0.15);
     }

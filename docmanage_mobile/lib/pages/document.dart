@@ -215,10 +215,10 @@ class _DocumentState extends State<Document> {
           vertical: 7,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF00796B) : Colors.white,
+          color: isSelected ? const Color(0xFF00685f) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF00796B) : Colors.grey.shade300,
+            color: isSelected ? const Color(0xFF00685f) : Colors.grey.shade300,
           ),
         ),
         child: Text(

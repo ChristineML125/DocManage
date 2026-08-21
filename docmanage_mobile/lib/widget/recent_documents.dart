@@ -22,43 +22,43 @@ class RecentDocuments extends StatelessWidget {
     final type = getFileType(filePath);
     switch (type) {
       case 'PDF':
-        return const Icon(Icons.picture_as_pdf, color: Color(0xFFBA1A1A), size: 24);
+        return const Icon(Icons.picture_as_pdf, color: Colors.red, size: 24);
       case 'DOCX':
-        return const Icon(Icons.description, color: Color(0xFF006B5E), size: 24);
+        return const Icon(Icons.description, color: Colors.blue, size: 24);
       case 'XLSX':
-        return const Icon(Icons.table_chart, color: Color(0xFF34675C), size: 24);
+        return const Icon(Icons.table_chart, color: Colors.green, size: 24);
       default:
-        return const Icon(Icons.insert_drive_file, color: Color(0xFF6E7A76), size: 24);
+        return const Icon(Icons.insert_drive_file, color: Colors.grey, size: 24);
     }
   }
 
   Color _statusColor(String? status) {
     switch (status?.toLowerCase()) {
       case 'active':
-        return const Color(0xFFB5EBDC);
+        return Colors.blue.shade100;
       case 'archived':
-        return const Color(0xFFE0E3E5);
+        return Colors.orange.shade100;
       default:
-        return const Color(0xFFE0E3E5);
+        return Colors.blue.shade100;
     }
   }
 
   Color _statusTextColor(String? status) {
     switch (status?.toLowerCase()) {
       case 'active':
-        return const Color(0xFF00201A);
+        return Colors.blue.shade800;
       case 'archived':
-        return const Color(0xFF3E4946);
+        return Colors.orange.shade800;
       default:
-        return const Color(0xFF3E4946);
+        return Colors.blue.shade800;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       color: const Color(0xFFFFFFFF),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -92,11 +92,11 @@ class RecentDocuments extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF006B5E),
+                          color: Color(0xFF00685f),
                         ),
                       ),
                       SizedBox(width: 4),
-                      Icon(Icons.arrow_forward, size: 16, color: Color(0xFF006B5E)),
+                      Icon(Icons.arrow_forward, size: 16, color: Color(0xFF00685f)),
                     ],
                   ),
                 ),
@@ -132,17 +132,17 @@ class RecentDocuments extends StatelessWidget {
                   ),
                 ),
                 trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
                     color: _statusColor(status),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     status,
                     style: TextStyle(
                       color: _statusTextColor(status),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),

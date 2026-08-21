@@ -352,7 +352,7 @@ class _PersonnelViewState extends State<PersonnelView> {
                 ),
                 const SizedBox(height: 4),
                 Text(user['role'] ?? '', style: const TextStyle(color: Color(0xFF3E4946))),
-                Text(user['departmentName'] ?? '', style: const TextStyle(color: Color(0xFF005E53), fontSize: 12, fontWeight: FontWeight.w600)),
+                Text(user['departmentName'] ?? '', style: const TextStyle(color: Color(0xFF00685f), fontSize: 12, fontWeight: FontWeight.w600)),
               ],
             ),
           ),

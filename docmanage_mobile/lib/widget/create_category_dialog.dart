@@ -37,7 +37,7 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF006B5E),
+                color: Color(0xFF00685f),
               ),
             ),
             const SizedBox(height: 24),
@@ -92,7 +92,7 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF006B5E),
+                      backgroundColor: const Color(0xFF00685f),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8)),
@@ -129,7 +129,7 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF006B5E)),
+        borderSide: const BorderSide(color: Color(0xFF00685f)),
       ),
     );
   }

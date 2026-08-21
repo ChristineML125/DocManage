@@ -270,6 +270,7 @@ export class StaffAllDocument extends LitElement {
      .preview-header {
          padding: 15px;
          border-bottom: 1px solid #eef2f6;
+         display: flex;
          align-items: center;
          justify-content: space-between;
      }
@@ -359,7 +360,7 @@ export class StaffAllDocument extends LitElement {
      .icon-btn {
          width: 32px;
          height: 32px;
-         display: flex-end;
+         display: flex;
          align-items: center;
          justify-content: center;
          border-radius: 6px;
@@ -390,7 +391,7 @@ export class StaffAllDocument extends LitElement {
      .docx-wrapper {
          width: 100%;
          overflow: auto;
-         box-sizing: border-size;
+         box-sizing: border-box;
          min-height: 0;
          padding: 0;
      }
@@ -408,7 +409,7 @@ export class StaffAllDocument extends LitElement {
      #docx-modal-container {
          width: 100%;
          min-width: 0;
-         box-sizing: border-size;
+         box-sizing: border-box;
      }
  
      .docx {

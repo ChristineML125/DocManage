@@ -59,7 +59,7 @@ export class PersonalTopBar extends LitElement {
       border-radius: 6px;
     }
     .action-btn:hover {
-      color: #005e53;
+      color: #00685f;
       background: rgba(0, 94, 83, 0.06);
     }
     .action-btn .icon { font-size: 18px; }
@@ -100,7 +100,7 @@ export class PersonalTopBar extends LitElement {
       justify-content: center;
       background: #d5ecf8;
       border: 1px solid #bdc9c5;
-      color: #005e53;
+      color: #00685f;
       font-weight: 700;
     }
 

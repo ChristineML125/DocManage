@@ -168,7 +168,7 @@ export class TopBar extends LitElement {
       justify-content: center;
       background: #d5ecf8;
       border: 1px solid #bdc9c5;
-      color: #005e53;
+      color: #00685f;
       font-weight: 700;
     }
 

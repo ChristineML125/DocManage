@@ -51,6 +51,27 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   Future<void> _login() async {
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text;
+
+    if (username.isEmpty && password.isEmpty) {
+      setState(() {
+        errorMsg = 'Please enter your username and password.';
+      });
+      return;
+    }
+    if (username.isEmpty) {
+      setState(() {
+        errorMsg = 'Please enter your username.';
+      });
+      return;
+    }
+    if (password.isEmpty) {
+      setState(() {
+        errorMsg = 'Please enter your password.';
+      });
+      return;
+    }
 
     setState(() {
       loading = true;
@@ -92,13 +113,18 @@ class _LoginFormState extends State<LoginForm> {
 
       } else {
         setState(() {
-          errorMsg = response['message'] ?? 'Login failed';
+          errorMsg = response['message'] ?? 'Login failed. Please check your credentials.';
         });
       }
     } catch (e) {
       debugPrint("Login failed: $e");
+      String message = 'Unable to connect to server. Please try again.';
+      final errStr = e.toString();
+      if (errStr.contains('Invalid') || errStr.contains('incorrect') || errStr.contains('wrong')) {
+        message = 'Invalid username or password. Please try again.';
+      }
       setState(() {
-        errorMsg = 'Unable to connect to server. Please try again.';
+        errorMsg = message;
       });
     } finally {
       setState(() {
@@ -172,7 +198,7 @@ class _LoginFormState extends State<LoginForm> {
           child: ElevatedButton(
             onPressed: loading ? null : _login, // Disable button when loading
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF005e53), 
+              backgroundColor: const Color(0xFF00685f), 
               foregroundColor: Colors.white,
             ),
             
@@ -213,7 +239,7 @@ class _LoginFormState extends State<LoginForm> {
                 );
               },
               child: const Text("Sign Up",
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF005e53))),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF00685f))),
             ),
           ],
         ),

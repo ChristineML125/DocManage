@@ -34,7 +34,7 @@ export class LoginPage extends LitElement {
 
     .accent-bar {
       position: absolute; top: 0; left: 0;
-      width: 100%; height: 4px; background: #005e53;
+      width: 100%; height: 4px; background: #00685f;
     }
 
     .header {

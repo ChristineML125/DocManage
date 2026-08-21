@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../api/user_api.dart';
 import '../pages/dashboard.dart';
@@ -82,10 +83,23 @@ class _RegisterPageState extends State<RegisterPage> {
         });
       }
     } catch (e) {
+      String message = 'Registration failed. Please try again.';
+      final errStr = e.toString();
+      if (errStr.contains('already exists')) {
+        message = 'Username or email already exists.';
+      } else if (errStr.contains('Failed to register')) {
+        final innerMatch = RegExp(r'Exception: (.+)').firstMatch(errStr);
+        if (innerMatch != null) {
+          try {
+            final body = jsonDecode(innerMatch.group(1)!);
+            message = body['message'] ?? message;
+          } catch (_) {
+            message = 'Registration failed. Please try again.';
+          }
+        }
+      }
       setState(() {
-        errorMsg = e.toString().contains('already')
-            ? 'Username or email already exists.'
-            : 'Registration failed. Please try again.';
+        errorMsg = message;
       });
     } finally {
       setState(() => loading = false);
@@ -94,7 +108,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    const teal = Color(0xFF005e53);
+    const teal = Color(0xFF00685f);
 
     return Scaffold(
       backgroundColor: const Color(0xfff7f9fb),

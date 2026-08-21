@@ -40,7 +40,7 @@ class DepartmentCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.folder_open,
-                    size: 20, color: Color(0xFF006B5E)),
+                    size: 20, color: Color(0xFF00685f)),
               ),
               if (isAdmin)
                 GestureDetector(
@@ -61,13 +61,13 @@ class DepartmentCard extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.description, size: 14, color: Color(0xFF006B5E)),
+              const Icon(Icons.description, size: 14, color: Color(0xFF00685f)),
               const SizedBox(width: 4),
               Text('$docCount Docs',
                   style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF006B5E))),
+                      color: Color(0xFF00685f))),
             ],
           ),
         ],

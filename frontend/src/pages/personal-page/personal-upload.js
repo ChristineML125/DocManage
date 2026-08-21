@@ -37,7 +37,7 @@ export class PersonalUploadPage extends LitElement {
     }
 
     .drop-zone:hover, .drop-zone.dragover {
-      border-color: #005e53;
+      border-color: #00685f;
       background: #e6f6ff;
     }
 
@@ -75,7 +75,7 @@ export class PersonalUploadPage extends LitElement {
       width: 100%;
     }
 
-    .btn-primary { background: #005e53; color: white; }
+    .btn-primary { background: #00685f; color: white; }
     .btn-primary:hover { background: #005047; }
     .btn-primary:disabled { background: #bdc9c5; cursor: not-allowed; }
 
@@ -113,7 +113,7 @@ export class PersonalUploadPage extends LitElement {
     .doc-icon.pdf { background: #ffdad6; color: #ba1a1a; }
     .doc-icon.docx { background: #d4e3ff; color: #005faf; }
     .doc-icon.xlsx { background: #dcfce7; color: #166534; }
-    .doc-icon.txt { background: #e6f6ff; color: #005e53; }
+    .doc-icon.txt { background: #e6f6ff; color: #00685f; }
     .doc-icon.other { background: #cfe6f2; color: #3e4946; }
 
     .doc-info { flex: 1; min-width: 0; }

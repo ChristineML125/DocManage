@@ -25,7 +25,7 @@ class UploadZone extends StatelessWidget {
         child: Column(
           children: [
             const Icon(Icons.cloud_upload_outlined,
-                size: 48, color: Color(0xFF006B5E)),
+                size: 48, color: Color(0xFF00685f)),
             const SizedBox(height: 12),
             const Text(
               'Drag and drop file here',
@@ -46,7 +46,7 @@ class UploadZone extends StatelessWidget {
               Text(
                 selectedFileName!,
                 style: const TextStyle(
-                    fontWeight: FontWeight.w600, color: Color(0xFF006B5E)),
+                    fontWeight: FontWeight.w600, color: Color(0xFF00685f)),
               ),
             ],
           ],
