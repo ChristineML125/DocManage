@@ -143,7 +143,34 @@ router.post("/register/personal", async(req,res)=>{
 
         const userID = await registerPersonalUser(UserName, Password, Email);
 
-        res.json({ success:true, message:"Account created successfully. You can now login.", userID });
+        const new_user = await pool.query(
+            `SELECT * FROM "Users" WHERE "UserID"=$1`, [userID]
+        );
+        const u = new_user.rows[0];
+
+        const token = jwt.sign({
+            UserID: u.UserID,
+            UserName: u.UserName,
+            Email: u.Email,
+            role: u.role,
+            userType: u.userType || 'personal',
+            CompanyID: u.CompanyID || null
+        }, process.env.JWT_SECRET, { expiresIn: "8h" });
+
+        res.json({
+            success:true,
+            message:"Account created successfully",
+            token,
+            mustChangePassword: u.MustChangePassword === true || u.MustChangePassword === 1,
+            user:{
+                UserID: u.UserID,
+                UserName: u.UserName,
+                Email: u.Email,
+                role: u.role,
+                userType: u.userType || 'personal',
+                CompanyID: u.CompanyID || null
+            }
+        });
     }catch(err){
         res.status(500).json({ success:false, message:err.message });
     }
