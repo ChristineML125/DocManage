@@ -132,7 +132,26 @@ export async function convertPdfToDocx(filename) {
     const parser = new PDFParse({ data: buffer });
     const result = await parser.getText();
     const text = result.text || "";
-    const docxBuffer = await makeDocxFromText(text);
+    const numps = result.numpages || 1;
+
+    const paragraphs = text.split("\n").filter(line => line.trim()).map(line =>
+        new Paragraph({ children: [new TextRun({ text: line.trim(), size: 24 })] })
+    );
+
+    const pageBreaks = [];
+    const linesPerPage = Math.ceil(text.split("\n").length / Math.max(numps, 1));
+    for (let i = linesPerPage; i < paragraphs.length; i += linesPerPage) {
+        pageBreaks.push(i);
+    }
+    pageBreaks.forEach(idx => {
+        if (idx < paragraphs.length) {
+            paragraphs.splice(idx, 0, new Paragraph({ children: [new TextRun({ break: 1 })], pageBreakBefore: true }));
+        }
+    });
+
+    const docxBuffer = await Packer.toBuffer(new Document({
+        sections: [{ properties: {}, children: paragraphs.length > 0 ? paragraphs : [new Paragraph({ children: [new TextRun({ text: "No content found", size: 24 })] })] }]
+    }));
     await saveConvertedFile(docxBuffer, docxName);
     return docxName;
 }
@@ -160,6 +179,14 @@ export async function convertXlsxToPdf(filename) {
 
 // ====== PDF → XLSX ======
 export async function convertPdfToXlSX(filename) {
+    const xlsxName = filename.replace(/\.pdf$/i, ".xlsx");
+
+    if (await hasLibreOffice()) {
+        const localFile = await downloadToLocal(filename);
+        const result = await libreOfficeConvertAndSave(localFile, xlsxName, "xlsx");
+        if (result) return result;
+    }
+
     const buffer = await getFileBuffer(filename);
     const parser = new PDFParse({ data: buffer });
     const result = await parser.getText();
@@ -168,7 +195,6 @@ export async function convertPdfToXlSX(filename) {
     const worksheet = XLSX.utils.aoa_to_sheet(rows);
     XLSX.utils.book_append_sheet(workbook, worksheet, "PDF Content");
     const xlsxBuffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
-    const xlsxName = filename.replace(/\.pdf$/i, ".xlsx");
     await saveConvertedFile(xlsxBuffer, xlsxName);
     return xlsxName;
 }
@@ -207,6 +233,12 @@ export async function convertDocxToXlsx(filename) {
             const text = $(el).text().trim();
             if (text) allRows.push([text]);
         });
+    }
+
+    const imgCount = $("img").length;
+    if (imgCount > 0) {
+        allRows.push([]);
+        allRows.push([`[${imgCount} image(s) in original document]`]);
     }
 
     if (allRows.length === 0) allRows.push(["No content found"]);
@@ -331,6 +363,47 @@ function makePdfFromHtml(htmlContent) {
         }
         else if (tagName === "br") { y += 4; }
         else if (tagName === "hr") { checkPage(5); doc.setDrawColor(180); doc.line(margin, y, pageWidth - margin, y); y += 5; }
+        else if (tagName === "img") {
+            const src = $(node).attr("src") || "";
+            if (src.startsWith("data:image/")) {
+                const match = src.match(/^data:image\/(\w+);base64,(.+)$/);
+                if (match) {
+                    let format = match[1].toUpperCase();
+                    if (format === "JPG") format = "JPEG";
+                    if (!["PNG", "JPEG", "GIF", "BMP", "WEBP"].includes(format)) format = "PNG";
+
+                    const imgWidth = contentWidth;
+                    let imgHeight = 40;
+
+                    try {
+                        const props = doc.getImageProperties(src);
+                        const ratio = props.height / props.width;
+                        imgHeight = Math.min(imgWidth * ratio, doc.internal.pageSize.getHeight() - margin * 2);
+                    } catch (_) {}
+
+                    checkPage(imgHeight + 5);
+                    try {
+                        doc.addImage(src, format, margin, y, imgWidth, imgHeight);
+                        y += imgHeight + 5;
+                    } catch (e) {
+                        console.error("PDF img addImage failed:", e.message);
+                        checkPage(6);
+                        doc.setFontSize(9);
+                        doc.setTextColor(150);
+                        doc.text("[Image]", margin, y);
+                        y += 6;
+                        doc.setTextColor(0);
+                    }
+                }
+            } else {
+                checkPage(6);
+                doc.setFontSize(9);
+                doc.setTextColor(150);
+                doc.text("[Image]", margin, y);
+                y += 6;
+                doc.setTextColor(0);
+            }
+        }
         else if (!["head","meta","title","style","script","link"].includes(tagName)) {
             $(node).contents().each((_, child) => processNode(child));
         }
@@ -364,4 +437,86 @@ function makeDocxFromText(text) {
     return Packer.toBuffer(new Document({
         sections: [{ properties: {}, children: paragraphs }]
     }));
+}
+
+// ====== IMAGE → PDF ======
+export async function convertImageToPdf(filename) {
+    const buffer = await getFileBuffer(filename);
+    const ext = path.extname(filename).toLowerCase().replace(".", "");
+    const formatMap = { png: "PNG", jpg: "JPEG", jpeg: "JPEG", webp: "JPEG", bmp: "BMP", gif: "GIF", heic: "JPEG", heif: "JPEG" };
+    const format = formatMap[ext] || "PNG";
+
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 10;
+
+    const base64 = `data:image/${format === "JPEG" ? "jpeg" : ext};base64,${buffer.toString("base64")}`;
+
+    try {
+        const props = doc.getImageProperties(base64);
+        const imgRatio = props.width / props.height;
+        const availW = pageWidth - margin * 2;
+        const availH = pageHeight - margin * 2;
+        let drawW, drawH;
+
+        if (imgRatio > availW / availH) {
+            drawW = availW;
+            drawH = availW / imgRatio;
+        } else {
+            drawH = availH;
+            drawW = availH * imgRatio;
+        }
+
+        const x = (pageWidth - drawW) / 2;
+        const y = (pageHeight - drawH) / 2;
+        doc.addImage(base64, format, x, y, drawW, drawH);
+    } catch (e) {
+        console.error("Image→PDF fallback:", e.message);
+        doc.setFontSize(12);
+        doc.text("[Could not render image]", margin, pageHeight / 2);
+    }
+
+    const pdfName = filename.replace(/\.\w+$/, ".pdf");
+    await saveConvertedFile(Buffer.from(doc.output("arraybuffer")), pdfName);
+    return pdfName;
+}
+
+// ====== IMAGE → DOCX ======
+export async function convertImageToDocx(filename) {
+    const buffer = await getFileBuffer(filename);
+    const ext = path.extname(filename).toLowerCase().replace(".", "");
+    const mimeMap = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", bmp: "image/bmp", gif: "image/gif", heic: "image/jpeg", heif: "image/jpeg" };
+    const mime = mimeMap[ext] || "image/png";
+    const base64Str = buffer.toString("base64");
+
+    const { ImageRun } = await import("docx");
+    const imgRun = new ImageRun({
+        data: base64Str,
+        transformation: { width: 500, height: 600 },
+        type: ext === "png" ? "png" : "jpg",
+    });
+
+    const docxBuffer = await Packer.toBuffer(new Document({
+        sections: [{ properties: {}, children: [
+            new Paragraph({ children: [imgRun] })
+        ] }]
+    }));
+    const docxName = filename.replace(/\.\w+$/, ".docx");
+    await saveConvertedFile(docxBuffer, docxName);
+    return docxName;
+}
+
+// ====== IMAGE → XLSX ======
+export async function convertImageToXlsx(filename) {
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet([
+        ["[Image file - content cannot be represented in spreadsheet]"],
+        ["Original file: " + path.basename(filename)]
+    ]);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Image");
+    const xlsxBuffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+    const xlsxName = filename.replace(/\.\w+$/, ".xlsx");
+    await saveConvertedFile(xlsxBuffer, xlsxName);
+    return xlsxName;
 }

@@ -7,7 +7,10 @@ import {
   convertXlsxToPdf,
   convertDocxToXlsx,
   convertPdfToXlSX,
-  convertXlsxToDocx
+  convertXlsxToDocx,
+  convertImageToPdf,
+  convertImageToDocx,
+  convertImageToXlsx
 } from "../utils/convert.js";
 import { generateSummary as generateAISummary } from '../services/aiService.js';
 import {
@@ -452,12 +455,14 @@ router.post('/export', authenticate, async (req, res) => {
       pdfFile = await convertDocxToPdf(filename);
     } else if (ext === ".xlsx") {
       pdfFile = await convertXlsxToPdf(filename);
+    } else if ([".png",".jpg",".jpeg",".webp",".bmp",".gif",".heic",".heif"].includes(ext)) {
+      pdfFile = await convertImageToPdf(filename);
     } else {
       return res.status(400).json({ success: false, message: "Unsupported file type" });
     }
 
     if (!pdfFile) {
-      pdfFile = filename;
+      return res.status(500).json({ success: false, message: "Conversion to PDF failed. Please try again." });
     }
     const downloadUrl = `/files/${pdfFile}?download=1&name=${encodeURIComponent(doc.documentName + '.pdf')}`;
 
@@ -498,12 +503,14 @@ router.post('/export-docx', authenticate, async (req, res) => {
       docxName = await convertPdfToDocx(filename);
     } else if (ext === ".xlsx") {
       docxName = await convertXlsxToDocx(filename);
+    } else if ([".png",".jpg",".jpeg",".webp",".bmp",".gif",".heic",".heif"].includes(ext)) {
+      docxName = await convertImageToDocx(filename);
     } else {
       return res.status(400).json({ success: false, message: "Unsupported file type" });
     }
 
     if (!docxName) {
-      docxName = filename;
+      return res.status(500).json({ success: false, message: "Conversion to DOCX failed. Please try again." });
     }
     const downloadUrl = `/files/${docxName}?download=1&name=${encodeURIComponent(doc.documentName + '.docx')}`;
 
@@ -544,12 +551,14 @@ router.post('/export-xlsx', authenticate, async (req, res) => {
       xlsxFile = await convertDocxToXlsx(filename);
     } else if (ext === ".pdf") {
       xlsxFile = await convertPdfToXlSX(filename);
+    } else if ([".png",".jpg",".jpeg",".webp",".bmp",".gif",".heic",".heif"].includes(ext)) {
+      xlsxFile = await convertImageToXlsx(filename);
     } else {
       return res.status(400).json({ success: false, message: "Unsupported file type" });
     }
 
     if (!xlsxFile) {
-      xlsxFile = filename;
+      return res.status(500).json({ success: false, message: "Conversion to XLSX failed. Please try again." });
     }
     const downloadUrl = `/files/${xlsxFile}?download=1&name=${encodeURIComponent(doc.documentName + '.xlsx')}`;
     return res.json({ success: true, documentName: doc.documentName, downloadUrl });
