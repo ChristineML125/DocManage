@@ -216,7 +216,7 @@ export class LoginForm extends LitElement {
           <label>Email Address / Username</label>
           <div class="input-wrap">
             <span class="icon material-symbols-outlined">mail</span>
-            <input type="text" placeholder="dr.smith@hospital.org"
+            <input type="text" placeholder="...@gmail.com"
               .value=${this.username} @input=${e => this.username = e.target.value} required>
           </div>
         </div>

@@ -10,6 +10,10 @@ function getTransport() {
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
     secure: String(process.env.SMTP_SECURE).toLowerCase() === 'true',
+    family: 4,
+    connectionTimeout: 15000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
     auth: { user: SMTP_USER, pass: SMTP_PASS }
   });
 }
