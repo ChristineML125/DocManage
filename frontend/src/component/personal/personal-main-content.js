@@ -10,7 +10,7 @@ export class PersonalMainContent extends LitElement {
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+      gap: 16px;
       margin-bottom: 28px;
     }
 
@@ -19,6 +19,12 @@ export class PersonalMainContent extends LitElement {
       border: 1px solid #eef2f6;
       padding: 18px 20px;
       border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+      border-color: #dce4ed;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
     }
 
     .stat-number {
@@ -26,6 +32,7 @@ export class PersonalMainContent extends LitElement {
       font-weight: 700;
       color: #0b1c30;
       margin: 0 0 2px 0;
+      letter-spacing: -0.5px;
     }
 
     .stat-label {
@@ -33,6 +40,7 @@ export class PersonalMainContent extends LitElement {
       font-weight: 500;
       color: #7a8a9a;
       margin: 0;
+      letter-spacing: 0.2px;
     }
 
     .table-card {
@@ -50,58 +58,89 @@ export class PersonalMainContent extends LitElement {
       align-items: center;
     }
 
-    .table-header h2 { margin: 0; font-size: 16px; }
+    .table-header h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #0b1c30;
+      margin: 0;
+    }
 
     .view-all-btn {
-      background: none;
-      border: none;
       color: #005e53;
-      cursor: pointer;
-      font-weight: 600;
       font-size: 13px;
+      font-weight: 600;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.15s;
       font-family: inherit;
-      text-decoration: none;
     }
 
-    .view-all-btn:hover { text-decoration: underline; }
+    .view-all-btn:hover {
+      background: rgba(0, 94, 83, 0.06);
+      text-decoration: underline;
+    }
 
-    table { width: 100%; border-collapse: collapse; }
-    th {
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      padding: 12px 16px 12px 20px;
       text-align: left;
-      padding: 12px 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #7a8a9a;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      color: #7a8a9a;
       border-bottom: 1px solid #eef2f6;
+      background: #fafbfc;
     }
-    td {
-      padding: 12px 20px;
-      font-size: 14px;
-      color: #3d4947;
-      border-bottom: 1px solid #f5f6f8;
+
+    tbody td {
+      padding: 12px 16px 12px 20px;
+      border-bottom: 1px solid #f0f3f7;
+      color: #2a3a4a;
     }
-    tr:hover { background: #fafbff; }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
 
     .badge {
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 12px;
+      display: inline-block;
+      padding: 2px 12px;
+      border-radius: 20px;
+      font-size: 11px;
       font-weight: 600;
     }
 
     .badge-active { background: #dcfce7; color: #166534; }
-    .badge-archived { background: #fee2e2; color: #991b1b; }
+    .badge-archived { background: #d3d3d3; color: #4b4b4b; }
 
     .preview-btn {
-      background: none;
-      border: none;
       color: #005e53;
-      cursor: pointer;
-      font-weight: 600;
       font-size: 13px;
+      font-weight: 600;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.15s;
       font-family: inherit;
+    }
+
+    .preview-btn:hover {
+      background: rgba(0, 94, 83, 0.06);
     }
 
     .star-btn {
@@ -128,7 +167,16 @@ export class PersonalMainContent extends LitElement {
       font-size: 18px;
     }
 
-    .empty { text-align: center; padding: 40px; color: #7a8a9a; }
+    .empty { text-align: center; padding: 40px 20px; color: #7a8a9a; }
+
+    @media (max-width: 992px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .stat-number { font-size: 22px; }
+    }
   `;
 
   static properties = {
@@ -223,7 +271,7 @@ export class PersonalMainContent extends LitElement {
 
       <div class="table-card">
         <div class="table-header">
-          <h2>Recent Documents</h2>
+          <h3>Recent Documents</h3>
           <button class="view-all-btn" @click=${() => this.goToDocuments()}>View All</button>
         </div>
         ${this.documents.length === 0

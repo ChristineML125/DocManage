@@ -41,17 +41,16 @@ export class Sidebar extends LitElement {
     .brand-icon {
       width: 40px;
       height: 40px;
-      border-radius: 12px;
-      background-color: #003107;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .brand-icon img {
-      width: 28px;
-      height: 28px;
-      object-fit: contain;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
     }
 
     .brand-icon .icon {
@@ -65,7 +64,7 @@ export class Sidebar extends LitElement {
     }
 
     .brand-name {
-      font-size: 25px;
+      font-size: 20px;
       font-weight: 600;
       line-height: 28px;
       color: #008d3f;

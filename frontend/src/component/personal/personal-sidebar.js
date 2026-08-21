@@ -38,18 +38,16 @@ export class PersonalSidebar extends LitElement {
     .brand-icon {
       width: 40px;
       height: 40px;
-      border-radius: 12px;
-      background-color: #003107;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .brand-icon img { width: 28px; height: 28px; object-fit: contain; }
+    .brand-icon img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     .brand-icon .icon { color: #ffffff; font-size: 24px; }
 
     .brand-text { display: flex; flex-direction: column; }
-    .brand-name { font-size: 25px; font-weight: 600; line-height: 28px; color: #008d3f; }
+    .brand-name { font-size: 20px; font-weight: 600; line-height: 28px; color: #008d3f; }
 
     .mode-badge {
       font-size: 10px;

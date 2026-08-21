@@ -11,12 +11,12 @@ export class PersonalDocumentPage extends LitElement {
       display: flex;
       height: 100%;
       width: 100%;
-      background: #f3faff;
-      font-family: 'Manrope', sans-serif;
-      color: #071e27;
-      --accent: #005e53;
-      --accent-light: rgba(0, 94, 83, 0.08);
-      --accent-lighter: rgba(0, 94, 83, 0.12);
+      background: #f7f9fb;
+      font-family: 'Inter', sans-serif;
+      color: #191c1e;
+      --accent: #00685f;
+      --accent-light: rgba(0, 104, 95, 0.06);
+      --accent-lighter: #eef2f6;
       --border: #eef2f6;
     }
 
@@ -92,8 +92,8 @@ export class PersonalDocumentPage extends LitElement {
     }
 
     tbody tr.active {
-      background: var(--accent-lighter);
-      border-left: 4px solid var(--accent);
+      background: #eef2f6;
+      border-left: 4px solid #00685f;
     }
 
     .doc-info {
@@ -112,8 +112,8 @@ export class PersonalDocumentPage extends LitElement {
       font-size: 11px;
       font-weight: 700;
       flex-shrink: 0;
-      background: #ede9fe;
-      color: var(--accent);
+      background: #e0e7ff;
+      color: #1e40af;
     }
 
     .doc-title {
@@ -142,8 +142,8 @@ export class PersonalDocumentPage extends LitElement {
       border-radius: 20px;
       font-size: 11px;
       font-weight: 600;
-      color: #4338ca;
-      background: #ede9fe;
+      color: #0c00b4;
+      background: #c8fdff;
     }
 
     .icon-btn {
