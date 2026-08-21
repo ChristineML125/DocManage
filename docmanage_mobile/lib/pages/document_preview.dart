@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../api/document_api.dart';
 import '../api/http_service.dart';
+import '../api/folder_note_api.dart';
 import '../widget/version_preview.dart';
 import '../widget/add_new_version.dart';
 
@@ -48,6 +49,10 @@ class _DocumentPreviewState extends State<DocumentPreview> {
 
   List<Map<String, dynamic>> versions = [];
 
+  List<Map<String, dynamic>> notes = [];
+  final TextEditingController _noteTitleController = TextEditingController();
+  final TextEditingController _noteContentController = TextEditingController();
+
   Map<String, dynamic> get document =>
       widget.document;
 
@@ -56,7 +61,7 @@ class _DocumentPreviewState extends State<DocumentPreview> {
       _collapsedSheetHeight = 100;
 
   static const double
-      _expandedSheetHeight = 430;
+      _expandedSheetHeight = 530;
 
 
   @override
@@ -66,6 +71,7 @@ class _DocumentPreviewState extends State<DocumentPreview> {
     loadPreview();
     loadVersionHistory();
     loadExistingSummary();
+    loadNotes();
   }
 
   void toggleSheet() {
@@ -768,12 +774,53 @@ class _DocumentPreviewState extends State<DocumentPreview> {
               summary.toString();
         });
       }
-
     } catch (e) {
 
       debugPrint(
         "NO EXISTING AI SUMMARY: $e",
       );
+    }
+  }
+
+  // Notes
+  Future<void> loadNotes() async {
+    final documentId = document["documentID"];
+    if (documentId == null) return;
+    try {
+      final response = await FolderNoteApi.getNotes(documentId);
+      if (!mounted) return;
+      if (response["success"] == true) {
+        setState(() {
+          notes = List<Map<String, dynamic>>.from(response["notes"] ?? []);
+        });
+      }
+    } catch (e) {
+      debugPrint("Failed to load notes: $e");
+    }
+  }
+
+  Future<void> addNote() async {
+    final documentId = document["documentID"];
+    if (documentId == null) return;
+    final title = _noteTitleController.text.trim();
+    final content = _noteContentController.text.trim();
+    if (content.isEmpty && title.isEmpty) return;
+    try {
+      await FolderNoteApi.createNote(documentId, title.isEmpty ? null : title, content);
+      _noteTitleController.clear();
+      _noteContentController.clear();
+      await loadNotes();
+    } catch (e) {
+      debugPrint("Failed to add note: $e");
+    }
+  }
+
+  Future<void> removeNote(Map<String, dynamic> note) async {
+    try {
+      await FolderNoteApi.deleteNote(note["noteID"]);
+      await loadNotes();
+    } catch (e) {
+      debugPrint("Failed to delete note: $e");
     }
   }
 
@@ -2633,7 +2680,116 @@ class _DocumentPreviewState extends State<DocumentPreview> {
                             buildAISummarySection(),
 
                             const SizedBox(
-                              height: 20,
+                              height: 14,
+                            ),
+
+                            // NOTES SECTION
+                            if (isPersonal) ...[
+                              Row(
+                                children: [
+                                  const Icon(Icons.note_alt_outlined, size: 18, color: Color(0xFF00685f)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    "Notes (${notes.length})",
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _noteTitleController,
+                                      style: const TextStyle(fontSize: 12),
+                                      decoration: InputDecoration(
+                                        hintText: "Title (optional)",
+                                        hintStyle: const TextStyle(fontSize: 12),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                        isDense: true,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _noteContentController,
+                                      style: const TextStyle(fontSize: 12),
+                                      maxLines: 2,
+                                      decoration: InputDecoration(
+                                        hintText: "Write a note...",
+                                        hintStyle: const TextStyle(fontSize: 12),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                        isDense: true,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  IconButton(
+                                    onPressed: addNote,
+                                    icon: const Icon(Icons.send, size: 20, color: Color(0xFF00685f)),
+                                    tooltip: "Add note",
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              if (notes.isEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Text(
+                                    "No notes yet",
+                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                                  ),
+                                )
+                              else
+                                ...notes.map((n) => Card(
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  elevation: 0,
+                                  color: const Color(0xFFF7F9FB),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    side: BorderSide(color: Colors.grey.shade200),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              n["noteTitle"] ?? "Untitled",
+                                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                            ),
+                                            GestureDetector(
+                                              onTap: () => removeNote(n),
+                                              child: Icon(Icons.delete_outline, size: 16, color: Colors.grey.shade500),
+                                            ),
+                                          ],
+                                        ),
+                                        if (n["noteContent"] != null && (n["noteContent"] as String).isNotEmpty) ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            n["noteContent"],
+                                            style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                )),
+                              const SizedBox(height: 10),
+                            ],
+
+                            const SizedBox(
+                              height: 10,
                             ),
 
                             buildHistorySection(),

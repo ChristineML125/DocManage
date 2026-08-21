@@ -347,8 +347,8 @@ class _DashboardState extends State<Dashboard> {
           children: [
 
             Container(
-              width: 55,
-              height: 55,
+              width: 65,
+              height: 65,
               padding: const EdgeInsets.all(5),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),

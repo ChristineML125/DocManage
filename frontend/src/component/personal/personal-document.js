@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { getDocumentsList, getDocument, getVersionList, generateAISummary, exportPDF, exportDocx, exportXlsx, uploadNewVersion, toggleFavorite, getFavorites, updateDocumentStatus } from '../../api/documentAPI.js';
 import { getFileUrl, fetchFile, http } from '../../api/http.js';
+import { getFolders, createFolder, renameFolder, deleteFolder, assignDocumentToFolder, unassignDocumentFromFolder, getNotes, createNote, updateNote, deleteNote, getNoteCounts } from '../../api/folderNoteAPI.js';
 import { renderAsync } from 'docx-preview';
 import * as XLSX from 'xlsx';
 
@@ -177,6 +178,339 @@ export class PersonalDocumentPage extends LitElement {
     .save-btn:hover {
       background: rgba(0, 104, 95, 0.1);
       color: #00685f;
+    }
+
+    .folder-panel {
+      width: 200px;
+      min-width: 200px;
+      background: #fafbfc;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+    }
+
+    .folder-panel-header {
+      padding: 12px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #7a8a9a;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .folder-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px;
+    }
+
+    .folder-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 13px;
+      font-weight: 500;
+      color: #45474c;
+    }
+
+    .folder-item:hover {
+      background: rgba(0, 104, 95, 0.04);
+    }
+
+    .folder-item.active {
+      background: rgba(0, 104, 95, 0.08);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .folder-item .folder-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .folder-item .folder-count {
+      font-size: 11px;
+      color: #7a8a9a;
+      background: #eef2f6;
+      padding: 1px 7px;
+      border-radius: 10px;
+    }
+
+    .folder-item-actions {
+      display: none;
+      gap: 2px;
+    }
+
+    .folder-item:hover .folder-item-actions {
+      display: flex;
+    }
+
+    .folder-item:hover .folder-count {
+      display: none;
+    }
+
+    .folder-item-actions .icon-btn {
+      width: 22px;
+      height: 22px;
+    }
+
+    .folder-item-actions .icon-btn .material-symbols-outlined {
+      font-size: 14px;
+    }
+
+    .folder-new {
+      padding: 8px 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .folder-new-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .folder-new-row input {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .folder-new-row input:focus {
+      border-color: var(--accent);
+    }
+
+    .folder-new-row button {
+      padding: 6px 8px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .folder-edit-input {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .folder-edit-input input {
+      flex: 1;
+      padding: 4px 8px;
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .notes-section {
+      border-top: 1px solid #eef2f6;
+      padding: 12px;
+      max-height: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .notes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .notes-header h4 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: #0b1c30;
+    }
+
+    .note-new-form {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .note-new-form input,
+    .note-new-form textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      resize: vertical;
+    }
+
+    .note-new-form input:focus,
+    .note-new-form textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .note-new-form button {
+      align-self: flex-end;
+      padding: 6px 14px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .notes-list {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .note-card {
+      background: #f7f9fb;
+      border-radius: 8px;
+      padding: 10px 12px;
+      border: 1px solid #eef2f6;
+    }
+
+    .note-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
+
+    .note-card-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0b1c30;
+    }
+
+    .note-card-actions {
+      display: flex;
+      gap: 2px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .note-card:hover .note-card-actions {
+      opacity: 1;
+    }
+
+    .note-card-actions .icon-btn {
+      width: 22px;
+      height: 22px;
+    }
+
+    .note-card-actions .icon-btn .material-symbols-outlined {
+      font-size: 14px;
+    }
+
+    .note-card-body {
+      font-size: 12px;
+      color: #4a5568;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .note-card-time {
+      font-size: 10px;
+      color: #7a8a9a;
+      margin-top: 6px;
+    }
+
+    .note-edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .note-edit-form input,
+    .note-edit-form textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      resize: vertical;
+    }
+
+    .note-edit-actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .note-edit-actions button {
+      padding: 4px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .note-edit-actions .btn-save {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .note-edit-actions .btn-cancel-note {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .folder-assign-modal {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .folder-assign-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 13px;
+    }
+
+    .folder-assign-option:hover {
+      background: rgba(0, 104, 95, 0.04);
+      border-color: var(--accent);
+    }
+
+    .folder-assign-option.current {
+      background: rgba(0, 104, 95, 0.08);
+      border-color: var(--accent);
+      font-weight: 600;
     }
 
     .modal-overlay {
@@ -1468,7 +1802,20 @@ export class PersonalDocumentPage extends LitElement {
     editName: { type: String },
     deletingDoc: { type: Object },
     favorites: { type: Set },
-    editingStatusID: { type: Number }
+    editingStatusID: { type: Number },
+    folders: { type: Array },
+    selectedFolderID: { type: Number },
+    newFolderName: { type: String },
+    editingFolder: { type: Object },
+    editFolderName: { type: String },
+    notes: { type: Array },
+    noteCounts: { type: Object },
+    newNoteTitle: { type: String },
+    newNoteContent: { type: String },
+    editingNote: { type: Object },
+    editNoteTitle: { type: String },
+    editNoteContent: { type: String },
+    showMoveFolderModal: { type: Object }
   };
 
   constructor() {
@@ -1502,6 +1849,19 @@ export class PersonalDocumentPage extends LitElement {
     this.deletingDoc = null;
     this.favorites = new Set();
     this.editingStatusID = null;
+    this.folders = [];
+    this.selectedFolderID = null;
+    this.newFolderName = '';
+    this.editingFolder = null;
+    this.editFolderName = '';
+    this.notes = [];
+    this.noteCounts = {};
+    this.newNoteTitle = '';
+    this.newNoteContent = '';
+    this.editingNote = null;
+    this.editNoteTitle = '';
+    this.editNoteContent = '';
+    this.showMoveFolderModal = null;
 
     this._onMouseMove = this._onMouseMove.bind(this);
     this._onMouseUp = this._onMouseUp.bind(this);
@@ -1517,6 +1877,8 @@ export class PersonalDocumentPage extends LitElement {
     window.addEventListener('mouseup', this._onMouseUp);
     this.fetchDocuments();
     this.loadFavorites();
+    this.loadFolders();
+    this.loadNoteCounts();
 
     const params = new URLSearchParams(window.location.search);
     const urlKeyword = params.get('keyword') || '';
@@ -1592,13 +1954,19 @@ export class PersonalDocumentPage extends LitElement {
 
   filterDocuments() {
     const kw = this.keyword.toLowerCase();
-    if (!kw) {
-      this.filteredDocs = [...this.documents];
-    } else {
-      this.filteredDocs = this.documents.filter(d =>
+    let docs = [...this.documents];
+
+    if (this.selectedFolderID !== null) {
+      docs = docs.filter(d => d.folderID === this.selectedFolderID);
+    }
+
+    if (kw) {
+      docs = docs.filter(d =>
         (d.documentName || '').toLowerCase().includes(kw)
       );
     }
+
+    this.filteredDocs = docs;
     this.currentPage = 1;
     this.updatePagination();
   }
@@ -1634,6 +2002,163 @@ export class PersonalDocumentPage extends LitElement {
       }
     } catch (err) {
       console.error('Toggle favorite failed', err);
+    }
+  }
+
+  // Folder methods
+  async loadFolders() {
+    try {
+      const res = await getFolders();
+      if (res.success) {
+        this.folders = res.folders || [];
+      }
+    } catch (err) {
+      console.error('Failed to load folders', err);
+    }
+  }
+
+  selectFolder(folderID) {
+    this.selectedFolderID = folderID;
+    this.currentPage = 1;
+    this.filterDocuments();
+  }
+
+  async createNewFolder() {
+    if (!this.newFolderName.trim()) return;
+    try {
+      const res = await createFolder(this.newFolderName.trim());
+      if (res.success) {
+        this.newFolderName = '';
+        await this.loadFolders();
+      } else {
+        alert(res.message || 'Failed to create folder');
+      }
+    } catch (err) {
+      alert('Failed to create folder: ' + err.message);
+    }
+  }
+
+  async renameExistingFolder() {
+    if (!this.editFolderName.trim() || !this.editingFolder) return;
+    try {
+      const res = await renameFolder(this.editingFolder.folderID, this.editFolderName.trim());
+      if (res.success) {
+        this.editingFolder = null;
+        this.editFolderName = '';
+        await this.loadFolders();
+      } else {
+        alert(res.message || 'Failed to rename folder');
+      }
+    } catch (err) {
+      alert('Failed to rename folder: ' + err.message);
+    }
+  }
+
+  async deleteExistingFolder(folder) {
+    if (!confirm(`Delete folder "${folder.folderName}"? Documents will not be deleted.`)) return;
+    try {
+      const res = await deleteFolder(folder.folderID);
+      if (res.success) {
+        if (this.selectedFolderID === folder.folderID) {
+          this.selectedFolderID = null;
+        }
+        await this.loadFolders();
+        this.filterDocuments();
+      } else {
+        alert(res.message || 'Failed to delete folder');
+      }
+    } catch (err) {
+      alert('Failed to delete folder: ' + err.message);
+    }
+  }
+
+  async moveDocToFolder(doc, folderID) {
+    try {
+      if (folderID === null) {
+        await unassignDocumentFromFolder(doc.documentID);
+      } else {
+        await assignDocumentToFolder(doc.documentID, folderID);
+      }
+      this.showMoveFolderModal = null;
+      await this.fetchDocuments();
+      await this.loadFolders();
+    } catch (err) {
+      alert('Failed to move document: ' + err.message);
+    }
+  }
+
+  // Note methods
+  async loadNoteCounts() {
+    try {
+      const res = await getNoteCounts();
+      if (res.success) {
+        this.noteCounts = res.counts || {};
+      }
+    } catch (err) {
+      console.error('Failed to load note counts', err);
+    }
+  }
+
+  async loadNotes(docID) {
+    try {
+      const res = await getNotes(docID);
+      if (res.success) {
+        this.notes = res.notes || [];
+      } else {
+        this.notes = [];
+      }
+    } catch (err) {
+      console.error('Failed to load notes', err);
+      this.notes = [];
+    }
+  }
+
+  async addNote() {
+    if (!this.selectedDoc || (!this.newNoteContent.trim() && !this.newNoteTitle.trim())) return;
+    try {
+      const res = await createNote(this.selectedDoc.documentID, this.newNoteTitle.trim(), this.newNoteContent.trim());
+      if (res.success) {
+        this.newNoteTitle = '';
+        this.newNoteContent = '';
+        await this.loadNotes(this.selectedDoc.documentID);
+        await this.loadNoteCounts();
+      } else {
+        alert(res.message || 'Failed to create note');
+      }
+    } catch (err) {
+      alert('Failed to create note: ' + err.message);
+    }
+  }
+
+  async saveNoteEdit() {
+    if (!this.editingNote) return;
+    try {
+      const res = await updateNote(this.editingNote.noteID, this.editNoteTitle.trim(), this.editNoteContent.trim());
+      if (res.success) {
+        this.editingNote = null;
+        this.editNoteTitle = '';
+        this.editNoteContent = '';
+        await this.loadNotes(this.selectedDoc.documentID);
+      } else {
+        alert(res.message || 'Failed to update note');
+      }
+    } catch (err) {
+      alert('Failed to update note: ' + err.message);
+    }
+  }
+
+  async removeNote(note) {
+    if (!confirm('Delete this note?')) return;
+    try {
+      const res = await deleteNote(note.noteID);
+      if (res.success) {
+        await this.loadNotes(this.selectedDoc.documentID);
+        await this.loadNoteCounts();
+      } else {
+        alert(res.message || 'Failed to delete note');
+      }
+    } catch (err) {
+      alert('Failed to delete note: ' + err.message);
     }
   }
 
@@ -1779,6 +2304,7 @@ export class PersonalDocumentPage extends LitElement {
       console.error('Failed to load document details', err);
     }
 
+    await this.loadNotes(doc.documentID);
     this.requestUpdate();
   }
 
@@ -2307,9 +2833,73 @@ export class PersonalDocumentPage extends LitElement {
 
     return html`
       <div class="container">
+        <div class="folder-panel">
+          <div class="folder-panel-header">
+            <span>Folders</span>
+          </div>
+          <div class="folder-list">
+            <div class="folder-item ${this.selectedFolderID === null ? 'active' : ''}"
+              @click=${() => this.selectFolder(null)}>
+              <span class="material-symbols-outlined" style="font-size:18px;color:inherit">folder_open</span>
+              <span class="folder-name">All Documents</span>
+              <span class="folder-count">${this.documents.length}</span>
+            </div>
+            ${this.folders.map(f => html`
+              <div class="folder-item ${this.selectedFolderID === f.folderID ? 'active' : ''}"
+                @click=${() => this.selectFolder(f.folderID)}>
+                ${this.editingFolder?.folderID === f.folderID
+                  ? html`
+                    <div class="folder-edit-input">
+                      <input type="text" .value=${this.editFolderName}
+                        @input=${e => this.editFolderName = e.target.value}
+                        @keydown=${e => { if (e.key === 'Enter') this.renameExistingFolder(); if (e.key === 'Escape') { this.editingFolder = null; } }}
+                        @click=${e => e.stopPropagation()}>
+                      <button class="icon-btn" @click=${(e) => { e.stopPropagation(); this.renameExistingFolder(); }}>
+                        <span class="material-symbols-outlined" style="font-size:14px">check</span>
+                      </button>
+                    </div>
+                  `
+                  : html`
+                    <span class="material-symbols-outlined" style="font-size:18px;color:inherit">folder</span>
+                    <span class="folder-name">${f.folderName}</span>
+                    <span class="folder-count">${f.docCount || 0}</span>
+                    <div class="folder-item-actions">
+                      <button class="icon-btn" title="Rename"
+                        @click=${(e) => { e.stopPropagation(); this.editingFolder = f; this.editFolderName = f.folderName; }}>
+                        <span class="material-symbols-outlined">edit</span>
+                      </button>
+                      <button class="icon-btn delete-btn" title="Delete"
+                        @click=${(e) => { e.stopPropagation(); this.deleteExistingFolder(f); }}>
+                        <span class="material-symbols-outlined">delete</span>
+                      </button>
+                    </div>
+                  `
+                }
+              </div>
+            `)}
+          </div>
+          <div class="folder-new">
+            <div class="folder-new-row">
+              <input type="text" placeholder="New folder..."
+                .value=${this.newFolderName}
+                @input=${e => this.newFolderName = e.target.value}
+                @keydown=${e => { if (e.key === 'Enter') this.createNewFolder(); }}>
+              <button @click=${() => this.createNewFolder()}>Add</button>
+            </div>
+          </div>
+        </div>
+
         <div class="left-pane">
           <div class="filter-bar">
-            <span>${this.filteredDocs.length || 0} documents</span>
+            <span>${this.selectedFolderID !== null
+              ? this.folders.find(f => f.folderID === this.selectedFolderID)?.folderName || 'Folder'
+              : 'All Documents'} — ${this.filteredDocs.length || 0} documents</span>
+            ${this.selectedDoc
+              ? html`<button class="icon-btn" title="Move to folder" @click=${() => { this.showMoveFolderModal = this.selectedDoc; }}>
+                  <span class="material-symbols-outlined" style="font-size:16px">drive_file_move</span>
+                </button>`
+              : ''
+            }
           </div>
           <div class="table-wrap">
             <table>
@@ -2464,6 +3054,61 @@ export class PersonalDocumentPage extends LitElement {
                 <p style="font-size:13px; color:#7a8a9a; line-height:1.0;">
                   This document was uploaded on ${this.formatDate(this.selectedDoc.uploadDate)}.
                 </p>
+              </div>
+
+              <div class="notes-section">
+                <div class="notes-header">
+                  <h4>Notes (${this.notes.length})</h4>
+                </div>
+                <div class="note-new-form">
+                  <input type="text" placeholder="Note title (optional)"
+                    .value=${this.newNoteTitle}
+                    @input=${e => this.newNoteTitle = e.target.value}>
+                  <textarea rows="2" placeholder="Write a note..."
+                    .value=${this.newNoteContent}
+                    @input=${e => this.newNoteContent = e.target.value}></textarea>
+                  <button @click=${() => this.addNote()}>Add Note</button>
+                </div>
+                <div class="notes-list">
+                  ${this.notes.length === 0
+                    ? html`<p style="font-size:12px;color:#7a8a9a;text-align:center;padding:10px 0;">No notes yet</p>`
+                    : this.notes.map(n => html`
+                      <div class="note-card">
+                        ${this.editingNote?.noteID === n.noteID
+                          ? html`
+                            <div class="note-edit-form">
+                              <input type="text" .value=${this.editNoteTitle}
+                                @input=${e => this.editNoteTitle = e.target.value}>
+                              <textarea rows="2" .value=${this.editNoteContent}
+                                @input=${e => this.editNoteContent = e.target.value}></textarea>
+                              <div class="note-edit-actions">
+                                <button class="btn-cancel-note" @click=${() => { this.editingNote = null; }}>Cancel</button>
+                                <button class="btn-save" @click=${() => this.saveNoteEdit()}>Save</button>
+                              </div>
+                            </div>
+                          `
+                          : html`
+                            <div class="note-card-header">
+                              <span class="note-card-title">${n.noteTitle || 'Untitled'}</span>
+                              <div class="note-card-actions">
+                                <button class="icon-btn" title="Edit"
+                                  @click=${() => { this.editingNote = n; this.editNoteTitle = n.noteTitle || ''; this.editNoteContent = n.noteContent || ''; }}>
+                                  <span class="material-symbols-outlined">edit</span>
+                                </button>
+                                <button class="icon-btn delete-btn" title="Delete"
+                                  @click=${() => this.removeNote(n)}>
+                                  <span class="material-symbols-outlined">delete</span>
+                                </button>
+                              </div>
+                            </div>
+                            <div class="note-card-body">${n.noteContent}</div>
+                            <div class="note-card-time">${this.formatDate(n.updatedAt)}</div>
+                          `
+                        }
+                      </div>
+                    `)
+                  }
+                </div>
               </div>
             `
             : html`
@@ -2772,6 +3417,32 @@ export class PersonalDocumentPage extends LitElement {
               <div class="modal-actions">
                 <button class="btn-cancel" @click=${() => { this.deletingDoc = null; }}>Cancel</button>
                 <button class="btn-danger" @click=${() => this.doDelete()}>Delete</button>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        ${this.showMoveFolderModal ? html`
+          <div class="modal-overlay" @click=${() => { this.showMoveFolderModal = null; }}>
+            <div class="modal-box" @click=${e => e.stopPropagation()}>
+              <h3>Move to Folder</h3>
+              <p>Select a folder for "<strong>${this.showMoveFolderModal.documentName}</strong>"</p>
+              <div class="folder-assign-modal">
+                <div class="folder-assign-option ${this.showMoveFolderModal.folderID === null ? 'current' : ''}"
+                  @click=${() => this.moveDocToFolder(this.showMoveFolderModal, null)}>
+                  <span class="material-symbols-outlined" style="font-size:18px">folder_off</span>
+                  No folder (root)
+                </div>
+                ${this.folders.map(f => html`
+                  <div class="folder-assign-option ${this.showMoveFolderModal.folderID === f.folderID ? 'current' : ''}"
+                    @click=${() => this.moveDocToFolder(this.showMoveFolderModal, f.folderID)}>
+                    <span class="material-symbols-outlined" style="font-size:18px">folder</span>
+                    ${f.folderName}
+                  </div>
+                `)}
+              </div>
+              <div class="modal-actions" style="margin-top:14px">
+                <button class="btn-cancel" @click=${() => { this.showMoveFolderModal = null; }}>Cancel</button>
               </div>
             </div>
           </div>

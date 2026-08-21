@@ -41,15 +41,15 @@ class LoginPage extends StatelessWidget {
                   children: [
                     
                     Container(
-                      width: 90,
-                      height: 90,
-                      padding: const EdgeInsets.all(6),
+                      width: 120,
+                      height: 120,
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(24),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(18),
                         child: Image.asset(
                           'assets/logo.png',
                           fit: BoxFit.contain,
@@ -60,7 +60,7 @@ class LoginPage extends StatelessWidget {
                     const Text(
                         "Docly",
                         style: TextStyle(
-                          fontSize: 25,
+                          fontSize: 30,
                           fontWeight: FontWeight.bold,
                           color: Color.fromARGB(255, 15, 65, 17),
                         ),

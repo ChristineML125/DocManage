@@ -76,8 +76,8 @@ export class AdminSidebar extends LitElement {
     }
 
     .brand-icon {
-      width: 40px;
-      height: 40px;
+      width: 52px;
+      height: 52px;
       display: flex;
       align-items: center;
       justify-content: center;

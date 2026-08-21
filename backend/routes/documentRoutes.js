@@ -159,7 +159,8 @@ router.get('/my', authenticate, async (req, res) => {
         d."uploadDate",
         d."filePath",
         s."statusName",
-        dv."VersionNum" AS "versionNum"
+        dv."VersionNum" AS "versionNum",
+        d."folderID"
       FROM "Document" d
       LEFT JOIN "Category" c ON d."categoriesID" = c."categoriesID"
       LEFT JOIN "Status" s ON d."statusID" = s."statusID"

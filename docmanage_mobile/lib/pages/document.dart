@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../api/document_api.dart';
+import '../api/folder_note_api.dart';
 import '../widget/document_card.dart';
 
 class Document extends StatefulWidget {
@@ -21,8 +22,10 @@ class _DocumentState extends State<Document> {
 
   List<Map<String, dynamic>> documents = [];
   List<Map<String, dynamic>> filteredDocuments = [];
+  List<Map<String, dynamic>> folders = [];
 
   String selectedStatus = "All";
+  int? selectedFolderID;
   Set<int> favoriteIds = {};
 
   bool get isAdmin => widget.role.toLowerCase() == "admin";
@@ -32,6 +35,7 @@ class _DocumentState extends State<Document> {
   void initState() {
     super.initState();
     loadDocuments();
+    loadFolders();
     if (isPersonal) loadFavorites();
   }
 
@@ -43,6 +47,20 @@ class _DocumentState extends State<Document> {
       documents = List<Map<String, dynamic>>.from(response["documents"] ?? []);
       filteredDocuments = documents;
     });
+  }
+
+  Future loadFolders() async {
+    if (!isPersonal) return;
+    try {
+      final response = await FolderNoteApi.getFolders();
+      if (response["success"] == true) {
+        setState(() {
+          folders = List<Map<String, dynamic>>.from(response["folders"] ?? []);
+        });
+      }
+    } catch (e) {
+      debugPrint("Failed to load folders: $e");
+    }
   }
 
   Future loadFavorites() async {
@@ -87,6 +105,7 @@ class _DocumentState extends State<Document> {
           (document["department"] ?? "").toString().toLowerCase();
       final id = (document["documentID"] ?? "").toString().toLowerCase();
       final status = (document["statusName"] ?? "Active").toString();
+      final folderID = document["folderID"];
 
       final matchesSearch = fileName.contains(searchText) ||
           documentName.contains(searchText) ||
@@ -96,7 +115,10 @@ class _DocumentState extends State<Document> {
       final matchesStatus = selectedStatus == "All" ||
           status.toLowerCase() == selectedStatus.toLowerCase();
 
-      return matchesSearch && matchesStatus;
+      final matchesFolder = selectedFolderID == null ||
+          (folderID != null && folderID == selectedFolderID);
+
+      return matchesSearch && matchesStatus && matchesFolder;
     }).toList();
 
     setState(() {
@@ -158,6 +180,22 @@ class _DocumentState extends State<Document> {
                   _buildFilterButton("Archived"),
                 ],
               ),
+              if (isPersonal && folders.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 34,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      _buildFolderChip(null, "All"),
+                      ...folders.map((f) => _buildFolderChip(
+                        f["folderID"] as int,
+                        f["folderName"] ?? "Folder",
+                      )),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 10),
               Expanded(
                 child: filteredDocuments.isEmpty
@@ -227,6 +265,46 @@ class _DocumentState extends State<Document> {
             fontSize: 12,
             color: isSelected ? Colors.white : Colors.grey.shade700,
             fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFolderChip(int? folderID, String name) {
+    final isSelected = selectedFolderID == folderID;
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedFolderID = folderID;
+          });
+          searchDocuments(searchController.text);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF00685f).withOpacity(0.1) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF00685f) : Colors.grey.shade300,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.folder, size: 14, color: isSelected ? const Color(0xFF00685f) : Colors.grey),
+              const SizedBox(width: 4),
+              Text(
+                name,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isSelected ? const Color(0xFF00685f) : Colors.grey.shade700,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ),

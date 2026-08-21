@@ -134,15 +134,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 90,
-                    height: 90,
-                    padding: const EdgeInsets.all(6),
+                    width: 120,
+                    height: 120,
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(24),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(18),
                       child: Image.asset(
                         'assets/logo.png',
                         fit: BoxFit.contain,
@@ -152,7 +152,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const Text(
                     "Docly",
                     style: TextStyle(
-                      fontSize: 25,
+                      fontSize: 30,
                       fontWeight: FontWeight.bold,
                       color: teal,
                     ),
