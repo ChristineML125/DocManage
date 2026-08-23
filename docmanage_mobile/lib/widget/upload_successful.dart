@@ -44,7 +44,7 @@ class UploadSuccessView extends StatelessWidget {
                         Text('Upload Successful',
                             style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF00685f))),
                         SizedBox(height: 4),
-                        Text('The documents have been securely stored in the clinical repository.',
+                        Text('The documents have been securely stored in your medical repository.',
                             style: TextStyle(color: Color(0xFF3D4947))),
                       ],
                     ),

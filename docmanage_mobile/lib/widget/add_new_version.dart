@@ -41,6 +41,11 @@ class _AddNewVersionDialogState
         'png',
         'jpg',
         'jpeg',
+        'webp',
+        'bmp',
+        'gif',
+        'heic',
+        'heif',
       ],
     );
 

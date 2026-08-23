@@ -437,7 +437,7 @@ export class AdminCategories extends LitElement {
       <div class="header">
         <div>
           <h2>Document Categories</h2>
-          <p>Organize and manage clinical classifications for digital health records.</p>
+          <p>Organize and manage document classifications for your health records.</p>
         </div>
         <button class="btn-primary" @click=${()=>this.openModal('category')}>
           <span class="material-symbols-outlined">add_circle</span>

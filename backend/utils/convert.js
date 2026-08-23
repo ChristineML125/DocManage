@@ -18,6 +18,10 @@ function getStorageDir() {
     return path.join(process.cwd(), "..", "storage");
 }
 
+function replaceExtension(filename, extension) {
+    return `${filename.slice(0, filename.length - path.extname(filename).length)}${extension}`;
+}
+
 export async function getFileBuffer(filename) {
     if (isConfigured()) {
         const client = getSupabase();
@@ -105,7 +109,7 @@ async function libreOfficeConvertAndSave(inputFile, outputName, format) {
 // ====== DOCX → PDF ======
 export async function convertDocxToPdf(filename) {
     const localFile = await downloadToLocal(filename);
-    const pdfName = filename.replace(/\.docx$/i, ".pdf");
+    const pdfName = replaceExtension(filename, ".pdf");
 
     if (await hasLibreOffice()) {
         const result = await libreOfficeConvertAndSave(localFile, pdfName, "pdf");
@@ -159,10 +163,26 @@ export async function convertPdfToDocx(filename) {
     return result;
 }
 
+// ====== DOC → DOCX ======
+export async function convertDocToDocx(filename) {
+    const localFile = await downloadToLocal(filename);
+    const docxName = replaceExtension(filename, ".docx");
+
+    if (!await hasLibreOffice()) {
+        throw new Error("LibreOffice is required for DOC to DOCX conversion.");
+    }
+
+    const result = await libreOfficeConvertAndSave(localFile, docxName, "docx");
+    if (!result) {
+        throw new Error("DOC to DOCX conversion failed.");
+    }
+    return result;
+}
+
 // ====== XLSX → PDF ======
 export async function convertXlsxToPdf(filename) {
     const localFile = await downloadToLocal(filename);
-    const pdfName = filename.replace(/\.xlsx$/i, ".pdf");
+    const pdfName = replaceExtension(filename, ".pdf");
 
     if (await hasLibreOffice()) {
         const result = await libreOfficeConvertAndSave(localFile, pdfName, "pdf");
@@ -178,6 +198,23 @@ export async function convertXlsxToPdf(filename) {
     const pdfBuffer = makePdfFromSheet(sheets);
     await saveConvertedFile(pdfBuffer, pdfName);
     return pdfName;
+}
+
+// ====== XLS → XLSX ======
+export async function convertXlsToXlsx(filename) {
+    const xlsxName = replaceExtension(filename, ".xlsx");
+
+    if (await hasLibreOffice()) {
+        const localFile = await downloadToLocal(filename);
+        const result = await libreOfficeConvertAndSave(localFile, xlsxName, "xlsx");
+        if (result) return result;
+    }
+
+    // SheetJS can still create a valid XLSX file when LibreOffice is unavailable.
+    const workbook = XLSX.read(await getFileBuffer(filename), { type: "buffer" });
+    const xlsxBuffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+    await saveConvertedFile(xlsxBuffer, xlsxName);
+    return xlsxName;
 }
 
 // ====== PDF → XLSX ======
@@ -204,7 +241,7 @@ export async function convertPdfToXlSX(filename) {
 
 // ====== DOCX → XLSX ======
 export async function convertDocxToXlsx(filename) {
-    const xlsxName = filename.replace(/\.docx$/i, ".xlsx");
+    const xlsxName = replaceExtension(filename, ".xlsx");
 
     if (await hasLibreOffice()) {
         const localFile = await downloadToLocal(filename);
@@ -256,7 +293,7 @@ export async function convertDocxToXlsx(filename) {
 
 // ====== XLSX → DOCX ======
 export async function convertXlsxToDocx(filename) {
-    const docxName = filename.replace(/\.xlsx$/i, ".docx");
+    const docxName = replaceExtension(filename, ".docx");
 
     if (await hasLibreOffice()) {
         const localFile = await downloadToLocal(filename);

@@ -638,7 +638,7 @@ export class AdminUpload extends LitElement {
         </div>
         <div>
           <h2>Upload Successful</h2>
-          <p>The documents have been securely stored in the clinical repository.</p>
+          <p>The documents have been securely stored in your medical repository.</p>
         </div>
       </div>
 
@@ -862,7 +862,7 @@ export class AdminUpload extends LitElement {
         </div>
         <div>
           <h2>Upload Successful</h2>
-          <p>The documents have been securely stored in the clinical repository.</p>
+          <p>The documents have been securely stored in your medical repository.</p>
         </div>
       </div>
 

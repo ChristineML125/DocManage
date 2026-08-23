@@ -18,8 +18,9 @@ export function getFileUrl(filePath) {
     if (!filePath) return "";
     const clean = String(filePath).trim();
     if (/^https?:\/\//i.test(clean)) return clean;
+    const filePathWithoutPrefix = clean.replace(/^\/?files\//i, "");
     const base = (BASE_URL[0] || "").replace(/\/api\/?$/i, "");
-    return `${base}/files/${clean}`;
+    return `${base}/files/${filePathWithoutPrefix}`;
 }
 
 // Fetch a file from the protected /files route with the Bearer token attached.
@@ -30,11 +31,9 @@ export async function fetchFile(filePathOrUrl) {
 
     for (const baseURL of BASE_URL) {
         try {
-            let url = filePathOrUrl;
-            if (!/^https?:\/\//i.test(url) && !url.startsWith('/files/')) {
-                const base = baseURL.replace(/\/api\/?$/i, "");
-                url = `${base}/files/${url}`;
-            }
+            const url = /^https?:\/\//i.test(filePathOrUrl)
+                ? filePathOrUrl
+                : getFileUrl(filePathOrUrl);
 
             const res = await fetch(url, {
                 credentials: "include",

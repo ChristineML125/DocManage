@@ -288,7 +288,7 @@ export class RightBar extends LitElement {
         <div class="insight-card">
           <div class="insight-header">
             <span class="material-symbols-outlined icon">lightbulb</span>
-            <span>AI Clinical Insight</span>
+            <span>AI Medical Insight</span>
           </div>
           <blockquote>Loading insights...</blockquote>
         </div>

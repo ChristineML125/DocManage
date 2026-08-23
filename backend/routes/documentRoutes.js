@@ -3,8 +3,10 @@ import { upload } from '../middleware/upload.js';
 import path from "path";
 import {
   convertDocxToPdf,
+  convertDocToDocx,
   convertPdfToDocx,
   convertXlsxToPdf,
+  convertXlsToXlsx,
   convertDocxToXlsx,
   convertPdfToXlSX,
   convertXlsxToDocx,
@@ -32,6 +34,12 @@ import { isConfigured, uploadFile, deleteFile, getPublicUrl } from '../config/st
 import { generateUniqueFilename } from '../middleware/upload.js';
 
 const router = express.Router();
+
+function exportFilename(documentName, extension) {
+  const safeName = path.basename(String(documentName || "document"));
+  const baseName = path.basename(safeName, path.extname(safeName)) || "document";
+  return `${baseName}.${extension}`;
+}
 
 async function checkDocumentOwnership(documentID, user) {
   const pool = await getPool();
@@ -451,9 +459,9 @@ router.post('/export', authenticate, async (req, res) => {
 
     if (ext === ".pdf") {
       pdfFile = filename;
-    } else if (ext === ".docx") {
+    } else if ([".doc", ".docx"].includes(ext)) {
       pdfFile = await convertDocxToPdf(filename);
-    } else if (ext === ".xlsx") {
+    } else if ([".xls", ".xlsx"].includes(ext)) {
       pdfFile = await convertXlsxToPdf(filename);
     } else if ([".png",".jpg",".jpeg",".webp",".bmp",".gif",".heic",".heif"].includes(ext)) {
       pdfFile = await convertImageToPdf(filename);
@@ -464,7 +472,8 @@ router.post('/export', authenticate, async (req, res) => {
     if (!pdfFile) {
       return res.status(500).json({ success: false, message: "Conversion to PDF failed. Please try again." });
     }
-    const downloadUrl = `/files/${pdfFile}?download=1&name=${encodeURIComponent(doc.documentName + '.pdf')}`;
+    const downloadName = exportFilename(doc.documentName, "pdf");
+    const downloadUrl = `/files/${pdfFile}?download=1&name=${encodeURIComponent(downloadName)}`;
 
     await addAuditLog({
       userID: req.user.UserID,
@@ -475,7 +484,7 @@ router.post('/export', authenticate, async (req, res) => {
       description: `Export Document ${doc.documentName} as PDF`
     });
 
-    return res.json({ success: true, documentName: doc.documentName, downloadUrl });
+    return res.json({ success: true, documentName: downloadName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);
     res.status(500).json({ success: false, message: err.message });
@@ -499,9 +508,11 @@ router.post('/export-docx', authenticate, async (req, res) => {
 
     if (ext === ".docx") {
       docxName = filename;
+    } else if (ext === ".doc") {
+      docxName = await convertDocToDocx(filename);
     } else if (ext === ".pdf") {
       docxName = await convertPdfToDocx(filename);
-    } else if (ext === ".xlsx") {
+    } else if ([".xls", ".xlsx"].includes(ext)) {
       docxName = await convertXlsxToDocx(filename);
     } else if ([".png",".jpg",".jpeg",".webp",".bmp",".gif",".heic",".heif"].includes(ext)) {
       docxName = await convertImageToDocx(filename);
@@ -512,7 +523,8 @@ router.post('/export-docx', authenticate, async (req, res) => {
     if (!docxName) {
       return res.status(500).json({ success: false, message: "Conversion to DOCX failed. Please try again." });
     }
-    const downloadUrl = `/files/${docxName}?download=1&name=${encodeURIComponent(doc.documentName + '.docx')}`;
+    const downloadName = exportFilename(doc.documentName, "docx");
+    const downloadUrl = `/files/${docxName}?download=1&name=${encodeURIComponent(downloadName)}`;
 
     await addAuditLog({
       userID: req.user.UserID,
@@ -523,7 +535,7 @@ router.post('/export-docx', authenticate, async (req, res) => {
       description: `Export Document ${doc.documentName} as DOCX`
     });
 
-    return res.json({ success: true, documentName: doc.documentName, downloadUrl });
+    return res.json({ success: true, documentName: downloadName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);
     res.status(500).json({ success: false, message: err.message });
@@ -547,7 +559,9 @@ router.post('/export-xlsx', authenticate, async (req, res) => {
 
     if (ext === ".xlsx") {
       xlsxFile = filename;
-    } else if (ext === ".docx") {
+    } else if (ext === ".xls") {
+      xlsxFile = await convertXlsToXlsx(filename);
+    } else if ([".doc", ".docx"].includes(ext)) {
       xlsxFile = await convertDocxToXlsx(filename);
     } else if (ext === ".pdf") {
       xlsxFile = await convertPdfToXlSX(filename);
@@ -560,8 +574,9 @@ router.post('/export-xlsx', authenticate, async (req, res) => {
     if (!xlsxFile) {
       return res.status(500).json({ success: false, message: "Conversion to XLSX failed. Please try again." });
     }
-    const downloadUrl = `/files/${xlsxFile}?download=1&name=${encodeURIComponent(doc.documentName + '.xlsx')}`;
-    return res.json({ success: true, documentName: doc.documentName, downloadUrl });
+    const downloadName = exportFilename(doc.documentName, "xlsx");
+    const downloadUrl = `/files/${xlsxFile}?download=1&name=${encodeURIComponent(downloadName)}`;
+    return res.json({ success: true, documentName: downloadName, downloadUrl });
   } catch (err) {
     console.error("Export failed:", err);
     res.status(500).json({ success: false, message: err.message });

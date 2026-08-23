@@ -446,7 +446,7 @@ export class RegisterPage extends LitElement {
 
           <div class="desktop-header">
             <h2>Create Account</h2>
-            <p>Join Docly to manage your clinical workflow securely.</p>
+            <p>Join Docly to manage your medical documents securely.</p>
           </div>
 
           <div class="toggle-wrap">
