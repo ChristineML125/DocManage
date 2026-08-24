@@ -1837,7 +1837,11 @@ static styles = css`
 
     a.href=this.selectedDoc.fileUrl;
 
-    a.download=this.selectedDoc.documentName;
+    const extension = (this.selectedDoc.filePath || '').match(/\.[^./?]+(?=\?|$)/)?.[0] || '';
+    const name = this.selectedDoc.documentName || 'download';
+    a.download = extension && !name.toLowerCase().endsWith(extension.toLowerCase())
+      ? `${name}${extension}`
+      : name;
 
     a.click();
 
