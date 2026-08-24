@@ -124,6 +124,29 @@ export class PersonalSidebar extends LitElement {
       font-family: "Material Symbols Outlined";
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
+
+    /* ---- Responsive: tablet and below -> icon-only rail ---- */
+    @media (max-width: 1024px) {
+      :host {
+        width: 72px;
+        padding: 16px 8px;
+      }
+      .brand { justify-content: center; padding: 0; margin-bottom: 24px; }
+      .brand-text,
+      .nav-link .label,
+      .btn-logout .label { display: none; }
+      .nav-link, .btn-logout {
+        justify-content: center;
+        padding: 12px 0;
+        gap: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      :host { width: 60px; padding: 12px 6px; }
+      .brand-icon { width: 40px; height: 40px; }
+      .nav-link .icon { font-size: 20px; }
+    }
   `;
 
   connectedCallback() {
@@ -164,38 +187,38 @@ export class PersonalSidebar extends LitElement {
         <button class="nav-link ${this.isActive('/personal-dashboard') ? 'active' : ''}"
           @click=${() => this.go('/personal-dashboard')}>
           <span class="material-symbols-outlined icon">dashboard</span>
-          Dashboard
+          <span class="label">Dashboard</span>
         </button>
 
         <button class="nav-link ${this.isActive('/personal-documents') ? 'active' : ''}"
           @click=${() => this.go('/personal-documents')}>
           <span class="material-symbols-outlined icon">description</span>
-          My Documents
+          <span class="label">My Documents</span>
         </button>
 
         <button class="nav-link ${this.isActive('/personal-favorites') ? 'active' : ''}"
           @click=${() => this.go('/personal-favorites')}>
           <span class="material-symbols-outlined icon">star</span>
-          Favorites
+          <span class="label">Favorites</span>
         </button>
 
         <button class="nav-link ${this.isActive('/personal-upload') ? 'active' : ''}"
           @click=${() => this.go('/personal-upload')}>
           <span class="material-symbols-outlined icon">upload_file</span>
-          Upload
+          <span class="label">Upload</span>
         </button>
 
         <button class="nav-link ${this.isActive('/personal-setting') ? 'active' : ''}"
           @click=${() => this.go('/personal-setting')}>
           <span class="material-symbols-outlined icon">settings</span>
-          Setting
+          <span class="label">Setting</span>
         </button>
       </nav>
 
       <div class="footer">
         <button class="btn-logout" @click=${this.logout}>
           <span class="material-symbols-outlined icon">logout</span>
-          Logout
+          <span class="label">Logout</span>
         </button>
       </div>
     `;

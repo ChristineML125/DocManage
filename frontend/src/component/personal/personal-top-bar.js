@@ -113,6 +113,23 @@ export class PersonalTopBar extends LitElement {
       .search-box { width: 180px; }
       .user-text { display: none; }
     }
+
+    @media (max-width: 640px) {
+      .topbar {
+        flex-wrap: wrap;
+        padding: 8px 14px;
+        gap: 8px;
+      }
+      .title-section h1 { font-size: 17px !important; }
+      .search-box {
+        order: 3;
+        width: 100%;
+        padding: 6px 12px;
+      }
+      .search-box input { font-size: 14px; }
+      .user-info { padding-left: 10px; }
+      .avatar, .avatar-placeholder { width: 34px; height: 34px; }
+    }
   `;
 
   static properties = {

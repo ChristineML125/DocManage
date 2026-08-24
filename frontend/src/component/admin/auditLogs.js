@@ -283,6 +283,39 @@ export class AuditLog extends LitElement {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       vertical-align: middle;
     }
+
+    /* ----- Responsive ----- */
+    .content-row {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    @media (max-width: 1024px) {
+      .content-row {
+        display: block;
+        overflow-y: auto;
+      }
+      .left-pane { overflow: visible; display: block; }
+      .table-wrap { overflow-x: auto; overflow-y: visible; }
+      table { min-width: 760px; }
+      .right-pane {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid #eef2f6;
+      }
+    }
+
+    @media (max-width: 640px) {
+      :host { height: auto; min-height: 100%; }
+      .top { flex-direction: column; align-items: stretch; gap: 10px; padding: 10px 12px; }
+      .filter { flex-wrap: wrap; gap: 8px; }
+      .column select { max-width: 100%; font-size: 12px; }
+      thead th, tbody td { padding: 9px 8px; font-size: 12px; }
+      .badge { font-size: 11px; white-space: nowrap; }
+      .right-pane { padding: 16px 14px; }
+      .pagination { padding: 10px 8px; gap: 10px; }
+    }
   `;
 
   static properties = {
@@ -476,7 +509,7 @@ export class AuditLog extends LitElement {
         </div>
 
         <!-- Main area: table + details side by side -->
-        <div style="display: flex; flex: 1; min-height: 0;">
+        <div class="content-row">
           <!-- Left table pane -->
           <div class="left-pane">
             <div class="table-wrap">

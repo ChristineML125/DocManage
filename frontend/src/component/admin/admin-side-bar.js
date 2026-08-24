@@ -265,6 +265,27 @@ export class AdminSidebar extends LitElement {
       font-family: 'Material Symbols Outlined';
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
+
+    /* ---- Responsive: tablet and below -> icon-only rail ---- */
+    @media (max-width: 1024px) {
+      :host { width: 72px; padding: 16px 8px; }
+      .brand { justify-content: center; }
+      .brand-text,
+      .divider,
+      .nav-link .label,
+      .btn-logout .label { display: none; }
+      .nav-link, .btn-logout {
+        justify-content: center;
+        padding: 12px 0;
+        gap: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      :host { width: 60px; padding: 12px 6px; }
+      .brand-icon { width: 40px; height: 40px; }
+      .nav-link .icon { font-size: 20px; }
+    }
   `;
 
   render() {
@@ -285,7 +306,7 @@ export class AdminSidebar extends LitElement {
           @click=${() => this.go('/admin-dashboard')}
         >
           <span class="material-symbols-outlined icon">dashboard</span>
-          Dashboard
+          <span class="label">Dashboard</span>
         </button>
 
         <button
@@ -293,7 +314,7 @@ export class AdminSidebar extends LitElement {
           @click=${() => this.go('/admin-allDocument')}
         >
           <span class="material-symbols-outlined icon">description</span>
-          All Documents
+          <span class="label">All Documents</span>
         </button>
 
         <button
@@ -301,7 +322,7 @@ export class AdminSidebar extends LitElement {
           @click=${() => this.go('/admin-upload')}
         >
           <span class="material-symbols-outlined icon">upload_file</span>
-          Upload Files
+          <span class="label">Upload Files</span>
         </button>
 
         <button
@@ -309,7 +330,7 @@ export class AdminSidebar extends LitElement {
           @click=${() => this.go('/admin-category')}
         >
           <span class="material-symbols-outlined icon">grid_view</span>
-          Categories
+          <span class="label">Categories</span>
         </button>
 
         <div class="divider"></div>
@@ -319,7 +340,7 @@ export class AdminSidebar extends LitElement {
           @click=${() => this.go('/UserManagement')}
         >
           <span class="material-symbols-outlined icon">group</span>
-          User Management
+          <span class="label">User Management</span>
         </button>
 
         <button
@@ -327,7 +348,7 @@ export class AdminSidebar extends LitElement {
           @click=${() => this.go('/AuditLogs')}
         >
           <span class="material-symbols-outlined icon">history_edu</span>
-          Audit Logs
+          <span class="label">Audit Logs</span>
         </button>
         
         <button 
@@ -335,13 +356,13 @@ export class AdminSidebar extends LitElement {
           @click=${() => this.go('/admin-setting')}
         >
           <span class="material-symbols-outlined icon">settings</span>
-          Setting
+          <span class="label">Setting</span>
         </button>
       </nav>
 
         <button class="btn-logout" @click=${this.logout}>
           <span class="material-symbols-outlined icon">logout</span>
-          Logout
+          <span class="label">Logout</span>
         </button>
       </div>
     `;

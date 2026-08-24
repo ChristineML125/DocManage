@@ -425,6 +425,11 @@ export class AdminCategories extends LitElement {
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         line-height: 1;
     }
+
+    /* ========== Responsive ========== */
+    @media (max-width: 480px) {
+        .bento-grid { grid-template-columns: 1fr; }
+    }
   `;
 
   render() {

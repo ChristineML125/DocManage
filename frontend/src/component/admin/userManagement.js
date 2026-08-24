@@ -875,6 +875,27 @@ export class userManagement extends LitElement{
     .reset-password-cancel:hover {
         background: #e0e3e5;
     }
+
+    /* ========== Responsive ========== */
+    @media (max-width: 1024px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .table-wrap { overflow-x: auto; }
+        table { min-width: 860px; }
+    }
+
+    @media (max-width: 640px) {
+        :host { height: auto; min-height: 100%; }
+        .stats-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 16px; }
+        .stats-card { padding: 14px 16px; }
+        .value { font-size: 22px; padding-top: 10px; }
+        .stat-icon { width: 46px; height: 46px; font-size: 24px; }
+        .top { flex-direction: column; align-items: stretch; gap: 10px; }
+        .top-actions { justify-content: flex-end; }
+        thead th, tbody td { padding: 9px 8px; font-size: 12px; }
+        .pagination { padding: 10px 8px; gap: 10px; }
+        .modal-overlay { padding: 10px; align-items: stretch; }
+        .register-modal { max-height: 92vh; overflow-y: auto; }
+    }
   `
     
     static properties ={

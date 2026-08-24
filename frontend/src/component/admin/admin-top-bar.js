@@ -200,6 +200,22 @@ export class TopBar extends LitElement {
         font-size: 15px;
       }
     }
+
+    @media (max-width: 640px) {
+      .topbar {
+        flex-wrap: wrap;
+        padding: 8px 14px;
+        gap: 8px;
+      }
+      .title-section h1 { font-size: 17px !important; }
+      .search-box {
+        order: 3;
+        width: 100%;
+        padding: 6px 12px;
+      }
+      .search-box input { font-size: 14px; }
+      .user-info { padding-left: 10px; border-left: none; }
+    }
   `;
 
   static properties = {

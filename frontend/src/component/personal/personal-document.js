@@ -1774,6 +1774,65 @@ export class PersonalDocumentPage extends LitElement {
         font-size: 14px;
       }
     }
+
+    /* ---- Responsive: main list + preview layout ---- */
+    @media (max-width: 1024px) {
+      .container {
+        flex-direction: column;
+        overflow-y: auto;
+        display: block;
+      }
+      .left-pane {
+        border-right: none;
+        overflow: visible;
+        display: block;
+      }
+      .folder-panel {
+        width: auto !important;
+        min-width: 0 !important;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        max-height: none;
+      }
+      .folder-list {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 8px;
+        gap: 6px;
+      }
+      .folder-item { flex-shrink: 0; }
+      .table-wrap {
+        overflow-x: auto;
+        overflow-y: visible;
+      }
+      table { min-width: 720px; }
+      .resizer { display: none; }
+      .right-pane {
+        width: 100% !important;
+        min-width: 0;
+        border-left: none;
+        border-top: 1px solid #eef2f6;
+      }
+      .preview-content { min-height: 320px; }
+    }
+
+    @media (max-width: 640px) {
+      :host { height: auto; min-height: 100%; }
+      .filter-bar { padding: 10px 12px; font-size: 11px; gap: 8px; flex-wrap: wrap; }
+      thead th, tbody td { padding: 9px 8px; font-size: 12px; }
+      .doc-avatar { width: 28px; height: 28px; font-size: 13px; }
+      .doc-title { max-width: 130px; }
+      .actions-cell { white-space: nowrap; }
+      .icon-btn { padding: 5px; }
+      .preview-header { padding: 10px 12px; }
+      .preview-title { font-size: 15px; }
+      .preview-meta { grid-template-columns: 1fr 1fr; padding: 10px 12px; gap: 8px; }
+      .meta-value { font-size: 12px; }
+      .pagination { padding: 10px 8px; gap: 10px; }
+      .modal-box { padding: 20px 18px; width: 94vw; max-height: 88vh; overflow-y: auto; }
+    }
   `;
 
   static properties = {
