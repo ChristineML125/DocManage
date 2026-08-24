@@ -136,6 +136,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                             isAdmin: isAdmin,
                             isPersonal: true,
                             isFavorited: true,
+                            onUpdated: loadFavorites,
                             onToggleFavorite: docId != null
                                 ? () => toggleFavorite(docId)
                                 : null,

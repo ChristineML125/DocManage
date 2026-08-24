@@ -120,6 +120,19 @@ class DocumentApi {
     );
   }
 
+  static Future renameDocument(
+    String id,
+    String documentName,
+  ) async {
+    return HttpService.request(
+      '/documents/$id/rename',
+      method: 'PUT',
+      body: {
+        'documentName': documentName,
+      },
+    );
+  }
+
   // =========================================================
   // PREVIEW
   // =========================================================

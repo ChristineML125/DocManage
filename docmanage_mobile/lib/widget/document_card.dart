@@ -76,7 +76,7 @@ class DocumentCard extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text("Edit Document"),
+              title: const Text("Edit Status"),
               content: DropdownButtonFormField<String>(
                 value: selectedStatus,
                 decoration: const InputDecoration(
@@ -123,11 +123,28 @@ class DocumentCard extends StatelessWidget {
                         }
 
                         onUpdated?.call();
+                      } else {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                result["message"] ?? "Failed to update status.",
+                              ),
+                            ),
+                          );
+                        }
                       }
                     } catch (e) {
                       debugPrint(
                         "Update document status error: $e",
                       );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Update status failed: $e"),
+                          ),
+                        );
+                      }
                     }
                   },
                   child: const Text("Save"),
@@ -135,6 +152,80 @@ class DocumentCard extends StatelessWidget {
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void renameDocument(BuildContext context) {
+    final nameController = TextEditingController(
+      text: document["documentName"] ?? "",
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Edit Name"),
+          content: TextField(
+            controller: nameController,
+            autofocus: true,
+            decoration: const InputDecoration(
+              labelText: "Document name",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final newName = nameController.text.trim();
+                if (newName.isEmpty) {
+                  return;
+                }
+
+                try {
+                  final result = await DocumentApi.renameDocument(
+                    document["documentID"].toString(),
+                    newName,
+                  );
+
+                  if (result["success"] == true) {
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
+
+                    onUpdated?.call();
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            result["message"] ?? "Failed to rename document.",
+                          ),
+                        ),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  debugPrint("Rename document error: $e");
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Rename failed: $e"),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text("Save"),
+            ),
+          ],
         );
       },
     );
@@ -290,12 +381,14 @@ class DocumentCard extends StatelessWidget {
                       onPressed: onToggleFavorite,
                     ),
 
-                  if (isAdmin)
+                  if (isAdmin || isPersonal)
                     PopupMenuButton<String>(
                       padding: EdgeInsets.zero,
                       iconSize: 20,
                       onSelected: (value) {
-                        if (value == "edit") {
+                        if (value == "rename") {
+                          renameDocument(context);
+                        } else if (value == "edit") {
                           editDocument(context);
                         } else if (value == "delete") {
                           deleteDocument(context);
@@ -303,15 +396,29 @@ class DocumentCard extends StatelessWidget {
                       },
                       itemBuilder: (context) => [
                         const PopupMenuItem(
+                          value: "rename",
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.drive_file_rename_outline,
+                                size: 18,
+                              ),
+                              SizedBox(width: 8),
+                              Text("Edit name"),
+                            ],
+                          ),
+                        ),
+
+                        const PopupMenuItem(
                           value: "edit",
                           child: Row(
                             children: [
                               Icon(
-                                Icons.edit,
+                                Icons.toggle_on,
                                 size: 18,
                               ),
                               SizedBox(width: 8),
-                              Text("Edit"),
+                              Text("Edit status"),
                             ],
                           ),
                         ),
