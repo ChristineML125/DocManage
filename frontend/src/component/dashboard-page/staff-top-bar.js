@@ -216,6 +216,25 @@ export class TopBar extends LitElement {
       .search-box input { font-size: 14px; }
       .user-info { padding-left: 10px; border-left: none; }
     }
+
+    /* ---- Sidebar drawer toggle ---- */
+    .menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: #334155;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .menu-btn:hover { background: rgba(0, 104, 95, 0.08); }
+    .menu-btn .material-symbols-outlined { font-size: 26px; }
+
+    @media (max-width: 1024px) {
+      .menu-btn { display: inline-flex; margin-right: 10px; }
+    }
   `;
 
   static properties = {
@@ -280,6 +299,10 @@ export class TopBar extends LitElement {
   render() {
     return html`
       <div class="topbar">
+        <button class="menu-btn" aria-label="Toggle navigation"
+          @click=${() => window.dispatchEvent(new CustomEvent('toggle-sidebar'))}>
+          <span class="material-symbols-outlined">menu</span>
+        </button>
         <div class="title-section">
           <h1>${this.pageTitle}</h1>
         </div>

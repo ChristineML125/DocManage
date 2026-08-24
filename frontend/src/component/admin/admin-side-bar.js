@@ -5,7 +5,8 @@ export class AdminSidebar extends LitElement {
   static properties = {
     currentPath: { type: String },
     username: { type: String },
-    role: { type: String }
+    role: { type: String },
+    open: { type: Boolean, reflect: true }
   };
 
   constructor() {
@@ -13,6 +14,43 @@ export class AdminSidebar extends LitElement {
     this.currentPath = window.location.pathname;
     this.username = '';
     this.role = '';
+    this.open = false;
+  }
+
+  _onToggle = () => {
+    if (!window.matchMedia('(max-width: 1024px)').matches) return;
+    this.open = !this.open;
+  };
+
+  _onKeydown = (e) => {
+    if (e.key === 'Escape') this.open = false;
+  };
+
+  _ensureBackdrop() {
+    if (!this._backdrop) {
+      this._backdrop = document.createElement('div');
+      this._backdrop.style.cssText =
+        'position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:1150;' +
+        'opacity:0;pointer-events:none;transition:opacity .25s;';
+      this._backdrop.addEventListener('click', () => { this.open = false; });
+      document.body.appendChild(this._backdrop);
+    }
+  }
+
+  updated(changedProps) {
+    super.updated(changedProps);
+    if (changedProps.has('open')) {
+      if (this.open) {
+        this._ensureBackdrop();
+        requestAnimationFrame(() => {
+          this._backdrop.style.opacity = '1';
+          this._backdrop.style.pointerEvents = 'auto';
+        });
+      } else if (this._backdrop) {
+        this._backdrop.style.opacity = '0';
+        this._backdrop.style.pointerEvents = 'none';
+      }
+    }
   }
 
   connectedCallback() {
@@ -24,11 +62,19 @@ export class AdminSidebar extends LitElement {
       this.role = user.role || 'Administrator';
     }
     window.addEventListener('popstate', this._updatePath);
+    window.addEventListener('toggle-sidebar', this._onToggle);
+    window.addEventListener('keydown', this._onKeydown);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('popstate', this._updatePath);
+    window.removeEventListener('toggle-sidebar', this._onToggle);
+    window.removeEventListener('keydown', this._onKeydown);
+    if (this._backdrop) {
+      this._backdrop.remove();
+      this._backdrop = null;
+    }
   }
 
   _updatePath = () => {
@@ -37,6 +83,7 @@ export class AdminSidebar extends LitElement {
 
   go(path) {
     this.currentPath = path;
+    this.open = false;
     Router.go(path);
   }
 
@@ -45,6 +92,7 @@ export class AdminSidebar extends LitElement {
   }
 
   logout() {
+    this.open = false;
     localStorage.removeItem('adminUser');
     localStorage.removeItem('staffUser');
     Router.go('/login');
@@ -266,25 +314,25 @@ export class AdminSidebar extends LitElement {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
-    /* ---- Responsive: tablet and below -> icon-only rail ---- */
+    /* ---- Responsive: off-canvas drawer ---- */
     @media (max-width: 1024px) {
-      :host { width: 72px; padding: 16px 8px; }
-      .brand { justify-content: center; }
-      .brand-text,
-      .divider,
-      .nav-link .label,
-      .btn-logout .label { display: none; }
-      .nav-link, .btn-logout {
-        justify-content: center;
-        padding: 12px 0;
-        gap: 0;
+      :host {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 264px;
+        max-width: 82vw;
+        padding: 20px 16px;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 1200;
+        box-shadow: none;
       }
-    }
-
-    @media (max-width: 480px) {
-      :host { width: 60px; padding: 12px 6px; }
-      .brand-icon { width: 40px; height: 40px; }
-      .nav-link .icon { font-size: 20px; }
+      :host([open]) {
+        transform: translateX(0);
+        box-shadow: 8px 0 24px rgba(0, 0, 0, 0.2);
+      }
     }
   `;
 
