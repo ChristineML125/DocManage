@@ -11,6 +11,10 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import { fileURLToPath } from "url";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+const adobePdfServices = require("@adobe/pdfservices-node-sdk");
 
 const BUCKET_NAME = process.env.SUPABASE_BUCKET || 'documents';
 
@@ -77,6 +81,48 @@ function hasLibreOffice() {
     });
 }
 
+function hasAdobePdfServices() {
+    return Boolean(process.env.PDF_SERVICES_CLIENT_ID && process.env.PDF_SERVICES_CLIENT_SECRET);
+}
+
+async function adobeCreatePdf(inputFile) {
+    const {
+        ServicePrincipalCredentials,
+        PDFServices,
+        MimeType,
+        CreatePDFJob,
+        CreatePDFResult
+    } = adobePdfServices;
+    const extension = path.extname(inputFile).toLowerCase();
+    const mimeType = extension === ".doc" ? MimeType.DOC : MimeType.DOCX;
+    let readStream;
+
+    try {
+        const credentials = new ServicePrincipalCredentials({
+            clientId: process.env.PDF_SERVICES_CLIENT_ID,
+            clientSecret: process.env.PDF_SERVICES_CLIENT_SECRET
+        });
+        const pdfServices = new PDFServices({ credentials });
+        readStream = fs.createReadStream(inputFile);
+        const inputAsset = await pdfServices.upload({ readStream, mimeType });
+        const job = new CreatePDFJob({ inputAsset });
+        const pollingURL = await pdfServices.submit({ job });
+        const response = await pdfServices.getJobResult({ pollingURL, resultType: CreatePDFResult });
+        const outputAsset = response.result.asset;
+        const streamAsset = await pdfServices.getContent({ asset: outputAsset });
+        const chunks = [];
+        for await (const chunk of streamAsset.readStream) chunks.push(Buffer.from(chunk));
+        const pdfBuffer = Buffer.concat(chunks);
+
+        if (pdfBuffer.length === 0 || !pdfBuffer.subarray(0, 4).equals(Buffer.from("%PDF"))) {
+            throw new Error("Adobe PDF Services returned an invalid PDF file.");
+        }
+        return pdfBuffer;
+    } finally {
+        readStream?.destroy();
+    }
+}
+
 function libreOfficeConvert(inputFile, format, outDir) {
     return new Promise((resolve) => {
         const args = ["--headless", "--convert-to", format, "--outdir", outDir, inputFile];
@@ -110,6 +156,18 @@ async function libreOfficeConvertAndSave(inputFile, outputName, format) {
 export async function convertDocxToPdf(filename) {
     const localFile = await downloadToLocal(filename);
     const pdfName = replaceExtension(filename, ".pdf");
+
+    // Adobe renders Word documents with higher fidelity than the headless
+    // LibreOffice deployment. It is used whenever the service is configured.
+    if (hasAdobePdfServices()) {
+        try {
+            const pdfBuffer = await adobeCreatePdf(localFile);
+            await saveConvertedFile(pdfBuffer, pdfName);
+            return pdfName;
+        } catch (error) {
+            throw new Error(`Adobe DOCX to PDF conversion failed: ${error.message}`);
+        }
+    }
 
     if (await hasLibreOffice()) {
         const result = await libreOfficeConvertAndSave(localFile, pdfName, "pdf");
