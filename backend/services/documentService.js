@@ -434,30 +434,93 @@ export async function setLatestVersion(documentID, versionNum, userID) {
 export async function updateDocumentStatus(documentID, statusName, userID) {
     const pool = await getPool();
 
+    // Check status exists first - prevents setting statusID to NULL
+    const statusResult = await pool.query(`
+        SELECT "statusID"
+        FROM "Status"
+        WHERE "statusName" = $1
+    `, [statusName]);
+
+    if (statusResult.rows.length === 0) {
+        return {
+            success: false,
+            message: `Invalid status: ${statusName}`
+        };
+    }
+
+    const statusID = statusResult.rows[0].statusID;
+
+    // Update document
     const result = await pool.query(`
         UPDATE "Document"
-        SET "statusID" = (
-            SELECT "statusID"
-            FROM "Status"
-            WHERE "statusName" = $1
-        )
+        SET "statusID" = $1
         WHERE "documentID" = $2
-    `, [statusName, documentID]);
+        RETURNING "documentID"
+    `, [statusID, documentID]);
 
-      await addAuditLog({
+    if (result.rowCount === 0) {
+        return { success: false, message: "Document not found" };
+    }
+
+    // Audit log only after successful update
+    await addAuditLog({
         userID: userID,
         action:"Update Document Status",
         targetEntity:"Document",
         targetID:documentID,
         documentID:documentID,
         description:`Change status to ${statusName}`
-      });
-
-    if (result.rowCount === 0) {
-        return { success: false, message: "Document not found" };
-    }
+    });
 
     return { success: true, message: "Status updated" };
+}
+
+export async function renameDocument(documentID, documentName, userID) {
+  const pool = await getPool();
+
+  const oldResult = await pool.query(`
+    SELECT "documentName"
+    FROM "Document"
+    WHERE "documentID" = $1
+  `, [documentID]);
+
+  if (oldResult.rows.length === 0) {
+    return {
+      success: false,
+      message: "Document not found"
+    };
+  }
+
+  const oldName = oldResult.rows[0].documentName;
+
+  const result = await pool.query(`
+    UPDATE "Document"
+    SET "documentName" = $1
+    WHERE "documentID" = $2
+    RETURNING "documentID", "documentName"
+  `, [documentName, documentID]);
+
+  if (result.rowCount === 0) {
+    return {
+      success: false,
+      message: "Document not found"
+    };
+  }
+
+  await addAuditLog({
+    userID,
+    action: "Rename Document",
+    targetEntity: "Document",
+    targetID: documentID,
+    documentID: documentID,
+    description: `Rename document from "${oldName}" to "${documentName}"`
+  });
+
+  return {
+    success: true,
+    message: "Renamed successfully",
+    document: result.rows[0]
+  };
 }
 
 export async function previewDocument(documentID, userID) {

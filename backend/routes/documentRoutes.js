@@ -22,6 +22,7 @@ import {
   listDocuments,
   getDocument,
   updateDocumentStatus,
+  renameDocument,
   previewDocument,
   getCountDoc,
   setLatestVersion
@@ -414,9 +415,11 @@ router.put("/:id/rename", authenticate, async (req, res) => {
     if (!documentName || !documentName.trim()) {
       return res.status(400).json({ success:false, message:"Document name required" });
     }
-    const pool = await getPool();
-    await pool.query(`UPDATE "Document" SET "documentName" = $1 WHERE "documentID" = $2`, [documentName.trim(), documentID]);
-    return res.json({ success:true, message:"Renamed successfully" });
+    const result = await renameDocument(documentID, documentName.trim(), req.user.UserID);
+    if (!result.success) {
+      return res.status(404).json(result);
+    }
+    return res.json(result);
   } catch(err) {
     console.error("Rename failed:", err);
     res.status(500).json({ success:false, message:err.message });

@@ -1784,6 +1784,7 @@ export class PersonalDocumentPage extends LitElement {
     keyword: { type: String },
     currentPage: { type: Number },
     totalPages: { type: Number },
+    pageSize: { type: Number },
     pdfBlobUrl: { type: String },
     showHistoryVersion: { type: Boolean },
     showUploadVersion: { type: Boolean },
@@ -1794,6 +1795,7 @@ export class PersonalDocumentPage extends LitElement {
     aiSummary: { type: String },
     loadingSummary: { type: Boolean },
     converting: { type: Boolean },
+    uploading: { type: Boolean },
     progress: { type: Number },
     message: { type: String },
     selectedFile: { type: Object },
@@ -2179,8 +2181,8 @@ export class PersonalDocumentPage extends LitElement {
   }
 
   async startEdit(doc) {
-    this.editingDoc = doc;
-    this.editName = doc.documentName;
+    this.editingDoc = { ...doc };
+    this.editName = doc.documentName || '';
     this.requestUpdate();
   }
 
@@ -2243,9 +2245,17 @@ export class PersonalDocumentPage extends LitElement {
 
   toggleStatus(doc) {
     const newStatus = doc.statusName === 'Active' ? 'Archived' : 'Active';
-    this.documents = this.documents.map(d =>
-      d.documentID === doc.documentID ? { ...d, statusName: newStatus } : d
-    );
+
+    doc.statusName = newStatus;
+
+    this.documents = [...this.documents];
+    this.filteredDocs = [...this.filteredDocs];
+    this.paginatedDocs = [...this.paginatedDocs];
+
+    if (this.selectedDoc?.documentID === doc.documentID) {
+      this.selectedDoc = { ...this.selectedDoc, statusName: newStatus };
+    }
+
     this.requestUpdate();
   }
 
@@ -2637,8 +2647,9 @@ export class PersonalDocumentPage extends LitElement {
 
     this._exportCompletionTimer = setTimeout(() => {
       if (this._exportCancelled) return;
-      this.converting = false;
-      this.progress = 0;
+    this.converting = false;
+    this.uploading = false;
+    this.progress = 0;
       this.message = '';
       this._exportAbortController = null;
       this.requestUpdate();

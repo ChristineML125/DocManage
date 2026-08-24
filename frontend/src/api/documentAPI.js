@@ -17,7 +17,7 @@ export async function getDocumentsList(params={}){
 
 export async function getDocuments(){
     try {
-        return http ('/documents/count');
+        return await http ('/documents/count');
     } catch (err) {
         return {
             success: false,
@@ -29,7 +29,7 @@ export async function getDocuments(){
 export async function getDocument(id){
     try {
         
-        return http (`/documents/${id}`);
+        return await http (`/documents/${id}`);
     } catch (err) {
         return {
             success: false,
@@ -70,7 +70,7 @@ export async function uploadNewVersion(documentID, formData) {
 
 export async function deleteDocuments(id) {
     try{
-        return http (`/documents/${id}`, {
+        return await http (`/documents/${id}`, {
             method: "DELETE",
         });
     } catch (err) {
@@ -83,7 +83,7 @@ export async function deleteDocuments(id) {
 
 export async function renameDocument(id, documentName) {
     try {
-        return http(`/documents/${id}/rename`, {
+        return await http(`/documents/${id}/rename`, {
             method: "PUT",
             body: JSON.stringify({ documentName }),
         });
