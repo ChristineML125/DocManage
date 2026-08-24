@@ -478,6 +478,13 @@ export async function updateDocumentStatus(documentID, statusName, userID) {
 export async function renameDocument(documentID, documentName, userID) {
   const pool = await getPool();
 
+  if (!documentName || !documentName.trim()) {
+    return {
+      success: false,
+      message: "Document name is required"
+    };
+  }
+
   const oldResult = await pool.query(`
     SELECT "documentName"
     FROM "Document"

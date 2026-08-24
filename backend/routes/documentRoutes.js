@@ -406,6 +406,9 @@ router.get('/:documentID', authenticate, async (req, res) => {
 router.put("/:id/rename", authenticate, async (req, res) => {
   try {
     const documentID = Number(req.params.id);
+    if (Number.isNaN(documentID)) {
+      return res.status(400).json({ success:false, message:"Invalid document ID" });
+    }
     const own = await checkDocumentOwnership(documentID, req.user);
     if (!own.allowed) {
       if (own.reason === 'not_found') return res.status(404).json({ success:false, message:"Document not found" });

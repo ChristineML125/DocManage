@@ -85,7 +85,9 @@ export async function renameDocument(id, documentName) {
     try {
         return await http(`/documents/${id}/rename`, {
             method: "PUT",
-            body: JSON.stringify({ documentName }),
+            body: JSON.stringify({
+                documentName: documentName.trim()
+            }),
         });
     } catch (err) {
         return { success: false, message: err.message };
