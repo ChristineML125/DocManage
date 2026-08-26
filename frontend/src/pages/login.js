@@ -27,7 +27,7 @@ export class LoginPage extends LitElement {
     .layout {
       width: 100%; max-width: 1280px;
       display: flex; align-items: stretch;
-      gap: 48px;
+      gap: 0;
     }
 
     /* ---------- Left: product intro card (60%) ---------- */
@@ -38,8 +38,11 @@ export class LoginPage extends LitElement {
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border-radius: 16px;
+      border-radius: 16px 0 0 16px;
       box-shadow: 0px 4px 18px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .intro-header h2 {
@@ -116,6 +119,12 @@ export class LoginPage extends LitElement {
     .cta-btn:active { transform: scale(0.98); }
     .cta-btn .material-symbols-outlined { font-size: 20px; }
 
+    /* ---------- Divider ---------- */
+    .divider {
+      flex: 0 0 1px;
+      background: #c5d6d0;
+    }
+
     /* ---------- Right: login card (40%) ---------- */
     .login-side {
       flex: 1 1 40%;
@@ -124,7 +133,7 @@ export class LoginPage extends LitElement {
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border-radius: 16px;
+      border-radius: 0 16px 16px 0;
       box-shadow: 0px 4px 18px rgba(0,0,0,0.08);
     }
     .login-card {
@@ -142,16 +151,16 @@ export class LoginPage extends LitElement {
 
     /* ---------- Tablet & below: stacks vertically ---------- */
     @media (max-width: 1100px) {
-      .layout { gap: 28px; }
       .intro-panel { padding: 36px; }
       .login-side { padding: 36px 28px; }
     }
 
     @media (max-width: 960px) {
       :host { align-items: flex-start; padding-top: 24px; }
-      .layout { flex-direction: column; max-width: 720px; gap: 24px; }
-      .intro-panel { flex: none; padding: 30px 26px; }
-      .login-side { flex: none; padding: 30px 26px; }
+      .layout { flex-direction: column; max-width: 720px; }
+      .intro-panel { flex: none; padding: 30px 26px; border-radius: 16px 16px 0 0; }
+      .divider { flex: 0 0 1px; width: 100%; }
+      .login-side { flex: none; padding: 30px 26px; border-radius: 0 0 16px 16px; }
     }
 
     @media (max-width: 480px) {
@@ -280,6 +289,8 @@ export class LoginPage extends LitElement {
             </a>
           </div>
         </aside>
+
+        <div class="divider" role="presentation"></div>
 
         <div class="login-side">
           <div class="login-card">

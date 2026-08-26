@@ -32,7 +32,7 @@ export class RegisterPage extends LitElement {
     .layout {
       width: 100%; max-width: 1280px;
       display: flex; align-items: stretch;
-      gap: 48px;
+      gap: 0;
     }
 
     /* ===== Left: workspace intro card (60%) ===== */
@@ -43,8 +43,11 @@ export class RegisterPage extends LitElement {
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border-radius: 16px;
+      border-radius: 16px 0 0 16px;
       box-shadow: 0px 4px 18px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .intro-header h2 {
@@ -116,6 +119,12 @@ export class RegisterPage extends LitElement {
     .cta-btn:active { transform: scale(0.98); }
     .cta-btn .material-symbols-outlined { font-size: 19px; }
 
+    /* ===== Divider ===== */
+    .divider {
+      flex: 0 0 1px;
+      background: #c5d6d0;
+    }
+
     /* ===== Right: register form card (40%) ===== */
     .form-side {
       flex: 1 1 40%;
@@ -124,7 +133,7 @@ export class RegisterPage extends LitElement {
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border-radius: 16px;
+      border-radius: 0 16px 16px 0;
       box-shadow: 0px 4px 18px rgba(0,0,0,0.08);
     }
     .form-card {
@@ -287,16 +296,16 @@ export class RegisterPage extends LitElement {
 
     /* ===== Tablet & below: stacks vertically ===== */
     @media (max-width: 1100px) {
-      .layout { gap: 28px; }
       .intro-panel { padding: 36px; }
       .form-side { padding: 36px 28px; }
     }
 
     @media (max-width: 960px) {
       :host { align-items: flex-start; padding-top: 24px; }
-      .layout { flex-direction: column; max-width: 720px; gap: 24px; }
-      .intro-panel { flex: none; padding: 30px 26px; }
-      .form-side { flex: none; padding: 30px 26px; }
+      .layout { flex-direction: column; max-width: 720px; }
+      .intro-panel { flex: none; padding: 30px 26px; border-radius: 16px 16px 0 0; }
+      .divider { flex: 0 0 1px; width: 100%; }
+      .form-side { flex: none; padding: 30px 26px; border-radius: 0 0 16px 16px; }
     }
 
     @media (max-width: 640px) {
@@ -564,6 +573,8 @@ export class RegisterPage extends LitElement {
             </a>
           </div>
         </aside>
+
+        <div class="divider" role="presentation"></div>
 
         <div class="form-side">
           <div class="form-card">
