@@ -66,27 +66,34 @@ router.post("/login", async(req,res)=>{
             });
         }
 
-        // Same username can exist in different companies. Prefer the exact
-        // email match; otherwise refuse an ambiguous username-only login.
+        const hash=crypto.createHash("sha256")
+        .update(Password)
+        .digest("hex");
+
+        // Same username can exist in different companies. Disambiguate by:
+        // 1) exact email match, 2) password match (must be unique),
+        // otherwise ask the user to sign in with their email address.
         let user;
         if(matches.length===1){
             user=matches[0];
         }else{
             const needle=String(UserName).trim().toLowerCase();
             user=matches.find(r=>(r.Email||'').trim().toLowerCase()===needle);
+
             if(!user){
-                return res.json({
-                    success:false,
-                    message:"Multiple accounts found with this username. Please sign in with your email address."
-                });
+                const pwMatches=matches.filter(r=>(r.Password||'').trim()===hash);
+                if(pwMatches.length===1){
+                    user=pwMatches[0];
+                }else if(pwMatches.length>1){
+                    return res.json({
+                        success:false,
+                        message:"This username exists in multiple companies. Please sign in with your email address."
+                    });
+                }
             }
         }
 
-        const hash=crypto.createHash("sha256")
-        .update(Password)
-        .digest("hex");
-
-        if(hash!==user.Password.trim()){
+        if(!user || hash!==user.Password.trim()){
             return res.json({
                 success:false,
                 message:"Incorrect Password"
@@ -303,7 +310,12 @@ router.put("/profile", authenticate, async(req,res)=>{
     try{
         const pool = await getPool();
 
-        const existing = await pool.query(`SELECT "UserID" FROM "Users" WHERE "UserName" = $1 AND "UserID" != $2`, [UserName.trim(), userID]);
+        const existing = await pool.query(
+          `SELECT "UserID" FROM "Users"
+           WHERE "UserName" = $1 AND "UserID" != $2
+             AND ("CompanyID" IS NOT DISTINCT FROM $3)`,
+          [UserName.trim(), userID, req.user.CompanyID || null]
+        );
         if (existing.rows.length > 0) {
             return res.status(400).json({ success:false, message:"Username already taken" });
         }
@@ -496,7 +508,19 @@ router.post("/forgot-password", async (req, res) => {
             AND "UserStatusID" = 1
         `, [UserName]);
 
-        const user = result.rows[0];
+        const rows = result.rows;
+        let user;
+        if (rows.length === 1) {
+            user = rows[0];
+        } else if (rows.length > 1) {
+            // Same username in different companies: prefer the exact email match.
+            const needle = String(UserName).trim().toLowerCase();
+            user = rows.find(r => (r.Email || '').trim().toLowerCase() === needle);
+            if (!user) {
+                return res.status(409).json({ success: false, message: "This username exists in multiple companies. Please enter your email address instead." });
+            }
+        }
+
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
