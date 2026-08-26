@@ -2783,10 +2783,16 @@ export class PersonalDocumentPage extends LitElement {
     if (this.mobilePreviewID === doc.documentID) {
       this.mobilePreviewID = null;
     } else {
+      this.mobilePreviewID = doc.documentID;
+      await this.updateComplete;
       if (this.selectedDoc?.documentID !== doc.documentID) {
         await this.selectDoc(doc);
+      } else {
+        const type = this.selectedDoc?.fileType;
+        const url = this.selectedDoc?.fileUrl;
+        if (type === 'docx' && url) await this.renderMobileDoc(url);
+        if ((type === 'xlsx' || type === 'xls') && url) await this.renderMobileExcel(url);
       }
-      this.mobilePreviewID = doc.documentID;
     }
   }
 

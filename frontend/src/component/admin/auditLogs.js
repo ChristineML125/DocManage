@@ -307,14 +307,96 @@ export class AuditLog extends LitElement {
     }
 
     @media (max-width: 640px) {
-      :host { height: auto; min-height: 100%; }
+      :host { height: auto; min-height: 100%; padding: 0; }
       .top { flex-direction: column; align-items: stretch; gap: 10px; padding: 10px 12px; }
       .filter { flex-wrap: wrap; gap: 8px; }
       .column select { max-width: 100%; font-size: 12px; }
-      thead th, tbody td { padding: 9px 8px; font-size: 12px; }
+      thead { display: none; }
+      table, tbody { display: block; min-width: 0; }
+      tbody tr {
+        display: block;
+        border: 1px solid #e2e8e6;
+        border-radius: 12px;
+        background: #fff;
+        padding: 10px 12px;
+        margin-bottom: 10px;
+      }
+      tbody tr.active { border-color: #00685f; box-shadow: 0 0 0 2px rgba(0,104,95,0.12); }
+      tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 5px 0;
+        border: none;
+        white-space: normal;
+      }
+      tbody td::before {
+        content: attr(data-label);
+        font-size: 11px;
+        font-weight: 700;
+        color: #5c7a74;
+        flex-shrink: 0;
+      }
+      tbody td:last-child { justify-content: flex-end; }
+      .right-pane { display: none !important; }
       .badge { font-size: 11px; white-space: nowrap; }
-      .right-pane { padding: 16px 14px; }
       .pagination { padding: 10px 8px; gap: 10px; }
+      .mobile-detail-row td {
+        display: block !important;
+        padding: 0 !important;
+        border: none !important;
+      }
+      .mobile-detail-row td::before { content: none !important; }
+      .mobile-detail {
+        border: 1px solid #e2e8e6;
+        border-radius: 12px;
+        background: #f9fbfc;
+        margin-bottom: 10px;
+        overflow: hidden;
+      }
+      .mobile-detail-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        background: #eef2f6;
+        border-bottom: 1px solid #e2e8e6;
+        font-size: 12px;
+        font-weight: 600;
+        color: #45474c;
+      }
+      .mobile-detail-header button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #7a8a9a;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        border-radius: 4px;
+      }
+      .mobile-detail-header button:hover { color: #dc2626; }
+      .mobile-detail-body { padding: 12px; }
+      .mobile-detail-body .detail-item { margin-bottom: 10px; }
+      .mobile-detail-body .detail-label { font-size: 11px; color: #6a7a8a; text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px; margin-bottom: 2px; }
+      .mobile-detail-body .detail-value { font-size: 13px; color: #1e293b; word-break: break-word; }
+      .view-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: #fff;
+        color: var(--accent, #00685f);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .view-btn:hover { background: #eef2f6; }
+      .view-btn.active { background: #00685f; color: #fff; border-color: #00685f; }
     }
   `;
 
@@ -327,7 +409,8 @@ export class AuditLog extends LitElement {
     filterEntity: {type: String},
     currentPage: { type: Number },
     pageSize: { type: Number },
-    showDetail: {type: Boolean}
+    showDetail: {type: Boolean},
+    mobileDetailID: { type: Number }
   };
 
   constructor() {
@@ -341,6 +424,7 @@ export class AuditLog extends LitElement {
     this.currentPage = 1;
     this.pageSize = 30;
     this.showDetail = false;
+    this.mobileDetailID = null;
   }
 
   connectedCallback() {
@@ -371,6 +455,16 @@ export class AuditLog extends LitElement {
 
   selectAuditLogs(log) {
     this.selectedLogs = log;
+  }
+
+  toggleMobileDetail(log, e) {
+    e.stopPropagation();
+    if (this.mobileDetailID === log.id) {
+      this.mobileDetailID = null;
+    } else {
+      this.mobileDetailID = log.id;
+      this.selectedLogs = log;
+    }
   }
 
   firstUpdated() {
@@ -537,28 +631,73 @@ export class AuditLog extends LitElement {
                         </tr>
                       `
                     : this.paginatedLogs.map(
-                        (log) => html`
+                        (log) => {
+                          const isMobileDetailOpen = this.mobileDetailID === log.id;
+                          return html`
                           <tr
                             class="${this.selectedLogs && this.selectedLogs.id === log.id ? 'active' : ''}"
                             @click="${() => this.selectAuditLogs(log)}"
                           >
-                            <td>${log.timestamp ? new Date(log.timestamp).toLocaleString() : '--'}</td>
-                            <td><span>${log.UserName || 'Unknown'}</span></td>
-                            <td><span class="badge">${log.Action || '--'}</span></td>
-                            <td>${log.targetID || '--'}</td>
-                            <td>${log.targetEntity || '--'}</td>
-                            <td> 
+                            <td data-label="Time">${log.timestamp ? new Date(log.timestamp).toLocaleString() : '--'}</td>
+                            <td data-label="User"><span>${log.UserName || 'Unknown'}</span></td>
+                            <td data-label="Action"><span class="badge">${log.Action || '--'}</span></td>
+                            <td data-label="Target ID">${log.targetID || '--'}</td>
+                            <td data-label="Entity">${log.targetEntity || '--'}</td>
+                            <td data-label="View">
                               <button
-                                @click=${
-                                    async ()=>{this.showDetail = true;
+                                class="view-btn ${isMobileDetailOpen ? 'active' : ''}"
+                                @click=${(e) => {
+                                  e.stopPropagation();
+                                  if (window.innerWidth <= 640) {
+                                    this.toggleMobileDetail(log, e);
+                                  } else {
+                                    this.selectedLogs = log;
+                                    this.showDetail = true;
+                                  }
                                 }}
                               >
-                                View
+                                ${isMobileDetailOpen ? 'Hide' : 'View'}
                               </button>
                             </td>
                           </tr>
-                        `
-                      )}
+                          ${isMobileDetailOpen ? html`
+                            <tr class="mobile-detail-row">
+                              <td colspan="6">
+                                <div class="mobile-detail">
+                                  <div class="mobile-detail-header">
+                                    <span>Log Detail</span>
+                                    <button @click=${(e) => this.toggleMobileDetail(log, e)}>
+                                      <span class="material-symbols-outlined" style="font-size:16px">close</span>
+                                    </button>
+                                  </div>
+                                  <div class="mobile-detail-body">
+                                    <div class="detail-item">
+                                      <div class="detail-label">Username</div>
+                                      <div class="detail-value">${log.UserName || '--'}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                      <div class="detail-label">Action</div>
+                                      <div class="detail-value">${log.Action || '--'}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                      <div class="detail-label">Target Entity</div>
+                                      <div class="detail-value">${log.targetEntity || '--'}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                      <div class="detail-label">Timestamp</div>
+                                      <div class="detail-value">${log.timestamp ? new Date(log.timestamp).toLocaleString() : '--'}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                      <div class="detail-label">Description</div>
+                                      <div class="detail-value">${log.description || '--'}</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          ` : ''}
+                        `;
+                      })}
                 </tbody>
               </table>
             </div>
