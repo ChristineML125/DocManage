@@ -15,12 +15,8 @@ export class RegisterPage extends LitElement {
     :host {
       display: flex;
       min-height: 100vh;
-      background: #f3faff;
       font-family: 'Manrope', sans-serif;
       color: #071e27;
-      justify-content: center;
-      align-items: center;
-      padding: 32px;
     }
 
     .material-symbols-outlined {
@@ -28,102 +24,100 @@ export class RegisterPage extends LitElement {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
+    /* ===== Layout ===== */
     .layout {
-      width: 100%; max-width: 1200px;
-      display: flex; align-items: stretch;
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
     }
 
-    /* ===== Left: Welcome (60%) ===== */
+    /* ===== Left: Welcome (60%) — GREEN ===== */
     .intro-side {
       flex: 0 0 60%;
       padding: 64px 68px;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: flex-start;
+      background: #00685f;
     }
 
     .intro-side h2 {
       font-size: 36px; font-weight: 700; margin: 0 0 10px;
-      color: #071e27;
+      color: #ffffff;
     }
     .intro-tagline {
-      font-size: 17px; font-weight: 600; color: #00685f;
+      font-size: 17px; font-weight: 600; color: rgba(255,255,255,0.9);
       margin: 0 0 28px;
     }
 
     .workspaces {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 18px;
     }
 
     .ws-card {
-      border: 1px solid #d9e5e2;
+      border: 1px solid rgba(255,255,255,0.25);
       border-radius: 14px;
-      padding: 20px;
+      padding: 22px;
       display: flex; flex-direction: column;
-      background: #fff;
+      background: rgba(255,255,255,0.1);
     }
 
     .ws-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
     .ws-icon {
-      width: 38px; height: 38px; flex-shrink: 0;
+      width: 40px; height: 40px; flex-shrink: 0;
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
     }
-    .ws-icon.personal { background: #e6f6ff; color: #00796b; }
-    .ws-icon.company { background: #eef7ee; color: #2e7d32; }
-    .ws-head h3 { margin: 0; font-size: 15px; font-weight: 700; }
+    .ws-icon.personal { background: rgba(255,255,255,0.2); color: #ffffff; }
+    .ws-icon.company { background: rgba(255,255,255,0.2); color: #ffffff; }
+    .ws-head h3 { margin: 0; font-size: 16px; font-weight: 700; color: #ffffff; }
 
     .ws-tagline {
-      font-size: 13px; font-weight: 600; color: #00685f;
-      margin: 6px 0 4px;
+      font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.9);
+      margin: 8px 0 4px;
     }
     .ws-desc {
-      font-size: 12px; line-height: 1.5; color: #3e4946;
-      margin: 0 0 10px;
+      font-size: 12.5px; line-height: 1.55; color: rgba(255,255,255,0.85);
+      margin: 0 0 12px;
     }
 
     .ws-features {
       list-style: none;
       margin: 0; padding: 0;
-      display: flex; flex-direction: column; gap: 5px;
+      display: flex; flex-direction: column; gap: 6px;
     }
     .ws-features li {
-      display: flex; align-items: flex-start; gap: 6px;
-      font-size: 12px; line-height: 1.4; color: #071e27;
+      display: flex; align-items: flex-start; gap: 7px;
+      font-size: 12.5px; line-height: 1.45; color: rgba(255,255,255,0.9);
     }
     .ws-features li .material-symbols-outlined {
-      font-size: 15px; color: #00685f; flex-shrink: 0; margin-top: 1px;
+      font-size: 16px; color: rgba(255,255,255,0.8); flex-shrink: 0; margin-top: 1px;
     }
 
-    .cta-row { margin-top: auto; padding-top: 24px; }
+    .cta-row { margin-top: 28px; }
     .cta-btn {
       display: inline-flex; align-items: center; gap: 8px;
-      height: 42px; padding: 0 22px;
-      border: none; border-radius: 8px;
-      background: #e6f6ff; color: #00685f;
-      font-family: inherit; font-size: 13.5px; font-weight: 700;
+      height: 44px; padding: 0 24px;
+      border: 2px solid rgba(255,255,255,0.6); border-radius: 8px;
+      background: transparent; color: #ffffff;
+      font-family: inherit; font-size: 14px; font-weight: 700;
       text-decoration: none; cursor: pointer;
       transition: background 0.2s, transform 0.1s;
     }
-    .cta-btn:hover { background: #d3edfa; }
+    .cta-btn:hover { background: rgba(255,255,255,0.1); }
     .cta-btn:active { transform: scale(0.98); }
     .cta-btn .material-symbols-outlined { font-size: 18px; }
 
     /* ===== Divider ===== */
     .divider {
-      position: fixed;
-      top: 15%;
-      left: 50%;
       width: 1px;
-      height: 70%;
-      background: #c5d6d0;
-      box-shadow: 0 0 8px rgba(0,0,0,0.06);
-      z-index: 10;
+      background: #e0e8e6;
     }
 
-    /* ===== Right: Register Form (40%) ===== */
+    /* ===== Right: Register Form (40%) — WHITE ===== */
     .form-side {
       flex: 1 1 40%;
       padding: 64px 56px;
@@ -131,32 +125,36 @@ export class RegisterPage extends LitElement {
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      background: #ffffff;
     }
 
-    .form-inner {
-      width: 100%; max-width: 440px;
+    .form-card {
+      width: 100%; max-width: 420px;
+      border: 1px solid #dce9e6;
+      border-radius: 12px;
+      padding: 36px 32px;
       display: flex; flex-direction: column;
+      background: #ffffff;
     }
 
     .header {
       text-align: center;
       margin-bottom: 22px;
     }
-    .header img { height: 66px; width: auto; object-fit: contain; margin-bottom: 12px; }
-    .header h1 { font-size: 26px; font-weight: 700; margin: 0 0 6px; color: #071e27; }
-    .header p { font-size: 15px; margin: 0; color: #3e4946; }
+    .header img { height: 62px; width: auto; object-fit: contain; margin-bottom: 12px; }
+    .header h1 { font-size: 25px; font-weight: 700; margin: 0 0 6px; color: #071e27; }
+    .header p { font-size: 14px; margin: 0; color: #3e4946; }
 
-    /* ===== Workspace selection ===== */
     .choose-label {
-      font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
-      color: #071e27; margin-bottom: 8px;
+      font-size: 12.5px; font-weight: 700; letter-spacing: 0.02em;
+      color: #071e27; margin-bottom: 10px;
     }
 
     .type-cards {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 8px;
+      gap: 10px;
+      margin-bottom: 10px;
     }
 
     .type-card {
@@ -165,7 +163,7 @@ export class RegisterPage extends LitElement {
       flex-direction: column;
       align-items: center;
       text-align: center;
-      padding: 12px 10px;
+      padding: 14px 12px;
       border: 2px solid #dce9e6;
       border-radius: 10px;
       background: #fff;
@@ -181,24 +179,23 @@ export class RegisterPage extends LitElement {
       box-shadow: 0 0 0 3px rgba(0,104,95,0.12);
     }
     .type-card .check {
-      position: absolute; top: 6px; right: 6px;
-      font-size: 16px; color: #00685f;
+      position: absolute; top: 8px; right: 8px;
+      font-size: 18px; color: #00685f;
       opacity: 0;
       transition: opacity 0.2s;
     }
     .type-card.selected .check { opacity: 1; }
-    .type-card .type-icon { font-size: 24px; color: #00685f; margin-bottom: 3px; }
-    .type-card h3 { margin: 0 0 2px; font-size: 13px; font-weight: 700; }
-    .type-card p { margin: 0; font-size: 11px; line-height: 1.4; color: #3e4946; }
+    .type-card .type-icon { font-size: 26px; color: #00685f; margin-bottom: 4px; }
+    .type-card h3 { margin: 0 0 3px; font-size: 14px; font-weight: 700; }
+    .type-card p { margin: 0; font-size: 11.5px; line-height: 1.45; color: #3e4946; }
 
     .type-note {
-      display: flex; align-items: flex-start; gap: 5px;
-      font-size: 11px; line-height: 1.5; color: #5c7a74;
-      margin-bottom: 14px;
+      display: flex; align-items: flex-start; gap: 6px;
+      font-size: 11.5px; line-height: 1.5; color: #5c7a74;
+      margin-bottom: 16px;
     }
-    .type-note .material-symbols-outlined { font-size: 14px; flex-shrink: 0; margin-top: 1px; color: #00796b; }
+    .type-note .material-symbols-outlined { font-size: 15px; flex-shrink: 0; margin-top: 1px; color: #00796b; }
 
-    /* ===== FORM ===== */
     .section-heading {
       font-size: 14px; font-weight: 600; color: #00685f;
       border-bottom: 1px solid #bdc9c5;
@@ -210,8 +207,8 @@ export class RegisterPage extends LitElement {
     .field { margin-bottom: 10px; }
     .field label {
       display: block;
-      font-size: 11px; line-height: 16px; letter-spacing: 0.05em;
-      font-weight: 600; color: #3e4946; margin-bottom: 3px;
+      font-size: 11.5px; line-height: 16px; letter-spacing: 0.05em;
+      font-weight: 600; color: #3e4946; margin-bottom: 4px;
     }
     .input-wrap {
       position: relative;
@@ -220,16 +217,16 @@ export class RegisterPage extends LitElement {
     }
     .input-wrap .icon {
       position: absolute; left: 12px;
-      font-size: 18px; color: #bdc9c5;
+      font-size: 19px; color: #bdc9c5;
       pointer-events: none;
     }
     .input-wrap input {
       width: 100%;
-      height: 42px;
-      padding: 0 12px 0 40px;
+      height: 44px;
+      padding: 0 12px 0 42px;
       border: 1px solid #bdc9c5;
       border-radius: 6px;
-      font-size: 13px; font-family: inherit;
+      font-size: 13.5px; font-family: inherit;
       color: #071e27;
       background: #fff;
       box-sizing: border-box;
@@ -254,10 +251,9 @@ export class RegisterPage extends LitElement {
       gap: 10px;
     }
 
-    /* ===== SUBMIT ===== */
     .submit-btn {
-      width: 100%; height: 44px;
-      margin-top: 14px;
+      width: 100%; height: 46px;
+      margin-top: 16px;
       border: none; border-radius: 6px;
       font-size: 15px; font-weight: 600; font-family: inherit;
       color: #fff; background: #00685f;
@@ -269,12 +265,12 @@ export class RegisterPage extends LitElement {
     .submit-btn:hover { background: #006b5e; }
     .submit-btn:active { transform: scale(0.98); }
     .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .submit-btn .arrow { font-size: 18px; }
+    .submit-btn .arrow { font-size: 19px; }
 
     .signin-link {
-      margin-top: 16px;
+      margin-top: 18px;
       text-align: center;
-      font-size: 13px;
+      font-size: 13.5px;
       color: #3e4946;
     }
     .signin-link a {
@@ -286,37 +282,30 @@ export class RegisterPage extends LitElement {
     .signin-link a:hover { color: #006b5e; }
 
     .message {
-      margin-top: 10px; padding: 10px;
-      border-radius: 8px; font-size: 13px; text-align: center;
+      margin-top: 12px; padding: 11px;
+      border-radius: 8px; font-size: 13.5px; text-align: center;
     }
     .message.error { background: #ffdad6; color: #93000a; }
     .message.success { background: #dcfce7; color: #166534; }
 
     /* ===== Responsive ===== */
     @media (max-width: 900px) {
-      .intro-side { padding: 40px 36px; }
-      .form-side { padding: 40px 36px; }
-    }
-
-    @media (max-width: 768px) {
-      :host { align-items: flex-start; padding-top: 24px; }
-      .layout { flex-direction: column; max-width: 560px; margin: 0 auto; }
-      .intro-side { flex: none; padding: 32px 28px; }
+      .layout { flex-direction: column; }
+      .intro-side { flex: none; padding: 40px 36px; }
+      .form-side { flex: none; padding: 40px 36px; }
       .divider { width: 100%; height: 1px; }
-      .form-side { flex: none; padding: 32px 28px; }
     }
 
     @media (max-width: 640px) {
       .workspaces { grid-template-columns: 1fr; gap: 14px; }
-      .intro-side h2 { font-size: 26px; }
+      .intro-side h2 { font-size: 28px; }
     }
 
     @media (max-width: 480px) {
-      :host { padding: 14px; }
-      .intro-side { padding: 26px 20px; }
-      .form-side { padding: 26px 20px; }
-      .form-inner { max-width: none; }
-      .header img { height: 52px; }
+      .intro-side { padding: 28px 20px; }
+      .form-side { padding: 28px 20px; }
+      .form-card { max-width: none; }
+      .header img { height: 50px; }
       .header h1 { font-size: 21px; }
       .type-cards { grid-template-columns: 1fr; }
       .field-row { grid-template-columns: 1fr; gap: 0; }
@@ -560,7 +549,7 @@ export class RegisterPage extends LitElement {
         <div class="divider" role="presentation"></div>
 
         <div class="form-side">
-          <div class="form-inner">
+          <div class="form-card">
             <div class="header">
               <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
               <h1>Create your DOCLY account</h1>

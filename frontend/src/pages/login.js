@@ -7,15 +7,8 @@ export class LoginPage extends LitElement {
     :host {
       display: flex;
       min-height: 100vh;
-      background: #f3faff;
       font-family: 'Manrope', sans-serif;
       color: #071e27;
-      align-items: center;
-      justify-content: center;
-      padding: 32px;
-      background-image: url('https://lh3.googleusercontent.com/aida/AP1WRLtjY_WdpDiAlhA5N5140tR8pxLQMTwVyKtH2xHCj1w1xOCIb8MxSbLK9fJhdGNSOQi0iiatiy84O4D8biNcfJnDgzjd17PNovABDoeZs1Ikb0-dRUlQ6yaUC3v_i8_u9XX3-G61V6csbw3JLpi9ubNOAl79yAXnU6P-Ljq8ghyHCOry9e9Z5NRW_X-9RXAvbHw3wY928IDUMZ-5pB0PTMAJFlpcP3MTVpjUoRkMp3Wys_EdxKFKjSNzslU');
-      background-size: cover;
-      background-position: center;
     }
 
     .material-symbols-outlined {
@@ -23,30 +16,34 @@ export class LoginPage extends LitElement {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
+    /* ---------- Layout ---------- */
     .layout {
-      width: 100%; max-width: 1200px;
-      display: flex; align-items: stretch;
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
     }
 
-    /* ---------- Left: Welcome (60%) ---------- */
+    /* ---------- Left: Welcome (60%) — GREEN ---------- */
     .welcome-side {
       flex: 0 0 60%;
       padding: 64px 68px;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: flex-start;
+      background: #00685f;
     }
 
     .welcome-side h2 {
       font-size: 38px; font-weight: 700; margin: 0 0 10px;
-      color: #071e27;
+      color: #ffffff;
     }
     .welcome-tagline {
-      font-size: 18px; font-weight: 600; color: #00685f;
+      font-size: 18px; font-weight: 600; color: rgba(255,255,255,0.9);
       margin: 0 0 20px;
     }
     .welcome-desc {
-      font-size: 16px; line-height: 1.75; color: #3e4946;
+      font-size: 16px; line-height: 1.75; color: rgba(255,255,255,0.85);
       margin: 0 0 12px;
     }
 
@@ -60,41 +57,34 @@ export class LoginPage extends LitElement {
     .feature-icon {
       width: 44px; height: 44px; flex-shrink: 0;
       border-radius: 10px;
-      background: #e6f6ff; color: #00685f;
+      background: rgba(255,255,255,0.15); color: #ffffff;
       display: flex; align-items: center; justify-content: center;
     }
     .feature-icon .material-symbols-outlined { font-size: 23px; }
-    .feature h3 { font-size: 15.5px; font-weight: 700; margin: 0 0 3px; color: #071e27; }
-    .feature p { font-size: 14px; line-height: 1.55; color: #3e4946; margin: 0; }
+    .feature h3 { font-size: 15.5px; font-weight: 700; margin: 0 0 3px; color: #ffffff; }
+    .feature p { font-size: 14px; line-height: 1.55; color: rgba(255,255,255,0.85); margin: 0; }
 
-    .cta-row { margin-top: auto; padding-top: 28px; }
+    .cta-row { margin-top: 36px; }
     .cta-btn {
       display: inline-flex; align-items: center; gap: 8px;
-      height: 42px; padding: 0 22px;
-      border: none; border-radius: 8px;
-      background: #00685f; color: #fff;
-      font-family: inherit; font-size: 13.5px; font-weight: 700;
+      height: 46px; padding: 0 26px;
+      border: 2px solid rgba(255,255,255,0.6); border-radius: 8px;
+      background: transparent; color: #ffffff;
+      font-family: inherit; font-size: 15px; font-weight: 700;
       text-decoration: none; cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,94,83,0.18);
       transition: background 0.2s, transform 0.1s;
     }
-    .cta-btn:hover { background: #005047; }
+    .cta-btn:hover { background: rgba(255,255,255,0.1); }
     .cta-btn:active { transform: scale(0.98); }
-    .cta-btn .material-symbols-outlined { font-size: 18px; }
+    .cta-btn .material-symbols-outlined { font-size: 19px; }
 
     /* ---------- Divider ---------- */
     .divider {
-      position: fixed;
-      top: 15%;
-      left: 50%;
       width: 1px;
-      height: 70%;
-      background: #c5d6d0;
-      box-shadow: 0 0 8px rgba(0,0,0,0.06);
-      z-index: 10;
+      background: #e0e8e6;
     }
 
-    /* ---------- Right: Login (40%) ---------- */
+    /* ---------- Right: Login (40%) — WHITE ---------- */
     .login-side {
       flex: 1 1 40%;
       padding: 64px 56px;
@@ -102,43 +92,41 @@ export class LoginPage extends LitElement {
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      background: #ffffff;
     }
 
-    .login-inner {
-      width: 100%; max-width: 420px;
-      display: flex; flex-direction: column; gap: 32px;
+    .login-form-card {
+      width: 100%; max-width: 400px;
+      border: 1px solid #dce9e6;
+      border-radius: 12px;
+      padding: 36px 32px;
+      display: flex; flex-direction: column; gap: 28px;
+      background: #ffffff;
     }
 
     .header {
       display: flex; flex-direction: column;
-      align-items: center; text-align: center; gap: 18px;
+      align-items: center; text-align: center; gap: 16px;
     }
-    .header img { height: 68px; width: auto; object-fit: contain; }
-    .header h1 { font-size: 28px; font-weight: 700; margin: 0; color: #071e27; }
-    .header p { font-size: 15px; margin: 0; color: #3e4946; }
+    .header img { height: 64px; width: auto; object-fit: contain; }
+    .header h1 { font-size: 26px; font-weight: 700; margin: 0; color: #071e27; }
+    .header p { font-size: 14px; margin: 0; color: #3e4946; }
 
     /* ---------- Responsive ---------- */
     @media (max-width: 900px) {
-      .welcome-side { padding: 40px 36px; }
-      .login-side { padding: 40px 36px; }
-    }
-
-    @media (max-width: 768px) {
-      :host { align-items: flex-start; padding-top: 24px; }
-      .layout { flex-direction: column; max-width: 560px; margin: 0 auto; }
-      .welcome-side { flex: none; padding: 32px 28px; }
+      .layout { flex-direction: column; }
+      .welcome-side { flex: none; padding: 40px 36px; }
+      .login-side { flex: none; padding: 40px 36px; }
       .divider { width: 100%; height: 1px; }
-      .login-side { flex: none; padding: 32px 28px; }
     }
 
     @media (max-width: 480px) {
-      :host { padding: 14px; }
-      .welcome-side { padding: 26px 20px; }
-      .login-side { padding: 26px 20px; }
-      .welcome-side h2 { font-size: 26px; }
+      .welcome-side { padding: 28px 20px; }
+      .login-side { padding: 28px 20px; }
+      .welcome-side h2 { font-size: 28px; }
       .features { grid-template-columns: 1fr; }
       .cta-btn { width: 100%; justify-content: center; }
-      .login-inner { max-width: none; }
+      .login-form-card { max-width: none; }
     }
   `;
 
@@ -188,7 +176,7 @@ export class LoginPage extends LitElement {
         <div class="divider" role="presentation"></div>
 
         <div class="login-side">
-          <div class="login-inner">
+          <div class="login-form-card">
             <div class="header">
               <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
               <div>
