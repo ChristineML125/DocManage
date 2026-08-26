@@ -19,6 +19,7 @@ import noteRoutes from './routes/noteRoutes.js';
 import { authenticate } from './middleware/auth.js';
 import { isConfigured as supabaseConfigured, getPublicUrl, getSupabase } from './config/storage.js';
 import migrateCompanies from './migrate-companies.js';
+import migrateMultitenant from './migrate-multitenant.js';
 import migrateFavorites from './migrate-favorites.js';
 import migrateFolders from './migrate-folders.js';
 import migrateNotes from './migrate-notes.js';
@@ -130,6 +131,7 @@ const PORT = process.env.PORT || 3000;
 // server start
 try{
     migrateCompanies().catch(err => console.error('Companies migration failed:', err));
+    migrateMultitenant().catch(err => console.error('Multi-tenancy migration failed:', err));
     migrateFavorites().catch(err => console.error('Favorites migration failed:', err));
     migrateFolders().catch(err => console.error('Folders migration failed:', err));
     migrateNotes().catch(err => console.error('Notes migration failed:', err));

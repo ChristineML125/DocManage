@@ -387,6 +387,11 @@ export class userManagement extends LitElement{
         background: #eef2f6;
     }
 
+    .action-btn.delete-btn:hover {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
     /* ========== Pagination ========== */
     .pagination {
         display: flex;
@@ -1099,7 +1104,26 @@ export class userManagement extends LitElement{
         }
     }
 
-    
+    async handleDeleteUser(user) {
+
+        if(!confirm(`Permanently delete user "${user.UserName}"?\n\nThis removes their documents, notes and folders. This cannot be undone.`)) return;
+
+        try {
+            const data = await deleteUser(user.UserID);
+
+            if(data.success){
+                alert('User deleted successfully.');
+                await this.fetchUser();
+            }else{
+                alert(data.message || 'Failed to delete user.');
+            }
+
+        }catch(err){
+            alert(err.message);
+        }
+    }
+
+
     getStatusClass(statusName) {
       if (!statusName) return '';
         switch(statusName) {
@@ -1517,6 +1541,16 @@ export class userManagement extends LitElement{
                                 lock_reset
                               </span>
 
+                            </button>
+
+                            <button
+                              class="action-btn delete-btn"
+                              title="Delete user"
+                              @click=${() => this.handleDeleteUser(u)}
+                            >
+                              <span class="material-symbols-outlined">
+                                person_remove
+                              </span>
                             </button>
                         </td>
                       </tr>

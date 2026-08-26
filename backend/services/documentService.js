@@ -20,6 +20,7 @@ export async function listDocuments(filters = {}) {
   const departmentId = filters.departmentId ? Number(filters.departmentId) : null;
   const categoryId = filters.categoryId ? Number(filters.categoryId) : null;
   const branchId = filters.branchId ? Number(filters.branchId) : null;
+  const companyID = filters.companyID ? Number(filters.companyID) : null;
 
   const result = await pool.query(`
     SELECT
@@ -39,12 +40,13 @@ export async function listDocuments(filters = {}) {
     LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID"
     WHERE 1=1
       AND (u."userType" IS NULL OR u."userType" = 'company')
+      AND ($5::int IS NULL OR u."CompanyID" = $5)
       AND ($1::text IS NULL OR d."documentName" LIKE '%' || $1 || '%' OR c."categoriesName" LIKE '%' || $1 || '%')
       AND ($2::int IS NULL OR d."departmentID" = $2)
       AND ($3::int IS NULL OR d."categoriesID" = $3)
       AND ($4::int IS NULL OR d."branchID" = $4)
     ORDER BY d."uploadDate" DESC
-  `, [keyword, departmentId, categoryId, branchId]);
+  `, [keyword, departmentId, categoryId, branchId, companyID]);
 
   return result.rows;
 }
@@ -98,7 +100,8 @@ export async function uploadDocument({
   departmentId,
   branchId,
   uploadedById,
-  statusId
+  statusId,
+  companyID = null
 }) {
   const ext = path.extname(filename).toLowerCase();
   const documentName = path.parse(originalname).name;
@@ -113,6 +116,30 @@ export async function uploadDocument({
   }
 
   const pool = await getPool();
+
+  // Company-scoped uploads may only reference departments/categories
+  // that belong to the same company.
+  if (companyID) {
+    if (departmentId) {
+      const deptCheck = await pool.query(
+        `SELECT 1 FROM "Department" WHERE "departmentID" = $1 AND "CompanyID" = $2`,
+        [departmentId, companyID]
+      );
+      if (deptCheck.rows.length === 0) {
+        throw new Error("Invalid department for this company");
+      }
+    }
+    if (categoryId) {
+      const catCheck = await pool.query(
+        `SELECT 1 FROM "Category" WHERE "categoriesID" = $1 AND "CompanyID" = $2`,
+        [categoryId, companyID]
+      );
+      if (catCheck.rows.length === 0) {
+        throw new Error("Invalid category for this company");
+      }
+    }
+  }
+
   const client = await pool.connect();
 
   try {
@@ -573,24 +600,24 @@ export async function previewDocument(documentID, userID) {
     };
 }
 
-export async function getCountDoc(){
+export async function getCountDoc(companyID = null){
 
     const pool = await getPool();
 
     const result = await pool.query(`
         SELECT
-          (SELECT COUNT(*) FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company')::int AS "totalDocument",
-          (SELECT COUNT(DISTINCT d."departmentID") FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company')::int AS "department",
-          (SELECT COUNT(DISTINCT d."categoriesID") FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE u."userType" IS NULL OR u."userType" = 'company')::int AS "category",
+          (SELECT COUNT(*) FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE (u."userType" IS NULL OR u."userType" = 'company') AND ($1::int IS NULL OR u."CompanyID" = $1))::int AS "totalDocument",
+          (SELECT COUNT(DISTINCT d."departmentID") FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE (u."userType" IS NULL OR u."userType" = 'company') AND ($1::int IS NULL OR u."CompanyID" = $1))::int AS "department",
+          (SELECT COUNT(DISTINCT d."categoriesID") FROM "Document" d LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID" WHERE (u."userType" IS NULL OR u."userType" = 'company') AND ($1::int IS NULL OR u."CompanyID" = $1))::int AS "category",
           (SELECT COUNT(*) FROM "Document" d
             INNER JOIN "Status" s ON d."statusID" = s."statusID"
             LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID"
-            WHERE s."statusName" = 'Active' AND (u."userType" IS NULL OR u."userType" = 'company'))::int AS "activeCount",
+            WHERE s."statusName" = 'Active' AND (u."userType" IS NULL OR u."userType" = 'company') AND ($1::int IS NULL OR u."CompanyID" = $1))::int AS "activeCount",
           (SELECT COUNT(*) FROM "Document" d
             INNER JOIN "Status" s ON d."statusID" = s."statusID"
             LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID"
-            WHERE s."statusName" = 'Archived' AND (u."userType" IS NULL OR u."userType" = 'company'))::int AS "archivedCount"
-    `);
+            WHERE s."statusName" = 'Archived' AND (u."userType" IS NULL OR u."userType" = 'company') AND ($1::int IS NULL OR u."CompanyID" = $1))::int AS "archivedCount"
+    `, [companyID]);
 
     return result.rows[0];
 }

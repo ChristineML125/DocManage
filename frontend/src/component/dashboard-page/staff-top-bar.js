@@ -232,7 +232,7 @@ export class TopBar extends LitElement {
     .menu-btn:hover { background: rgba(0, 104, 95, 0.08); }
     .menu-btn .material-symbols-outlined { font-size: 26px; }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 767px) {
       .menu-btn { display: inline-flex; margin-right: 10px; }
     }
   `;

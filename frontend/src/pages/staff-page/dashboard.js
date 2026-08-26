@@ -53,6 +53,10 @@ export class DashboardPage extends LitElement {
       overflow-y: auto;
       padding: 0 32px 32px 32px;
     }
+
+    @media (max-width: 767px) {
+      .scroll-area { padding-bottom: 84px; }
+    }
     
     @media (max-width: 1068px) {
       .content-grid {

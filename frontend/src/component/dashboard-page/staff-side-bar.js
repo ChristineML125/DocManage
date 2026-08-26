@@ -14,7 +14,7 @@ export class Sidebar extends LitElement {
   }
 
   _onToggle = () => {
-    if (!window.matchMedia('(max-width: 1024px)').matches) return;
+    if (!window.matchMedia('(max-width: 767px)').matches) return;
     this.open = !this.open;
   };
 
@@ -215,8 +215,29 @@ export class Sidebar extends LitElement {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
-    /* ---- Responsive: off-canvas drawer ---- */
-    @media (max-width: 1024px) {
+    /* ---- Bottom nav (mobile only, rendered by this component) ---- */
+    .bottom-nav { display: none; }
+
+    /* ---- Tablet (768px–1024px): icon-only rail ---- */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      :host {
+        width: 72px;
+        padding: 20px 8px;
+        align-items: center;
+      }
+      .brand { justify-content: center; gap: 0; padding: 0; margin-bottom: 28px; }
+      .brand-text,
+      .nav-link .label,
+      .btn-new .label,
+      .btn-logout .label { display: none; }
+      .nav-link { justify-content: center; padding: 12px 0; gap: 0; }
+      .divider { margin: 10px 2px; }
+      .btn-new { padding: 12px 0; }
+      .btn-logout { justify-content: center; padding: 12px 0; gap: 0; }
+    }
+
+    /* ---- Mobile (≤767px): off-canvas drawer + bottom nav ---- */
+    @media (max-width: 767px) {
       :host {
         position: fixed;
         top: 0;
@@ -234,6 +255,29 @@ export class Sidebar extends LitElement {
         transform: translateX(0);
         box-shadow: 8px 0 24px rgba(0, 0, 0, 0.2);
       }
+
+      .bottom-nav {
+        display: flex;
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        height: calc(60px + env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom);
+        background: #ffffff;
+        border-top: 1px solid #bcc9c6;
+        z-index: 1100;
+      }
+      .bnav-item {
+        flex: 1;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 2px;
+        background: none; border: none; cursor: pointer;
+        color: #3d4947;
+        font-family: inherit; font-size: 10px; font-weight: 600;
+        padding: 6px 0;
+      }
+      .bnav-item .material-symbols-outlined { font-size: 22px; }
+      .bnav-item.active { color: #008d3f; }
     }
   `;
 
@@ -327,11 +371,32 @@ export class Sidebar extends LitElement {
       </nav>
 
       <div class="footer">
-        <button class="btn-logout" @click=${this.logout}>
+        <button class="btn-logout" @click=${this.logout} title="Logout">
           <span class="material-symbols-outlined icon">logout</span>
           <span class="label">Logout</span>
         </button>
       </div>
+
+      <nav class="bottom-nav">
+        <button
+          class="bnav-item ${this.isActive('/dashboard') ? 'active' : ''}"
+          @click=${() => this.go('/dashboard')}>
+          <span class="material-symbols-outlined">dashboard</span><span>Home</span>
+        </button>
+        <button
+          class="bnav-item ${this.isActive('/allDocument') ? 'active' : ''}"
+          @click=${() => this.go('/allDocument')}>
+          <span class="material-symbols-outlined">description</span><span>Docs</span>
+        </button>
+        <button
+          class="bnav-item ${this.isActive('/upload') ? 'active' : ''}"
+          @click=${() => this.go('/upload')}>
+          <span class="material-symbols-outlined">upload_file</span><span>Upload</span>
+        </button>
+        <button class="bnav-item" @click=${() => window.dispatchEvent(new CustomEvent('toggle-sidebar'))}>
+          <span class="material-symbols-outlined">menu</span><span>Menu</span>
+        </button>
+      </nav>
     `;
   }
 }

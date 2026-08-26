@@ -33,6 +33,10 @@ export class Setting extends LitElement {
       background: #f7f9fb;
     }
 
+    @media (max-width: 767px) {
+      .scroll-area { padding-bottom: 84px; }
+    }
+
   `;
     static properties ={
     username: {type: String}

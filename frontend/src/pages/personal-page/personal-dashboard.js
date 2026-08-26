@@ -29,6 +29,10 @@ export class PersonalDashboardPage extends LitElement {
       padding: 0 32px 32px 32px;
       margin-top: 20px;
     }
+
+    @media (max-width: 767px) {
+      .scroll-area { padding-bottom: 84px; }
+    }
   `;
 
   connectedCallback() {

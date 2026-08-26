@@ -12,6 +12,10 @@ export class PersonalUploadPage extends LitElement {
     .top { flex: 1; display: flex; flex-direction: column; min-width: 0; }
     .scroll-area { flex: 1; overflow-y: auto; padding: 32px; }
 
+    @media (max-width: 767px) {
+      .scroll-area { padding-bottom: 84px; }
+    }
+
     .upload-card {
       max-width: 600px;
       margin: 0 auto 32px;

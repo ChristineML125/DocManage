@@ -23,23 +23,23 @@ export class LoginPage extends LitElement {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
+    /* ---------- Unified panel: left 60% / divider / right 40% ---------- */
     .layout {
       width: 100%; max-width: 1280px;
-      display: flex; align-items: center; justify-content: center;
-      gap: 40px;
-    }
-
-    /* ---------- Left: product intro (landing) ---------- */
-    .intro-panel {
-      flex: 2 1 520px;
-      min-width: 0;
-      max-width: 820px;
-      background: rgba(255, 255, 255, 0.85);
+      display: flex; align-items: stretch;
+      background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       border-radius: 16px;
-      box-shadow: 0px 2px 12px rgba(0,0,0,0.06);
-      padding: 40px;
+      box-shadow: 0px 4px 18px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    /* ---------- Left: product intro (60%) ---------- */
+    .intro-panel {
+      flex: 0 0 60%;
+      min-width: 0;
+      padding: 44px 48px;
     }
 
     .intro-header h2 {
@@ -55,7 +55,8 @@ export class LoginPage extends LitElement {
       max-width: 640px;
     }
 
-    /* screenshot placeholders — replace inner slot content with <img> when real shots arrive */
+    /* screenshots — drop files into frontend/public/screenshots/
+       dashboard.png and document-detail.png to show them */
     .screenshots {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -65,7 +66,7 @@ export class LoginPage extends LitElement {
     .shot-slot {
       border: 2px dashed #9db8b3;
       border-radius: 12px;
-      background: rgba(230, 246, 255, 0.55);
+      background: #eef7fb;
       min-height: 190px;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
@@ -73,15 +74,21 @@ export class LoginPage extends LitElement {
       color: #5c7a74;
       overflow: hidden;
     }
+    .shot-slot.filled { border-style: solid; border-color: transparent; background: none; }
     .shot-slot .material-symbols-outlined { font-size: 34px; color: #7fa39c; }
     .shot-slot p { margin: 0; font-size: 13px; font-weight: 600; }
-    .shot-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .shot-slot img {
+      width: 100%; height: 100%;
+      min-height: inherit;
+      object-fit: cover; object-position: top center;
+      display: block;
+    }
 
     .features {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       gap: 18px;
-      margin-top: 24px;
+      margin-top: 26px;
     }
     .feature { display: flex; gap: 14px; align-items: flex-start; }
     .feature-icon {
@@ -109,20 +116,21 @@ export class LoginPage extends LitElement {
     .cta-btn:active { transform: scale(0.98); }
     .cta-btn .material-symbols-outlined { font-size: 20px; }
 
-    /* ---------- Right: login card ---------- */
-    .login-card {
-      flex: 1 1 400px;
-      max-width: 480px;
-      background: #fff; border-radius: 12px;
-      box-shadow: 0px 2px 8px rgba(0,0,0,0.04);
-      padding: 40px 32px;
-      display: flex; flex-direction: column; gap: 32px;
-      position: relative; overflow: hidden;
+    /* ---------- Divider ---------- */
+    .divider {
+      flex: 0 0 1px;
+      background: #cfdedb;
     }
 
-    .accent-bar {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 4px; background: #00685f;
+    /* ---------- Right: login form (40%) ---------- */
+    .login-side {
+      flex: 1 1 40%;
+      display: flex; align-items: center; justify-content: center;
+      padding: 44px 36px;
+    }
+    .login-card {
+      width: 100%; max-width: 430px;
+      display: flex; flex-direction: column; gap: 32px;
     }
 
     .header {
@@ -133,34 +141,52 @@ export class LoginPage extends LitElement {
     .header h1 { font-size: 24px; font-weight: 700; margin: 0; color: #071e27; }
     .header p { font-size: 14px; margin: 0; color: #3e4946; }
 
-    /* ---------- Tablet & below: intro stacks above login form ---------- */
+    /* ---------- Tablet & below: stacks vertically ---------- */
+    @media (max-width: 1100px) {
+      .intro-panel { padding: 36px; }
+      .login-side { padding: 36px 28px; }
+    }
+
     @media (max-width: 960px) {
       :host { align-items: flex-start; padding-top: 24px; }
-      .layout { flex-direction: column; gap: 24px; }
-      .intro-panel,
-      .login-card { width: 100%; max-width: 560px; }
+      .layout { flex-direction: column; max-width: 720px; }
+      .intro-panel { flex: none; padding: 30px 26px; }
+      .divider { flex: 0 0 1px; width: 100%; }
+      .login-side { flex: none; padding: 30px 26px; }
     }
 
     @media (max-width: 480px) {
       :host { padding: 12px; padding-top: 16px; }
-      .layout { gap: 16px; }
-      .login-card { padding: 28px 20px; gap: 24px; }
+      .intro-panel { padding: 22px 18px; }
+      .login-card { gap: 24px; }
       .header img { height: 52px; }
       .header h1 { font-size: 20px; }
-      .intro-panel { padding: 22px 18px; border-radius: 12px; }
-      .intro-header h2 { font-size: 24px; }
-      .intro-tagline { font-size: 15px; }
       .screenshots { grid-template-columns: 1fr; gap: 12px; }
       .shot-slot { min-height: 150px; }
       .features { grid-template-columns: 1fr; gap: 16px; margin-top: 20px; }
       .cta-row { margin-top: 22px; }
       .cta-btn { width: 100%; justify-content: center; }
+      .login-card { max-width: none; }
     }
   `;
+
+  static properties = {
+    _shotErrors: { state: true },
+  };
+
+  constructor() {
+    super();
+    this._shotErrors = { dashboard: false, detail: false };
+  }
+
+  _markShot(key) {
+    this._shotErrors = { ...this._shotErrors, [key]: true };
+  }
 
   render() {
     return html`
       <div class="layout">
+
         <aside class="intro-panel">
           <div class="intro-header">
             <h2>Welcome to DOCLY</h2>
@@ -176,14 +202,34 @@ export class LoginPage extends LitElement {
           </div>
 
           <div class="screenshots">
-            <div class="shot-slot">
-              <span class="material-symbols-outlined">image</span>
-              <p>Dashboard Screenshot</p>
-            </div>
-            <div class="shot-slot">
-              <span class="material-symbols-outlined">image</span>
-              <p>Document Detail Screenshot</p>
-            </div>
+            ${this._shotErrors.dashboard ? html`
+              <div class="shot-slot">
+                <span class="material-symbols-outlined">image</span>
+                <p>Dashboard Screenshot</p>
+              </div>
+            ` : html`
+              <div class="shot-slot filled">
+                <img
+                  src="/screenshots/dashboard.png"
+                  alt="DOCLY Dashboard"
+                  @error=${() => this._markShot('dashboard')}
+                >
+              </div>
+            `}
+            ${this._shotErrors.detail ? html`
+              <div class="shot-slot">
+                <span class="material-symbols-outlined">image</span>
+                <p>Document Detail Screenshot</p>
+              </div>
+            ` : html`
+              <div class="shot-slot filled">
+                <img
+                  src="/screenshots/document-detail.png"
+                  alt="DOCLY Document Detail"
+                  @error=${() => this._markShot('detail')}
+                >
+              </div>
+            `}
           </div>
 
           <div class="features">
@@ -236,16 +282,19 @@ export class LoginPage extends LitElement {
           </div>
         </aside>
 
-        <div class="login-card">
-          <div class="accent-bar"></div>
-          <div class="header">
-            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
-            <div>
-              <h1>Welcome Back</h1>
-              <p>Sign in to access your medical document dashboard</p>
+        <div class="divider" role="presentation"></div>
+
+        <div class="login-side">
+          <div class="login-card">
+            <div class="header">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
+              <div>
+                <h1>Welcome Back</h1>
+                <p>Sign in to access your medical document dashboard</p>
+              </div>
             </div>
+            <login-form></login-form>
           </div>
-          <login-form></login-form>
         </div>
       </div>
     `;

@@ -30,6 +30,7 @@ import {
 import { authenticate } from '../middleware/auth.js';
 import { getPool } from '../config/db.js';
 import { addAuditLog } from '../services/auditLogsService.js';
+import { resolveCompanyScope } from '../services/tenantService.js';
 
 import { isConfigured, uploadFile, deleteFile, getPublicUrl } from '../config/storage.js';
 import { generateUniqueFilename } from '../middleware/upload.js';
@@ -45,21 +46,41 @@ function exportFilename(documentName, extension) {
 async function checkDocumentOwnership(documentID, user) {
   const pool = await getPool();
   const result = await pool.query(`
-    SELECT d."uploadedBy", u."userType"
+    SELECT d."uploadedBy", u."userType", u."CompanyID"
     FROM "Document" d
     LEFT JOIN "Users" u ON d."uploadedBy" = u."UserID"
     WHERE d."documentID" = $1
   `, [documentID]);
   if (result.rows.length === 0) return { allowed: false, reason: 'not_found' };
-  const docUserType = result.rows[0].userType || 'company';
+
+  const doc = result.rows[0];
+  const docUserType = doc.userType || 'company';
   const requestUserType = user.userType || 'company';
+
   if (docUserType !== requestUserType) return { allowed: false, reason: 'forbidden' };
-  return { allowed: true, doc: result.rows[0] };
+
+  if (requestUserType === 'personal') {
+    // personal users can only access their own documents
+    if (Number(doc.uploadedBy) !== Number(user.UserID)) {
+      return { allowed: false, reason: 'forbidden' };
+    }
+    return { allowed: true, doc };
+  }
+
+  // company users can only access documents belonging to their company
+  const scope = await resolveCompanyScope(user);
+  const docCompany = doc.CompanyID || null;
+  if (!scope.companyID || docCompany !== scope.companyID) {
+    return { allowed: false, reason: 'forbidden' };
+  }
+
+  return { allowed: true, doc };
 }
 
 router.get("/count", authenticate, async(req,res)=>{
     try{
-        const data = await getCountDoc();
+        const scope = await resolveCompanyScope(req.user);
+        const data = await getCountDoc(scope.companyID);
         if (!data) throw new Error('No data returned from database');
         console.log('Stats data:', data);
         res.json({
@@ -76,11 +97,13 @@ router.get("/count", authenticate, async(req,res)=>{
 
 router.get('/list', authenticate, async (req, res) => {
   try {
+    const scope = await resolveCompanyScope(req.user);
     const documents = await listDocuments({
       keyword: req.query.keyword,
       departmentId: req.query.departmentId,
       categoryId: req.query.categoryId,
-      branchId: req.query.branchId
+      branchId: req.query.branchId,
+      companyID: scope.userType === 'personal' ? null : scope.companyID
     });
     return res.json({ success: true, documents });
   } catch (err) {

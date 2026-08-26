@@ -1419,6 +1419,48 @@ export class StaffAllDocument extends LitElement {
         .pagination { padding: 10px 8px; gap: 10px; }
         .modal-box { padding: 20px 18px; width: 94vw; max-height: 88vh; overflow-y: auto; }
     }
+
+    /* ---- Mobile (≤767px): table becomes stacked cards ---- */
+    @media (max-width: 767px) {
+        .table-wrap { overflow-x: visible; }
+        table, tbody { display: block; min-width: 0; }
+        thead { display: none; }
+        tbody tr {
+            display: block;
+            border: 1px solid #e2e8e6;
+            border-radius: 12px;
+            background: #fff;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+        }
+        tbody tr.active { border-color: #00685f; box-shadow: 0 0 0 2px rgba(0,104,95,0.12); }
+        tbody td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 0;
+            border: none;
+            white-space: normal;
+        }
+        td.doc-name {
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #eef2f6;
+            margin-bottom: 4px;
+        }
+        td.doc-name::before { content: none; }
+        tbody td::before {
+            content: attr(data-label);
+            font-size: 11px;
+            font-weight: 700;
+            color: #5c7a74;
+            flex-shrink: 0;
+        }
+        td:last-child { justify-content: flex-end; }
+        .doc-title { max-width: none; }
+        .doc-avatar { display: none; }
+        .pagination { justify-content: center; }
+    }
   `;
  
    static properties = {
@@ -2434,10 +2476,10 @@ export class StaffAllDocument extends LitElement {
                              <span class="doc-title" title="${doc.documentName}">${doc.documentName}</span>
                            </div>
                          </td>
-                         <td><span>${doc.departmentName || 'N/A'}</span></td>
-                         <td><span class="badge">${doc.categoriesName || 'N/A'}</span></td>
-                         <td><span class="badge">${this.getFileType(doc.filePath)}</span></td>
-                         <td><span class="status-badge ${this.getStatusClass(doc.statusName)}">
+                          <td data-label="Department"><span>${doc.departmentName || 'N/A'}</span></td>
+                          <td data-label="Category"><span class="badge">${doc.categoriesName || 'N/A'}</span></td>
+                          <td data-label="File Type"><span class="badge">${this.getFileType(doc.filePath)}</span></td>
+                          <td data-label="Status"><span class="status-badge ${this.getStatusClass(doc.statusName)}">
                            ${this.editingStatusID === doc.documentID
                            ? html`
                                <button
@@ -2451,7 +2493,7 @@ export class StaffAllDocument extends LitElement {
                            `}
                          </span>
                          </td>
-                         <td><span class="badge-version">V ${doc.versionNum}.0</span></td>
+                          <td data-label="Version"><span class="badge-version">V ${doc.versionNum}.0</span></td>
                          <td>
                              ${this.editingStatusID === doc.documentID
                                ? html`

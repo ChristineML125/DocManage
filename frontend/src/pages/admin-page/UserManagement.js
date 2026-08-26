@@ -34,6 +34,10 @@ export class userManagement extends LitElement {
       padding: 0 0 0 0;
     }
 
+    @media (max-width: 767px) {
+      .scroll-area { padding-bottom: 84px; }
+    }
+
   `;
   
   static properties ={

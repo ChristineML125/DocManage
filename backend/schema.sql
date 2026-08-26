@@ -14,13 +14,15 @@ CREATE TABLE IF NOT EXISTS "Companies" (
 
 CREATE TABLE IF NOT EXISTS "Department" (
     "departmentID" SERIAL PRIMARY KEY,
-    "departmentName" VARCHAR(100) NOT NULL
+    "departmentName" VARCHAR(100) NOT NULL,
+    "CompanyID" INT REFERENCES "Companies"("CompanyID")
 );
 
 CREATE TABLE IF NOT EXISTS "Category" (
     "categoriesID" SERIAL PRIMARY KEY,
     "categoriesName" VARCHAR(100) NOT NULL,
-    "description" VARCHAR(255)
+    "description" VARCHAR(255),
+    "CompanyID" INT REFERENCES "Companies"("CompanyID")
 );
 
 CREATE TABLE IF NOT EXISTS "Branch" (

@@ -109,7 +109,7 @@ export async function updateUserStatus(id,statusName){
 
 export async function deleteUser(id) {
     try{
-        return http (`/user/${id}`, {
+        return http (`/users/${id}`, {
             method: "DELETE",
         });
     } catch (err) {

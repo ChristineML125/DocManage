@@ -29,6 +29,10 @@ export class PersonalSettingPage extends LitElement {
       overflow-y: auto;
       padding: 0 32px 32px 32px;
     }
+
+    @media (max-width: 767px) {
+      .scroll-area { padding-bottom: 84px; }
+    }
   `;
 
   connectedCallback() {

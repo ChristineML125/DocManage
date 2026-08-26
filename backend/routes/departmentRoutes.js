@@ -1,14 +1,17 @@
 import express from 'express';
-import { deleteDepartment, 
-        getDepartmentLoad, 
-        createDepartment 
+import { authenticate } from '../middleware/auth.js';
+import { resolveCompanyScope } from '../services/tenantService.js';
+import { deleteDepartment,
+        getDepartmentLoad,
+        createDepartment
     } from '../services/departmentService.js';
 
 const router = express.Router();
 
-router.get('/load', async (req,res) => {
+router.get('/load', authenticate, async (req,res) => {
     try{
-        const data = await getDepartmentLoad();
+        const scope = await resolveCompanyScope(req.user);
+        const data = await getDepartmentLoad(scope.companyID);
         res.json({
             success: true,
             departments: data
@@ -22,10 +25,11 @@ router.get('/load', async (req,res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     try {
+        const scope = await resolveCompanyScope(req.user);
         const { name } = req.body;
-        const department = await createDepartment( name );
+        const department = await createDepartment( name, scope.companyID );
         res.json({ success: true, department });
     } catch (err) {
         console.error('Failed to create department:', err);
@@ -34,9 +38,10 @@ router.post('/', async (req, res) => {
 });
 
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
     try {
-        await deleteDepartment(parseInt(req.params.id));
+        const scope = await resolveCompanyScope(req.user);
+        await deleteDepartment(parseInt(req.params.id), scope.companyID);
         res.json({ success: true, message: 'Department deleted successfully' });
     } catch (err) {
         console.error('Failed to delete department:', err);

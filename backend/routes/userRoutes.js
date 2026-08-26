@@ -19,10 +19,12 @@ import {
     getUser,
     allUserList,
     getCount,
-    registerPersonalUser
+    registerPersonalUser,
+    deleteUser
 } from "../services/usersService.js";
 import jwt from "jsonwebtoken";
 import { authenticate } from "../middleware/auth.js";
+import { resolveCompanyScope } from "../services/tenantService.js";
 
 const router = express.Router();
 
@@ -55,13 +57,29 @@ router.post("/login", async(req,res)=>{
         `,
         [UserName]);
 
-        const user=result.rows[0];
+        const matches=result.rows;
 
-        if(!user){
+        if(matches.length===0){
             return res.json({
                 success:false,
                 message:"Invalid account or inactive account"
             });
+        }
+
+        // Same username can exist in different companies. Prefer the exact
+        // email match; otherwise refuse an ambiguous username-only login.
+        let user;
+        if(matches.length===1){
+            user=matches[0];
+        }else{
+            const needle=String(UserName).trim().toLowerCase();
+            user=matches.find(r=>(r.Email||'').trim().toLowerCase()===needle);
+            if(!user){
+                return res.json({
+                    success:false,
+                    message:"Multiple accounts found with this username. Please sign in with your email address."
+                });
+            }
         }
 
         const hash=crypto.createHash("sha256")
@@ -186,18 +204,26 @@ router.post("/register/company", async(req,res)=>{
     try{
         const pool = await getPool();
 
-        const userCheck = await pool.query(
-            `SELECT "UserID" FROM "Users" WHERE "UserName"=$1`, [AdminName]
-        );
-        if(userCheck.rows.length > 0){
-            return res.status(409).json({ success:false, message:"Admin name already exists" });
-        }
-
+        // Email must stay globally unique - it is the unambiguous login key.
         const emailCheck = await pool.query(
-            `SELECT "UserID" FROM "Users" WHERE "Email"=$1`, [AdminEmail]
+            `SELECT "UserID" FROM "Users" WHERE LOWER("Email")=LOWER($1)`, [AdminEmail]
         );
         if(emailCheck.rows.length > 0){
             return res.status(409).json({ success:false, message:"Email already exists" });
+        }
+
+        // Company names are checked for clarity only: each registration
+        // always creates a NEW company with its own CompanyID. Duplicate
+        // admin names across DIFFERENT companies are allowed.
+        const companyNameCheck = await pool.query(
+            `SELECT "CompanyID", "CompanyName" FROM "Companies" WHERE LOWER("CompanyName")=LOWER($1)`,
+            [CompanyName]
+        );
+        if(companyNameCheck.rows.length > 0){
+            return res.status(409).json({
+                success:false,
+                message:`A company named "${companyNameCheck.rows[0].CompanyName}" already exists. Please use a different company name.`
+            });
         }
 
         const companyResult = await pool.query(
@@ -206,6 +232,29 @@ router.post("/register/company", async(req,res)=>{
             [CompanyName, CompanyEmail || null, CompanyPhone || null, CompanyAddress || null]
         );
         const companyID = companyResult.rows[0].CompanyID;
+
+        // Seed default departments and categories for the new company
+        const defaultDepartments = ['Administration', 'Finance', 'Human Resources', 'Operations', 'IT'];
+        for (const deptName of defaultDepartments) {
+            await pool.query(
+                `INSERT INTO "Department" ("departmentName", "CompanyID") VALUES ($1, $2)`,
+                [deptName, companyID]
+            );
+        }
+
+        const defaultCategories = [
+            ['Policy', 'Company policies and guidelines'],
+            ['Report', 'Reports and analysis documents'],
+            ['Memo', 'Internal memorandums'],
+            ['Contract', 'Legal agreements and contracts'],
+            ['Certificate', 'Certificates and credentials']
+        ];
+        for (const [catName, catDesc] of defaultCategories) {
+            await pool.query(
+                `INSERT INTO "Category" ("categoriesName", "description", "CompanyID") VALUES ($1, $2, $3)`,
+                [catName, catDesc, companyID]
+            );
+        }
 
         const crypto = await import('crypto');
         const hash = crypto.default.createHash("sha256").update(Password).digest("hex");
@@ -274,9 +323,10 @@ router.put("/profile", authenticate, async(req,res)=>{
 });
 
 
-router.get("/count",async(req,res)=>{
+router.get("/count",authenticate, requireAdmin, async(req,res)=>{
     try{
-        const data = await getCount();
+        const scope = await resolveCompanyScope(req.user);
+        const data = await getCount(scope.companyID);
         res.json({
             success:true,
             totalUsers: data.totalUsers,
@@ -290,7 +340,8 @@ router.get("/count",async(req,res)=>{
 
 router.get("/list", authenticate, requireAdmin, async(req,res)=>{
     try{
-        const users=await allUserList();
+        const scope = await resolveCompanyScope(req.user);
+        const users=await allUserList(scope.companyID);
         res.json({ success:true, users });
     }catch(err){
         res.status(500).json({ success:false, message:err.message });
@@ -307,10 +358,11 @@ router.post("/", authenticate, requireAdmin, async(req,res)=>{
     }
 
     try{
-        await createUser(UserName, Password, DepartmentID, role, Email, req.user.UserID);
+        const scope = await resolveCompanyScope(req.user);
+        await createUser(UserName, Password, DepartmentID, role, Email, req.user.UserID, scope.companyID);
         res.json({ success:true, message:"User created successfully" });
     }catch(err){
-        res.status(500).json({ success:false, message:err.message });
+        res.status(400).json({ success:false, message:err.message });
     }
 });
 
@@ -343,6 +395,37 @@ router.put("/:id/status", authenticate, requireAdmin, async(req,res)=>{
         await updateUserStatus(userID, req.body.status, req.user.UserID);
         res.json({ success:true, message:"User status updated" });
     }catch(err){
+        res.status(500).json({ success:false, message:err.message });
+    }
+});
+
+router.delete("/:id", authenticate, requireAdmin, async(req,res)=>{
+    try{
+        const userID=Number(req.params.id);
+        if(isNaN(userID)){
+            return res.status(400).json({ success:false, message:"Invalid User ID" });
+        }
+        if(userID===Number(req.user.UserID)){
+            return res.status(400).json({ success:false, message:"You cannot delete your own account." });
+        }
+
+        const pool = await getPool();
+        const check = await pool.query(`SELECT "userType" FROM "Users" WHERE "UserID"=$1`, [userID]);
+        const userType = check.rows[0]?.userType || 'company';
+
+        const userName = await deleteUser(userID, req.user.UserID);
+
+        res.json({
+            success: true,
+            message: `User ${userName} deleted`,
+            note: userType === 'personal'
+                ? 'Personal account removed.'
+                : 'Company account user removed. The company record itself was kept.'
+        });
+    }catch(err){
+        if(err.message === "User not found"){
+            return res.status(404).json({ success:false, message:err.message });
+        }
         res.status(500).json({ success:false, message:err.message });
     }
 });

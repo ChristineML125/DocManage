@@ -3,7 +3,7 @@ import {getPool} from "../config/db.js";
 export async function listAuditLogs(filters = {}){
     const pool = await getPool();
 
-    const params = [filters.action || null, filters.departmentId ? Number(filters.departmentId) : null];
+    const companyID = filters.companyID ? Number(filters.companyID) : null;
 
     const result = await pool.query(`
         SELECT
@@ -40,9 +40,10 @@ export async function listAuditLogs(filters = {}){
         AND a."targetID" = targetDoc."documentID"
 
         WHERE (executor."userType" IS NULL OR executor."userType" = 'company')
+        AND ($1::int IS NULL OR executor."CompanyID" = $1)
 
         ORDER BY a."timestamp" DESC
-    `);
+    `, [companyID]);
 
     return result.rows;
 }

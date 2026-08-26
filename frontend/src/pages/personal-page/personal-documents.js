@@ -30,6 +30,10 @@ export class PersonalDocumentsPage extends LitElement {
       padding: 0;
       margin-top: 20px;
     }
+
+    @media (max-width: 767px) {
+      .scroll-area { padding-bottom: 84px; }
+    }
   `;
 
   connectedCallback() {
