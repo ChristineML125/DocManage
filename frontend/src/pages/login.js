@@ -86,6 +86,7 @@ export class LoginPage extends LitElement {
     .divider {
       width: 1px;
       background: #c5d6d0;
+      box-shadow: 0 0 8px rgba(0,0,0,0.06);
     }
 
     /* ---------- Right: Login (50%) ---------- */
@@ -140,6 +141,21 @@ export class LoginPage extends LitElement {
     return html`
       <div class="layout">
 
+        <div class="login-side">
+          <div class="login-inner">
+            <div class="header">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
+              <div>
+                <h1>Welcome Back</h1>
+                <p>Sign in to access your medical document dashboard</p>
+              </div>
+            </div>
+            <login-form></login-form>
+          </div>
+        </div>
+
+        <div class="divider" role="presentation"></div>
+
         <div class="welcome-side">
           <h2>Welcome to DOCLY</h2>
           <p class="welcome-tagline">Simple &amp; Organized Document Management</p>
@@ -176,21 +192,6 @@ export class LoginPage extends LitElement {
               <span>Get Started</span>
               <span class="material-symbols-outlined">arrow_forward</span>
             </a>
-          </div>
-        </div>
-
-        <div class="divider" role="presentation"></div>
-
-        <div class="login-side">
-          <div class="login-inner">
-            <div class="header">
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
-              <div>
-                <h1>Welcome Back</h1>
-                <p>Sign in to access your medical document dashboard</p>
-              </div>
-            </div>
-            <login-form></login-form>
           </div>
         </div>
 
