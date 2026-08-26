@@ -829,6 +829,49 @@ export class PersonalFavoritesPage extends LitElement {
       .pagination { padding: 10px 8px; gap: 10px; }
       .modal-box { padding: 20px 18px; width: 94vw; max-height: 88vh; overflow-y: auto; }
     }
+
+    /* ---- Mobile preview (≤767px) ---- */
+    @media (max-width: 767px) {
+        .right-pane { display: none !important; }
+        .resizer { display: none !important; }
+        .preview-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 5px 10px; border: 1px solid #00685f; border-radius: 6px;
+            background: #fff; color: #00685f; font-size: 12px; font-weight: 600;
+            font-family: inherit; cursor: pointer; white-space: nowrap;
+            transition: background 0.15s;
+        }
+        .preview-btn:hover { background: #f2fbf9; }
+        .preview-btn .material-symbols-outlined { font-size: 16px; }
+        .mobile-preview-row td {
+            display: block !important; padding: 0 !important; border: none !important;
+        }
+        .mobile-preview-row td::before { content: none !important; }
+        .mobile-inline-preview {
+            margin-top: 8px; padding: 12px;
+            border: 1px solid #dce9e6; border-radius: 10px;
+            background: #f8fcfb;
+        }
+        .mobile-inline-preview .mip-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .mobile-inline-preview .mip-header h4 {
+            margin: 0; font-size: 13px; font-weight: 700; color: #071e27;
+        }
+        .mobile-inline-preview .mip-close {
+            background: none; border: none; cursor: pointer;
+            color: #5c7a74; padding: 2px; display: flex;
+        }
+        .mobile-inline-preview .mip-close:hover { color: #071e27; }
+        .mobile-inline-preview .mip-content .docx-container,
+        .mobile-inline-preview .mip-content .excel-container {
+            height: 260px; overflow: hidden;
+        }
+        .mobile-inline-preview .mip-content .exl-wrapper {
+            width: 100%; overflow: auto;
+        }
+    }
   `;
 
   static properties = {
@@ -879,6 +922,7 @@ export class PersonalFavoritesPage extends LitElement {
     this.editName = '';
     this.deletingDoc = null;
     this.favoriteIds = new Set();
+    this.mobilePreviewDocID = null;
 
     this._onMouseMove = this._onMouseMove.bind(this);
     this._onMouseUp = this._onMouseUp.bind(this);
@@ -1042,6 +1086,50 @@ export class PersonalFavoritesPage extends LitElement {
       }
     } catch (err) { console.error('Failed to load document details', err); }
     this.requestUpdate();
+  }
+
+  async toggleMobilePreview(doc, e) {
+    e.stopPropagation();
+    if (this.mobilePreviewDocID === doc.documentID) {
+      this.mobilePreviewDocID = null;
+      return;
+    }
+    try {
+      const res = await getDocument(doc.documentID);
+      if (res.success) {
+        const filePath = res.document.filePath;
+        const fileUrl = filePath ? getFileUrl(filePath) : null;
+        const fileType = filePath ? filePath.split('.').pop().toLowerCase() : '';
+        this.selectedDoc = { ...doc, ...res.document, fileUrl, fileType };
+        this.mobilePreviewDocID = doc.documentID;
+        await this.updateComplete;
+        if (fileType === 'docx' && fileUrl) {
+          await renderAsync(
+            await (await fetchFile(fileUrl)).arrayBuffer(),
+            this.renderRoot.querySelector('#docx-mobile-container'),
+            undefined, { ignoreHeight: true, breakPages: false }
+          );
+        }
+        if ((fileType === 'xlsx' || fileType === 'xls') && fileUrl) {
+          const res2 = await fetchFile(fileUrl);
+          const buffer = await res2.arrayBuffer();
+          const workbook = XLSX.read(buffer, { type: 'array' });
+          const ws = workbook.Sheets[workbook.SheetNames[0]];
+          const sheetHtml = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const c = this.renderRoot.querySelector('#excel-mobile-container');
+          if (c) c.innerHTML = sheetHtml;
+        }
+        if (fileType === 'pdf' && fileUrl) {
+          try {
+            const r = await fetchFile(fileUrl);
+            const blob = await r.blob();
+            if (this.pdfBlobUrl) URL.revokeObjectURL(this.pdfBlobUrl);
+            this.pdfBlobUrl = URL.createObjectURL(blob);
+            await this.updateComplete;
+          } catch(err) { console.error('PDF load error:', err); }
+        }
+      }
+    } catch(err) { console.error(err); }
   }
 
   formatDate(dateStr) {
@@ -1325,9 +1413,11 @@ export class PersonalFavoritesPage extends LitElement {
                     `
                   : this.paginatedDocs.map(doc => {
                     const ext = doc.filePath?.split('.').pop()?.toUpperCase() || 'N/A';
+                    const isActive = this.selectedDoc && this.selectedDoc.documentID === doc.documentID;
+                    const isMobilePreviewOpen = this.mobilePreviewDocID === doc.documentID;
                     return html`
                       <tr
-                        class="${this.selectedDoc && this.selectedDoc.documentID === doc.documentID ? 'active' : ''}"
+                        class="${isActive ? 'active' : ''}"
                         @click=${() => this.selectDoc(doc)}
                         @dblclick=${async () => { await this.selectDoc(doc); await this.openPreviewModal(); }}
                         title="Double-click to view the full content"
@@ -1355,8 +1445,29 @@ export class PersonalFavoritesPage extends LitElement {
                           <button class="icon-btn delete-btn" title="Delete document" @click=${(e) => { e.stopPropagation(); this.confirmDelete(doc); }}>
                             <span class="material-symbols-outlined">delete</span>
                           </button>
+                          <button class="preview-btn" @click=${(e) => this.toggleMobilePreview(doc, e)}>
+                            <span class="material-symbols-outlined">visibility</span>
+                            <span>Preview</span>
+                          </button>
                         </td>
                       </tr>
+                      ${isMobilePreviewOpen ? html`
+                        <tr class="mobile-preview-row">
+                          <td colspan="6">
+                            <div class="mobile-inline-preview">
+                              <div class="mip-header">
+                                <h4>${doc.documentName} Preview</h4>
+                                <button class="mip-close" @click=${(e) => { e.stopPropagation(); this.mobilePreviewDocID = null; }}>
+                                  <span class="material-symbols-outlined">close</span>
+                                </button>
+                              </div>
+                              <div class="mip-content">
+                                ${this.renderPreview(this.selectedDoc?.fileType, this.selectedDoc?.fileUrl, 'docx-mobile-container', 'excel-mobile-container')}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ` : ''}
                     `;
                   })}
               </tbody>
