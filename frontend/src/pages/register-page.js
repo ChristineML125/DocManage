@@ -8,7 +8,8 @@ export class RegisterPage extends LitElement {
     accountType: { type: String },
     message: { type: String },
     isError: { type: Boolean },
-    isSaving: { type: Boolean }
+    isSaving: { type: Boolean },
+    _shotErrors: { state: true }
   };
 
   static styles = css`
@@ -28,8 +29,8 @@ export class RegisterPage extends LitElement {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
-    /* ===== Main panel ===== */
-    .main-panel {
+    /* ===== Unified panel: left 60% / divider / right 40% ===== */
+    .layout {
       width: 100%; max-width: 1280px;
       display: flex; align-items: stretch;
       background: rgba(255, 255, 255, 0.92);
@@ -42,12 +43,9 @@ export class RegisterPage extends LitElement {
 
     /* ===== Left: workspace intro (60%) ===== */
     .intro-panel {
-      flex: 0 1 60%;
+      flex: 0 0 60%;
       min-width: 0;
       padding: 44px 48px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
     }
 
     .intro-header h2 {
@@ -92,6 +90,28 @@ export class RegisterPage extends LitElement {
       margin: 0 0 12px;
     }
 
+    .ws-shot {
+      border: 2px dashed #9db8b3;
+      border-radius: 10px;
+      background: #eef7fb;
+      min-height: 150px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 6px;
+      color: #5c7a74;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .ws-shot.filled { border-style: solid; border-color: transparent; background: none; }
+    .ws-shot .material-symbols-outlined { font-size: 30px; color: #7fa39c; }
+    .ws-shot p { margin: 0; font-size: 12px; font-weight: 600; }
+    .ws-shot img {
+      width: 100%; height: 100%;
+      min-height: inherit;
+      object-fit: cover; object-position: top center;
+      display: block;
+    }
+
     .ws-features {
       list-style: none;
       margin: 0; padding: 0;
@@ -121,8 +141,8 @@ export class RegisterPage extends LitElement {
 
     /* ===== Divider ===== */
     .divider {
-      width: 1px;
-      background: #c5d6d0;
+      flex: 0 0 1px;
+      background: #cfdedb;
     }
 
     /* ===== Right: register form (40%) ===== */
@@ -297,9 +317,9 @@ export class RegisterPage extends LitElement {
 
     @media (max-width: 960px) {
       :host { align-items: flex-start; padding-top: 24px; }
-      .main-panel { flex-direction: column; max-width: 720px; }
+      .layout { flex-direction: column; max-width: 720px; }
       .intro-panel { flex: none; padding: 30px 26px; }
-      .divider { width: 100%; height: 1px; }
+      .divider { flex: 0 0 1px; width: 100%; }
       .form-side { flex: none; padding: 30px 26px; }
     }
 
@@ -315,6 +335,7 @@ export class RegisterPage extends LitElement {
       .form-card { max-width: none; }
       .header img { height: 50px; }
       .header h1 { font-size: 20px; }
+      .ws-shot { min-height: 130px; }
       .type-cards { grid-template-columns: 1fr; }
       .field-row { grid-template-columns: 1fr; gap: 0; }
       .cta-btn { width: 100%; justify-content: center; }
@@ -327,6 +348,11 @@ export class RegisterPage extends LitElement {
     this.message = '';
     this.isError = false;
     this.isSaving = false;
+    this._shotErrors = { personal: false, company: false };
+  }
+
+  _markShot(key) {
+    this._shotErrors = { ...this._shotErrors, [key]: true };
   }
 
   switchType(type) {
@@ -511,6 +537,21 @@ export class RegisterPage extends LitElement {
         <p class="ws-tagline">Manage your documents your way.</p>
         <p class="ws-desc">For individuals who want to keep, organize and access their own documents.</p>
 
+        ${this._shotErrors.personal ? html`
+          <div class="ws-shot">
+            <span class="material-symbols-outlined">image</span>
+            <p>Personal Dashboard Screenshot</p>
+          </div>
+        ` : html`
+          <div class="ws-shot filled">
+            <img
+              src="/screenshots/personal-dashboard.png"
+              alt="DOCLY Personal Dashboard"
+              @error=${() => this._markShot('personal')}
+            >
+          </div>
+        `}
+
         <ul class="ws-features">
           <li><span class="material-symbols-outlined">folder</span>Personal document management</li>
           <li><span class="material-symbols-outlined">star</span>Favorites</li>
@@ -533,6 +574,21 @@ export class RegisterPage extends LitElement {
         </div>
         <p class="ws-tagline">Manage documents across your organization.</p>
         <p class="ws-desc">For companies and teams that need one centralized place for shared documents.</p>
+
+        ${this._shotErrors.company ? html`
+          <div class="ws-shot">
+            <span class="material-symbols-outlined">image</span>
+            <p>Company Dashboard Screenshot</p>
+          </div>
+        ` : html`
+          <div class="ws-shot filled">
+            <img
+              src="/screenshots/company-dashboard.png"
+              alt="DOCLY Company Dashboard"
+              @error=${() => this._markShot('company')}
+            >
+          </div>
+        `}
 
         <ul class="ws-features">
           <li><span class="material-symbols-outlined">folder_shared</span>Centralized document management</li>
