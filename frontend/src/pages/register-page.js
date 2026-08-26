@@ -43,7 +43,7 @@ export class RegisterPage extends LitElement {
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border-radius: 16px 0 0 16px;
+      border-radius: 16px;
       box-shadow: 0px 4px 18px rgba(0,0,0,0.08);
       display: flex;
       flex-direction: column;
@@ -122,7 +122,8 @@ export class RegisterPage extends LitElement {
     /* ===== Divider ===== */
     .divider {
       flex: 0 0 1px;
-      background: #c5d6d0;
+      align-self: stretch;
+      border-left: 1px solid #c5d6d0;
     }
 
     /* ===== Right: register form card (40%) ===== */
@@ -133,7 +134,7 @@ export class RegisterPage extends LitElement {
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border-radius: 0 16px 16px 0;
+      border-radius: 16px;
       box-shadow: 0px 4px 18px rgba(0,0,0,0.08);
     }
     .form-card {
@@ -303,9 +304,9 @@ export class RegisterPage extends LitElement {
     @media (max-width: 960px) {
       :host { align-items: flex-start; padding-top: 24px; }
       .layout { flex-direction: column; max-width: 720px; }
-      .intro-panel { flex: none; padding: 30px 26px; border-radius: 16px 16px 0 0; }
-      .divider { flex: 0 0 1px; width: 100%; }
-      .form-side { flex: none; padding: 30px 26px; border-radius: 0 0 16px 16px; }
+      .intro-panel { flex: none; padding: 30px 26px; }
+      .divider { flex: 0 0 1px; width: 100%; align-self: auto; border-left: none; border-top: 1px solid #c5d6d0; }
+      .form-side { flex: none; padding: 30px 26px; }
     }
 
     @media (max-width: 640px) {
