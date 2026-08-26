@@ -1421,11 +1421,13 @@ static styles = css`
         .modal-box { padding: 20px 18px; width: 94vw; max-height: 88vh; overflow-y: auto; }
     }
 
-    /* ---- Mobile (≤767px): table becomes stacked cards ---- */
+    /* ---- Mobile (≤767px): table becomes stacked cards, right-pane hidden ---- */
     @media (max-width: 767px) {
         .table-wrap { overflow-x: visible; }
         table, tbody { display: block; min-width: 0; }
         thead { display: none; }
+        .resizer { display: none; }
+        .right-pane { display: none !important; }
         tbody tr {
             display: block;
             border: 1px solid #e2e8e6;
@@ -1461,6 +1463,68 @@ static styles = css`
         .doc-title { max-width: none; }
         .doc-avatar { display: none; }
         .pagination { justify-content: center; }
+        .mobile-preview-row td {
+            display: block !important;
+            padding: 0 !important;
+            border: none !important;
+        }
+        .mobile-preview-row td::before { content: none !important; }
+        .mobile-preview {
+            border: 1px solid #e2e8e6;
+            border-radius: 12px;
+            background: #f9fbfc;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .mobile-preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #eef2f6;
+            border-bottom: 1px solid #e2e8e6;
+            font-size: 12px;
+            font-weight: 600;
+            color: #45474c;
+        }
+        .mobile-preview-header button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #7a8a9a;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            border-radius: 4px;
+        }
+        .mobile-preview-header button:hover { color: #dc2626; }
+        .mobile-preview-content {
+            min-height: 200px;
+            max-height: 60vh;
+            overflow: auto;
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .mobile-preview-content iframe { width: 100%; height: 400px; border: none; }
+        .mobile-preview-content img { max-width: 100%; height: auto; }
+        .mobile-preview-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #fff;
+            color: #00685f;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .mobile-preview-btn:hover { background: #eef2f6; }
+        .mobile-preview-btn.active { background: #00685f; color: #fff; border-color: #00685f; }
     }
 `;
 
@@ -1487,7 +1551,8 @@ static styles = css`
     showSummary: {type: Boolean},
     loadingSummary: {type: Boolean},
     aiSummary: {type: String},
-    pdfBlobUrl: {type: String}
+    pdfBlobUrl: {type: String},
+    mobilePreviewID: {type: Number}
   };
 
   constructor() {
@@ -1528,6 +1593,7 @@ static styles = css`
     this.loadingSummary= false;
     this.aiSummary= "";
     this.pdfBlobUrl = null;
+    this.mobilePreviewID = null;
   }
 
   connectedCallback() {
@@ -1626,11 +1692,19 @@ static styles = css`
           if (fileType === "docx") {
             await this.updateComplete;
             await this.renderDoc(fileUrl);
+            if (window.innerWidth <= 767) {
+              await this.updateComplete;
+              await this.renderMobileDoc(fileUrl);
+            }
           }
 
           if (fileType === "xlsx" || fileType === "xls") {
             await this.updateComplete;
             await this.renderExcel(fileUrl);
+            if (window.innerWidth <= 767) {
+              await this.updateComplete;
+              await this.renderMobileExcel(fileUrl);
+            }
           }
 
           if (fileType === "pdf" && fileUrl) {
@@ -1655,6 +1729,9 @@ static styles = css`
       console.error('Failed to load document details', err);
     }
 
+    if (window.innerWidth <= 767) {
+      this.mobilePreviewID = doc.documentID;
+    }
     this.requestUpdate();
   }
 
@@ -1913,6 +1990,48 @@ static styles = css`
 
   closeSummaryModal(){
     this.showAISummary = false;
+  }
+
+  async toggleMobilePreview(doc, e) {
+    e.stopPropagation();
+    if (this.mobilePreviewID === doc.documentID) {
+      this.mobilePreviewID = null;
+    } else {
+      if (this.selectedDoc?.documentID !== doc.documentID) {
+        await this.selectDoc(doc);
+      }
+      this.mobilePreviewID = doc.documentID;
+    }
+  }
+
+  async renderMobileDoc(url) {
+    const res = await fetchFile(url);
+    const buffer = await res.arrayBuffer();
+    await this.updateComplete;
+    const container = this.renderRoot.querySelector('#docx-mobile-container');
+    if (!container) return;
+    container.innerHTML = '';
+    await renderAsync(buffer, container, null, {
+      ignoreWidth: true, ignoreHeight: true, breakPages: false
+    });
+  }
+
+  async renderMobileExcel(url) {
+    const res = await fetchFile(url);
+    const buffer = await res.arrayBuffer();
+    const container = this.renderRoot.querySelector('#excel-mobile-container');
+    if (!container) return;
+    container.innerHTML = '';
+    const workbook = XLSX.read(buffer, { type: 'array' });
+    workbook.SheetNames.forEach(sheetName => {
+      const sheet = workbook.Sheets[sheetName];
+      const title = document.createElement('h3');
+      title.textContent = sheetName;
+      container.appendChild(title);
+      const div = document.createElement('div');
+      div.innerHTML = XLSX.utils.sheet_to_html(sheet);
+      container.appendChild(div);
+    });
   }
 
   downloadDocument(){
@@ -2536,7 +2655,9 @@ static styles = css`
                         </td>
                       </tr>
                     `
-                  : this.paginatedDocs.map(doc => html`
+                  : this.paginatedDocs.map(doc => {
+                    const isMobilePreviewOpen = this.mobilePreviewID === doc.documentID;
+                    return html`
                       <tr
                         class="${this.selectedDoc && this.selectedDoc.documentID === doc.documentID ? 'active' : ''}"
                         @click=${() => this.selectDoc(doc)} 
@@ -2573,6 +2694,12 @@ static styles = css`
                         </td>
                         <td data-label="Version"><span class="badge-version">V ${doc.versionNum}.0</span></td>
                         <td>
+                            <button class="mobile-preview-btn ${isMobilePreviewOpen ? 'active' : ''}"
+                              @click=${(e) => this.toggleMobilePreview(doc, e)}
+                              title="Preview">
+                              <span class="material-symbols-outlined" style="font-size:14px">${isMobilePreviewOpen ? 'visibility_off' : 'visibility'}</span>
+                              Preview
+                            </button>
                             <button class="action-btn" @click=${(e) => this._handleDeleteClick(e)}>
                                 <span class="material-symbols-outlined icon">delete</span>
                             </button>
@@ -2591,7 +2718,27 @@ static styles = css`
                             `}
                         </td>
                       </tr>
-                    `)}
+                      ${isMobilePreviewOpen ? html`
+                        <tr class="mobile-preview-row">
+                          <td colspan="7">
+                            <div class="mobile-preview">
+                              <div class="mobile-preview-header">
+                                <span>Preview: ${doc.documentName}</span>
+                                <button @click=${(e) => this.toggleMobilePreview(doc, e)}>
+                                  <span class="material-symbols-outlined" style="font-size:16px">close</span>
+                                </button>
+                              </div>
+                              <div class="mobile-preview-content">
+                                ${this.selectedDoc?.documentID === doc.documentID
+                                  ? this.renderPreview(doc.filePath?.split('.').pop()?.toLowerCase(), this.selectedDoc?.fileUrl, 'docx-mobile-container', 'excel-mobile-container')
+                                  : ''}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ` : ''}
+                    `;
+                  })}
               </tbody>
             </table>
             <div class="pagination">
