@@ -31,41 +31,41 @@ export class LoginPage extends LitElement {
     /* ---------- Left: Welcome (60%) ---------- */
     .welcome-side {
       flex: 0 0 60%;
-      padding: 56px 60px;
+      padding: 64px 68px;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
 
     .welcome-side h2 {
-      font-size: 34px; font-weight: 700; margin: 0 0 8px;
+      font-size: 38px; font-weight: 700; margin: 0 0 10px;
       color: #071e27;
     }
     .welcome-tagline {
-      font-size: 17px; font-weight: 600; color: #00685f;
-      margin: 0 0 18px;
+      font-size: 18px; font-weight: 600; color: #00685f;
+      margin: 0 0 20px;
     }
     .welcome-desc {
-      font-size: 15px; line-height: 1.7; color: #3e4946;
-      margin: 0 0 10px;
+      font-size: 16px; line-height: 1.75; color: #3e4946;
+      margin: 0 0 12px;
     }
 
     .features {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 18px;
-      margin-top: 28px;
+      gap: 20px;
+      margin-top: 32px;
     }
     .feature { display: flex; gap: 14px; align-items: flex-start; }
     .feature-icon {
-      width: 40px; height: 40px; flex-shrink: 0;
+      width: 44px; height: 44px; flex-shrink: 0;
       border-radius: 10px;
       background: #e6f6ff; color: #00685f;
       display: flex; align-items: center; justify-content: center;
     }
-    .feature-icon .material-symbols-outlined { font-size: 21px; }
-    .feature h3 { font-size: 14.5px; font-weight: 700; margin: 0 0 2px; color: #071e27; }
-    .feature p { font-size: 13.5px; line-height: 1.5; color: #3e4946; margin: 0; }
+    .feature-icon .material-symbols-outlined { font-size: 23px; }
+    .feature h3 { font-size: 15.5px; font-weight: 700; margin: 0 0 3px; color: #071e27; }
+    .feature p { font-size: 14px; line-height: 1.55; color: #3e4946; margin: 0; }
 
     .cta-row { margin-top: auto; padding-top: 28px; }
     .cta-btn {
@@ -84,15 +84,20 @@ export class LoginPage extends LitElement {
 
     /* ---------- Divider ---------- */
     .divider {
+      position: fixed;
+      top: 15%;
+      left: 50%;
       width: 1px;
+      height: 70%;
       background: #c5d6d0;
       box-shadow: 0 0 8px rgba(0,0,0,0.06);
+      z-index: 10;
     }
 
     /* ---------- Right: Login (40%) ---------- */
     .login-side {
       flex: 1 1 40%;
-      padding: 56px 60px;
+      padding: 64px 56px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -100,17 +105,17 @@ export class LoginPage extends LitElement {
     }
 
     .login-inner {
-      width: 100%; max-width: 400px;
-      display: flex; flex-direction: column; gap: 28px;
+      width: 100%; max-width: 420px;
+      display: flex; flex-direction: column; gap: 32px;
     }
 
     .header {
       display: flex; flex-direction: column;
-      align-items: center; text-align: center; gap: 16px;
+      align-items: center; text-align: center; gap: 18px;
     }
-    .header img { height: 64px; width: auto; object-fit: contain; }
-    .header h1 { font-size: 26px; font-weight: 700; margin: 0; color: #071e27; }
-    .header p { font-size: 14.5px; margin: 0; color: #3e4946; }
+    .header img { height: 68px; width: auto; object-fit: contain; }
+    .header h1 { font-size: 28px; font-weight: 700; margin: 0; color: #071e27; }
+    .header p { font-size: 15px; margin: 0; color: #3e4946; }
 
     /* ---------- Responsive ---------- */
     @media (max-width: 900px) {
@@ -140,21 +145,6 @@ export class LoginPage extends LitElement {
   render() {
     return html`
       <div class="layout">
-
-        <div class="login-side">
-          <div class="login-inner">
-            <div class="header">
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
-              <div>
-                <h1>Welcome Back</h1>
-                <p>Sign in to access your medical document dashboard</p>
-              </div>
-            </div>
-            <login-form></login-form>
-          </div>
-        </div>
-
-        <div class="divider" role="presentation"></div>
 
         <div class="welcome-side">
           <h2>Welcome to DOCLY</h2>
@@ -192,6 +182,21 @@ export class LoginPage extends LitElement {
               <span>Get Started</span>
               <span class="material-symbols-outlined">arrow_forward</span>
             </a>
+          </div>
+        </div>
+
+        <div class="divider" role="presentation"></div>
+
+        <div class="login-side">
+          <div class="login-inner">
+            <div class="header">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
+              <div>
+                <h1>Welcome Back</h1>
+                <p>Sign in to access your medical document dashboard</p>
+              </div>
+            </div>
+            <login-form></login-form>
           </div>
         </div>
 

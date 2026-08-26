@@ -36,19 +36,19 @@ export class RegisterPage extends LitElement {
     /* ===== Left: Welcome (60%) ===== */
     .intro-side {
       flex: 0 0 60%;
-      padding: 56px 60px;
+      padding: 64px 68px;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
 
     .intro-side h2 {
-      font-size: 32px; font-weight: 700; margin: 0 0 8px;
+      font-size: 36px; font-weight: 700; margin: 0 0 10px;
       color: #071e27;
     }
     .intro-tagline {
-      font-size: 16px; font-weight: 600; color: #00685f;
-      margin: 0 0 24px;
+      font-size: 17px; font-weight: 600; color: #00685f;
+      margin: 0 0 28px;
     }
 
     .workspaces {
@@ -113,15 +113,20 @@ export class RegisterPage extends LitElement {
 
     /* ===== Divider ===== */
     .divider {
+      position: fixed;
+      top: 15%;
+      left: 50%;
       width: 1px;
+      height: 70%;
       background: #c5d6d0;
       box-shadow: 0 0 8px rgba(0,0,0,0.06);
+      z-index: 10;
     }
 
     /* ===== Right: Register Form (40%) ===== */
     .form-side {
       flex: 1 1 40%;
-      padding: 56px 60px;
+      padding: 64px 56px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -129,17 +134,17 @@ export class RegisterPage extends LitElement {
     }
 
     .form-inner {
-      width: 100%; max-width: 430px;
+      width: 100%; max-width: 440px;
       display: flex; flex-direction: column;
     }
 
     .header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
     }
-    .header img { height: 62px; width: auto; object-fit: contain; margin-bottom: 12px; }
-    .header h1 { font-size: 25px; font-weight: 700; margin: 0 0 6px; color: #071e27; }
-    .header p { font-size: 14px; margin: 0; color: #3e4946; }
+    .header img { height: 66px; width: auto; object-fit: contain; margin-bottom: 12px; }
+    .header h1 { font-size: 26px; font-weight: 700; margin: 0 0 6px; color: #071e27; }
+    .header p { font-size: 15px; margin: 0; color: #3e4946; }
 
     /* ===== Workspace selection ===== */
     .choose-label {
@@ -501,57 +506,6 @@ export class RegisterPage extends LitElement {
     return html`
       <div class="layout">
 
-        <div class="form-side">
-          <div class="form-inner">
-            <div class="header">
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
-              <h1>Create your DOCLY account</h1>
-              <p>Choose your workspace to get started.</p>
-            </div>
-
-            <div class="choose-label">Choose your workspace</div>
-            <div class="type-cards">
-              <button type="button"
-                class="type-card ${this.accountType === 'personal' ? 'selected' : ''}"
-                @click=${() => this.switchType('personal')}>
-                <span class="check material-symbols-outlined">check_circle</span>
-                <span class="type-icon material-symbols-outlined">person</span>
-                <h3>Personal</h3>
-                <p>For managing your own documents.</p>
-              </button>
-              <button type="button"
-                class="type-card ${this.accountType === 'company' ? 'selected' : ''}"
-                @click=${() => this.switchType('company')}>
-                <span class="check material-symbols-outlined">check_circle</span>
-                <span class="type-icon material-symbols-outlined">business</span>
-                <h3>Company</h3>
-                <p>For teams and organizations.</p>
-              </button>
-            </div>
-            <div class="type-note">
-              <span class="material-symbols-outlined">info</span>
-              <span>Your account type determines the features available to you.</span>
-            </div>
-
-            <form @submit=${this.handleSubmit}>
-              ${this.accountType === 'personal' ? this.renderPersonalForm() : this.renderCompanyForm()}
-
-              <button type="submit" class="submit-btn" ?disabled=${this.isSaving}>
-                <span>${this.isSaving ? 'Creating Account...' : 'Create Account'}</span>
-                ${!this.isSaving ? html`<span class="material-symbols-outlined arrow">arrow_forward</span>` : ''}
-              </button>
-
-              ${this.message ? html`<div class="message ${this.isError ? 'error' : 'success'}">${this.message}</div>` : ''}
-
-              <div class="signin-link">
-                Already registered?<a href="/login">Sign In</a>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <div class="divider" role="presentation"></div>
-
         <div class="intro-side">
           <h2>DOCLY — Document Management Made Simple</h2>
           <p class="intro-tagline">Manage, organize and access your documents in one place.</p>
@@ -600,6 +554,57 @@ export class RegisterPage extends LitElement {
               <span>Already have an account? Sign In</span>
               <span class="material-symbols-outlined">arrow_forward</span>
             </a>
+          </div>
+        </div>
+
+        <div class="divider" role="presentation"></div>
+
+        <div class="form-side">
+          <div class="form-inner">
+            <div class="header">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
+              <h1>Create your DOCLY account</h1>
+              <p>Choose your workspace to get started.</p>
+            </div>
+
+            <div class="choose-label">Choose your workspace</div>
+            <div class="type-cards">
+              <button type="button"
+                class="type-card ${this.accountType === 'personal' ? 'selected' : ''}"
+                @click=${() => this.switchType('personal')}>
+                <span class="check material-symbols-outlined">check_circle</span>
+                <span class="type-icon material-symbols-outlined">person</span>
+                <h3>Personal</h3>
+                <p>For managing your own documents.</p>
+              </button>
+              <button type="button"
+                class="type-card ${this.accountType === 'company' ? 'selected' : ''}"
+                @click=${() => this.switchType('company')}>
+                <span class="check material-symbols-outlined">check_circle</span>
+                <span class="type-icon material-symbols-outlined">business</span>
+                <h3>Company</h3>
+                <p>For teams and organizations.</p>
+              </button>
+            </div>
+            <div class="type-note">
+              <span class="material-symbols-outlined">info</span>
+              <span>Your account type determines the features available to you.</span>
+            </div>
+
+            <form @submit=${this.handleSubmit}>
+              ${this.accountType === 'personal' ? this.renderPersonalForm() : this.renderCompanyForm()}
+
+              <button type="submit" class="submit-btn" ?disabled=${this.isSaving}>
+                <span>${this.isSaving ? 'Creating Account...' : 'Create Account'}</span>
+                ${!this.isSaving ? html`<span class="material-symbols-outlined arrow">arrow_forward</span>` : ''}
+              </button>
+
+              ${this.message ? html`<div class="message ${this.isError ? 'error' : 'success'}">${this.message}</div>` : ''}
+
+              <div class="signin-link">
+                Already registered?<a href="/login">Sign In</a>
+              </div>
+            </form>
           </div>
         </div>
 
