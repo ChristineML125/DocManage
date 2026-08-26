@@ -33,9 +33,9 @@ export class RegisterPage extends LitElement {
       display: flex; align-items: stretch;
     }
 
-    /* ===== Left: Welcome (50%) ===== */
+    /* ===== Left: Welcome (60%) ===== */
     .intro-side {
-      flex: 1 1 50%;
+      flex: 0 0 60%;
       padding: 56px 60px;
       display: flex;
       flex-direction: column;
@@ -118,9 +118,9 @@ export class RegisterPage extends LitElement {
       box-shadow: 0 0 8px rgba(0,0,0,0.06);
     }
 
-    /* ===== Right: Register Form (50%) ===== */
+    /* ===== Right: Register Form (40%) ===== */
     .form-side {
-      flex: 1 1 50%;
+      flex: 1 1 40%;
       padding: 56px 60px;
       display: flex;
       flex-direction: column;
