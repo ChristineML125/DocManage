@@ -24,74 +24,48 @@ export class LoginPage extends LitElement {
     }
 
     .layout {
-      width: 100%; max-width: 1080px;
+      width: 100%; max-width: 1200px;
       display: flex; align-items: stretch;
     }
 
     /* ---------- Left: Welcome (50%) ---------- */
     .welcome-side {
       flex: 1 1 50%;
-      padding: 48px 52px;
+      padding: 56px 60px;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
 
     .welcome-side h2 {
-      font-size: 30px; font-weight: 700; margin: 0 0 6px;
+      font-size: 34px; font-weight: 700; margin: 0 0 8px;
       color: #071e27;
     }
     .welcome-tagline {
-      font-size: 16px; font-weight: 600; color: #00685f;
-      margin: 0 0 16px;
+      font-size: 17px; font-weight: 600; color: #00685f;
+      margin: 0 0 18px;
     }
     .welcome-desc {
-      font-size: 14px; line-height: 1.65; color: #3e4946;
-      margin: 0 0 8px;
-    }
-
-    .screenshots {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 24px;
-    }
-    .shot-slot {
-      border: 2px dashed #9db8b3;
-      border-radius: 10px;
-      background: #eef7fb;
-      min-height: 150px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 6px;
-      color: #5c7a74;
-      overflow: hidden;
-    }
-    .shot-slot.filled { border-style: solid; border-color: transparent; background: none; }
-    .shot-slot .material-symbols-outlined { font-size: 30px; color: #7fa39c; }
-    .shot-slot p { margin: 0; font-size: 12px; font-weight: 600; }
-    .shot-slot img {
-      width: 100%; height: 100%; min-height: inherit;
-      object-fit: cover; object-position: top center;
-      display: block;
+      font-size: 15px; line-height: 1.7; color: #3e4946;
+      margin: 0 0 10px;
     }
 
     .features {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      margin-top: 24px;
+      gap: 18px;
+      margin-top: 28px;
     }
-    .feature { display: flex; gap: 12px; align-items: flex-start; }
+    .feature { display: flex; gap: 14px; align-items: flex-start; }
     .feature-icon {
-      width: 36px; height: 36px; flex-shrink: 0;
-      border-radius: 8px;
+      width: 40px; height: 40px; flex-shrink: 0;
+      border-radius: 10px;
       background: #e6f6ff; color: #00685f;
       display: flex; align-items: center; justify-content: center;
     }
-    .feature-icon .material-symbols-outlined { font-size: 19px; }
-    .feature h3 { font-size: 13.5px; font-weight: 700; margin: 0 0 1px; color: #071e27; }
-    .feature p { font-size: 12.5px; line-height: 1.45; color: #3e4946; margin: 0; }
+    .feature-icon .material-symbols-outlined { font-size: 21px; }
+    .feature h3 { font-size: 14.5px; font-weight: 700; margin: 0 0 2px; color: #071e27; }
+    .feature p { font-size: 13.5px; line-height: 1.5; color: #3e4946; margin: 0; }
 
     .cta-row { margin-top: auto; padding-top: 28px; }
     .cta-btn {
@@ -117,7 +91,7 @@ export class LoginPage extends LitElement {
     /* ---------- Right: Login (50%) ---------- */
     .login-side {
       flex: 1 1 50%;
-      padding: 48px 52px;
+      padding: 56px 60px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -125,57 +99,42 @@ export class LoginPage extends LitElement {
     }
 
     .login-inner {
-      width: 100%; max-width: 380px;
-      display: flex; flex-direction: column; gap: 24px;
+      width: 100%; max-width: 400px;
+      display: flex; flex-direction: column; gap: 28px;
     }
 
     .header {
       display: flex; flex-direction: column;
-      align-items: center; text-align: center; gap: 14px;
+      align-items: center; text-align: center; gap: 16px;
     }
-    .header img { height: 58px; width: auto; object-fit: contain; }
-    .header h1 { font-size: 22px; font-weight: 700; margin: 0; color: #071e27; }
-    .header p { font-size: 13px; margin: 0; color: #3e4946; }
+    .header img { height: 64px; width: auto; object-fit: contain; }
+    .header h1 { font-size: 26px; font-weight: 700; margin: 0; color: #071e27; }
+    .header p { font-size: 14.5px; margin: 0; color: #3e4946; }
 
     /* ---------- Responsive ---------- */
     @media (max-width: 900px) {
-      .welcome-side { padding: 36px 32px; }
-      .login-side { padding: 36px 32px; }
+      .welcome-side { padding: 40px 36px; }
+      .login-side { padding: 40px 36px; }
     }
 
     @media (max-width: 768px) {
-      :host { align-items: flex-start; padding-top: 20px; }
-      .layout { flex-direction: column; max-width: 520px; margin: 0 auto; }
-      .welcome-side { flex: none; padding: 28px 24px; }
+      :host { align-items: flex-start; padding-top: 24px; }
+      .layout { flex-direction: column; max-width: 560px; margin: 0 auto; }
+      .welcome-side { flex: none; padding: 32px 28px; }
       .divider { width: 100%; height: 1px; }
-      .login-side { flex: none; padding: 28px 24px; }
+      .login-side { flex: none; padding: 32px 28px; }
     }
 
     @media (max-width: 480px) {
-      :host { padding: 12px; }
-      .welcome-side { padding: 22px 18px; }
-      .login-side { padding: 22px 18px; }
-      .welcome-side h2 { font-size: 24px; }
-      .screenshots { grid-template-columns: 1fr; }
-      .shot-slot { min-height: 120px; }
+      :host { padding: 14px; }
+      .welcome-side { padding: 26px 20px; }
+      .login-side { padding: 26px 20px; }
+      .welcome-side h2 { font-size: 26px; }
       .features { grid-template-columns: 1fr; }
       .cta-btn { width: 100%; justify-content: center; }
       .login-inner { max-width: none; }
     }
   `;
-
-  static properties = {
-    _shotErrors: { state: true },
-  };
-
-  constructor() {
-    super();
-    this._shotErrors = { dashboard: false, detail: false };
-  }
-
-  _markShot(key) {
-    this._shotErrors = { ...this._shotErrors, [key]: true };
-  }
 
   render() {
     return html`
@@ -192,31 +151,6 @@ export class LoginPage extends LitElement {
             Whether you're managing documents for yourself or for a company,
             DOCLY helps make document management simpler and more organized.
           </p>
-
-          <div class="screenshots">
-            ${this._shotErrors.dashboard ? html`
-              <div class="shot-slot">
-                <span class="material-symbols-outlined">image</span>
-                <p>Dashboard Screenshot</p>
-              </div>
-            ` : html`
-              <div class="shot-slot filled">
-                <img src="/screenshots/dashboard.png" alt="DOCLY Dashboard"
-                  @error=${() => this._markShot('dashboard')}>
-              </div>
-            `}
-            ${this._shotErrors.detail ? html`
-              <div class="shot-slot">
-                <span class="material-symbols-outlined">image</span>
-                <p>Document Detail Screenshot</p>
-              </div>
-            ` : html`
-              <div class="shot-slot filled">
-                <img src="/screenshots/document-detail.png" alt="DOCLY Document Detail"
-                  @error=${() => this._markShot('detail')}>
-              </div>
-            `}
-          </div>
 
           <div class="features">
             <div class="feature">

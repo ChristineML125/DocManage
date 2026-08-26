@@ -29,26 +29,26 @@ export class RegisterPage extends LitElement {
     }
 
     .layout {
-      width: 100%; max-width: 1080px;
+      width: 100%; max-width: 1200px;
       display: flex; align-items: stretch;
     }
 
     /* ===== Left: Welcome (50%) ===== */
     .intro-side {
       flex: 1 1 50%;
-      padding: 48px 52px;
+      padding: 56px 60px;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
 
     .intro-side h2 {
-      font-size: 28px; font-weight: 700; margin: 0 0 6px;
+      font-size: 32px; font-weight: 700; margin: 0 0 8px;
       color: #071e27;
     }
     .intro-tagline {
-      font-size: 15px; font-weight: 600; color: #00685f;
-      margin: 0 0 22px;
+      font-size: 16px; font-weight: 600; color: #00685f;
+      margin: 0 0 24px;
     }
 
     .workspaces {
@@ -120,7 +120,7 @@ export class RegisterPage extends LitElement {
     /* ===== Right: Register Form (50%) ===== */
     .form-side {
       flex: 1 1 50%;
-      padding: 48px 52px;
+      padding: 56px 60px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -128,17 +128,17 @@ export class RegisterPage extends LitElement {
     }
 
     .form-inner {
-      width: 100%; max-width: 400px;
+      width: 100%; max-width: 430px;
       display: flex; flex-direction: column;
     }
 
     .header {
       text-align: center;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
-    .header img { height: 56px; width: auto; object-fit: contain; margin-bottom: 10px; }
-    .header h1 { font-size: 22px; font-weight: 700; margin: 0 0 5px; color: #071e27; }
-    .header p { font-size: 13px; margin: 0; color: #3e4946; }
+    .header img { height: 62px; width: auto; object-fit: contain; margin-bottom: 12px; }
+    .header h1 { font-size: 25px; font-weight: 700; margin: 0 0 6px; color: #071e27; }
+    .header p { font-size: 14px; margin: 0; color: #3e4946; }
 
     /* ===== Workspace selection ===== */
     .choose-label {
@@ -288,30 +288,30 @@ export class RegisterPage extends LitElement {
 
     /* ===== Responsive ===== */
     @media (max-width: 900px) {
-      .intro-side { padding: 36px 32px; }
-      .form-side { padding: 36px 32px; }
+      .intro-side { padding: 40px 36px; }
+      .form-side { padding: 40px 36px; }
     }
 
     @media (max-width: 768px) {
-      :host { align-items: flex-start; padding-top: 20px; }
-      .layout { flex-direction: column; max-width: 520px; margin: 0 auto; }
-      .intro-side { flex: none; padding: 28px 24px; }
+      :host { align-items: flex-start; padding-top: 24px; }
+      .layout { flex-direction: column; max-width: 560px; margin: 0 auto; }
+      .intro-side { flex: none; padding: 32px 28px; }
       .divider { width: 100%; height: 1px; }
-      .form-side { flex: none; padding: 28px 24px; }
+      .form-side { flex: none; padding: 32px 28px; }
     }
 
     @media (max-width: 640px) {
-      .workspaces { grid-template-columns: 1fr; gap: 12px; }
-      .intro-side h2 { font-size: 23px; }
+      .workspaces { grid-template-columns: 1fr; gap: 14px; }
+      .intro-side h2 { font-size: 26px; }
     }
 
     @media (max-width: 480px) {
-      :host { padding: 12px; }
-      .intro-side { padding: 22px 18px; }
-      .form-side { padding: 22px 18px; }
+      :host { padding: 14px; }
+      .intro-side { padding: 26px 20px; }
+      .form-side { padding: 26px 20px; }
       .form-inner { max-width: none; }
-      .header img { height: 48px; }
-      .header h1 { font-size: 19px; }
+      .header img { height: 52px; }
+      .header h1 { font-size: 21px; }
       .type-cards { grid-template-columns: 1fr; }
       .field-row { grid-template-columns: 1fr; gap: 0; }
       .cta-btn { width: 100%; justify-content: center; }
