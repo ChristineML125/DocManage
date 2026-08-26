@@ -46,63 +46,57 @@ export class LoginPage extends LitElement {
     }
 
     .intro-header h2 {
-      font-size: 32px; font-weight: 700; margin: 0 0 6px;
+      font-size: 28px; font-weight: 700; margin: 0 0 6px;
       color: #071e27;
     }
     .intro-tagline {
-      font-size: 17px; font-weight: 600; color: #00685f;
-      margin: 0 0 16px;
-    }
-    .intro-desc {
-      font-size: 14px; line-height: 1.65; color: #3e4946; margin: 0 0 10px;
-      max-width: 640px;
+      font-size: 16px; font-weight: 600; color: #00685f;
+      margin: 0 0 22px;
     }
 
-    /* screenshots — drop files into frontend/public/screenshots/
-       dashboard.png and document-detail.png to show them */
-    .screenshots {
+    .workspaces {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 24px;
-    }
-    .shot-slot {
-      border: 2px dashed #9db8b3;
-      border-radius: 12px;
-      background: #eef7fb;
-      min-height: 190px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 8px;
-      color: #5c7a74;
-      overflow: hidden;
-    }
-    .shot-slot.filled { border-style: solid; border-color: transparent; background: none; }
-    .shot-slot .material-symbols-outlined { font-size: 34px; color: #7fa39c; }
-    .shot-slot p { margin: 0; font-size: 13px; font-weight: 600; }
-    .shot-slot img {
-      width: 100%; height: 100%;
-      min-height: inherit;
-      object-fit: cover; object-position: top center;
-      display: block;
+      gap: 18px;
     }
 
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 18px;
-      margin-top: 26px;
+    .ws-card {
+      border: 1px solid #d9e5e2;
+      border-radius: 14px;
+      padding: 20px;
+      display: flex; flex-direction: column;
+      background: #fff;
     }
-    .feature { display: flex; gap: 14px; align-items: flex-start; }
-    .feature-icon {
-      width: 42px; height: 42px; flex-shrink: 0;
+
+    .ws-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .ws-icon {
+      width: 40px; height: 40px; flex-shrink: 0;
       border-radius: 10px;
-      background: #e6f6ff; color: #00685f;
       display: flex; align-items: center; justify-content: center;
     }
-    .feature-icon .material-symbols-outlined { font-size: 22px; }
-    .feature h3 { font-size: 15px; font-weight: 700; margin: 0 0 2px; color: #071e27; }
-    .feature p { font-size: 13px; line-height: 1.55; color: #3e4946; margin: 0; }
+    .ws-icon.personal { background: #e6f6ff; color: #00796b; }
+    .ws-icon.company { background: #eef7ee; color: #2e7d32; }
+    .ws-head h3 { margin: 0; font-size: 17px; font-weight: 700; }
+
+    .ws-tagline {
+      font-size: 13.5px; font-weight: 600; color: #00685f;
+      margin: 8px 0 4px;
+    }
+    .ws-desc {
+      font-size: 12.5px; line-height: 1.55; color: #3e4946;
+      margin: 0 0 12px;
+    }
+
+    .ws-features {
+      list-style: none;
+      margin: 0; padding: 0;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .ws-features li {
+      display: flex; align-items: flex-start; gap: 7px;
+      font-size: 12.5px; line-height: 1.45; color: #071e27;
+    }
+    .ws-features li .material-symbols-outlined { font-size: 16px; color: #00685f; margin-top: 1px; }
 
     .cta-row { margin-top: 28px; }
     .cta-btn {
@@ -161,30 +155,14 @@ export class LoginPage extends LitElement {
     @media (max-width: 480px) {
       :host { padding: 12px; padding-top: 16px; }
       .intro-panel { padding: 22px 18px; }
-      .login-card { gap: 24px; }
+      .login-card { gap: 24px; max-width: none; }
       .header img { height: 52px; }
       .header h1 { font-size: 20px; }
-      .screenshots { grid-template-columns: 1fr; gap: 12px; }
-      .shot-slot { min-height: 150px; }
-      .features { grid-template-columns: 1fr; gap: 16px; margin-top: 20px; }
+      .workspaces { grid-template-columns: 1fr; }
       .cta-row { margin-top: 22px; }
       .cta-btn { width: 100%; justify-content: center; }
-      .login-card { max-width: none; }
     }
   `;
-
-  static properties = {
-    _shotErrors: { state: true },
-  };
-
-  constructor() {
-    super();
-    this._shotErrors = { dashboard: false, detail: false };
-  }
-
-  _markShot(key) {
-    this._shotErrors = { ...this._shotErrors, [key]: true };
-  }
 
   render() {
     return html`
@@ -192,88 +170,46 @@ export class LoginPage extends LitElement {
 
         <aside class="intro-panel">
           <div class="intro-header">
-            <h2>Welcome to DOCLY</h2>
-            <p class="intro-tagline">Simple &amp; Organized Document Management</p>
-            <p class="intro-desc">
-              DOCLY is a document management platform that helps you upload, organize,
-              preview, convert, manage versions, and keep track of your documents — all in one place.
-            </p>
-            <p class="intro-desc">
-              Whether you're managing documents for yourself or for a company,
-              DOCLY helps make document management simpler and more organized.
-            </p>
+            <h2>DOCLY — Document Management Made Simple</h2>
+            <p class="intro-tagline">Manage, organize and access your documents in one place.</p>
           </div>
 
-          <div class="screenshots">
-            ${this._shotErrors.dashboard ? html`
-              <div class="shot-slot">
-                <span class="material-symbols-outlined">image</span>
-                <p>Dashboard Screenshot</p>
+          <div class="workspaces">
+            <div class="ws-card">
+              <div class="ws-head">
+                <div class="ws-icon personal">
+                  <span class="material-symbols-outlined">person</span>
+                </div>
+                <h3>Personal Workspace</h3>
               </div>
-            ` : html`
-              <div class="shot-slot filled">
-                <img
-                  src="/screenshots/dashboard.png"
-                  alt="DOCLY Dashboard"
-                  @error=${() => this._markShot('dashboard')}
-                >
-              </div>
-            `}
-            ${this._shotErrors.detail ? html`
-              <div class="shot-slot">
-                <span class="material-symbols-outlined">image</span>
-                <p>Document Detail Screenshot</p>
-              </div>
-            ` : html`
-              <div class="shot-slot filled">
-                <img
-                  src="/screenshots/document-detail.png"
-                  alt="DOCLY Document Detail"
-                  @error=${() => this._markShot('detail')}
-                >
-              </div>
-            `}
-          </div>
-
-          <div class="features">
-            <div class="feature">
-              <div class="feature-icon">
-                <span class="material-symbols-outlined">folder</span>
-              </div>
-              <div>
-                <h3>Manage Documents</h3>
-                <p>Upload and organize your documents in one place.</p>
-              </div>
+              <p class="ws-tagline">Manage your documents your way.</p>
+              <p class="ws-desc">For individuals who want to keep, organize and access their own documents.</p>
+              <ul class="ws-features">
+                <li><span class="material-symbols-outlined">folder</span>Personal document management</li>
+                <li><span class="material-symbols-outlined">star</span>Favorites</li>
+                <li><span class="material-symbols-outlined">sync_alt</span>File conversion</li>
+                <li><span class="material-symbols-outlined">history</span>Document versions</li>
+                <li><span class="material-symbols-outlined">auto_awesome</span>AI document summary</li>
+              </ul>
             </div>
 
-            <div class="feature">
-              <div class="feature-icon">
-                <span class="material-symbols-outlined">sync_alt</span>
+            <div class="ws-card">
+              <div class="ws-head">
+                <div class="ws-icon company">
+                  <span class="material-symbols-outlined">business</span>
+                </div>
+                <h3>Company Workspace</h3>
               </div>
-              <div>
-                <h3>Convert Files</h3>
-                <p>Convert documents between supported file formats.</p>
-              </div>
-            </div>
-
-            <div class="feature">
-              <div class="feature-icon">
-                <span class="material-symbols-outlined">history</span>
-              </div>
-              <div>
-                <h3>Version Control</h3>
-                <p>Keep track of different versions of your documents.</p>
-              </div>
-            </div>
-
-            <div class="feature">
-              <div class="feature-icon">
-                <span class="material-symbols-outlined">search</span>
-              </div>
-              <div>
-                <h3>Easy Access</h3>
-                <p>Preview, search and quickly find the documents you need.</p>
-              </div>
+              <p class="ws-tagline">Manage documents across your organization.</p>
+              <p class="ws-desc">For companies and teams that need one centralized place for shared documents.</p>
+              <ul class="ws-features">
+                <li><span class="material-symbols-outlined">folder_shared</span>Centralized document management</li>
+                <li><span class="material-symbols-outlined">sell</span>Categories &amp; departments</li>
+                <li><span class="material-symbols-outlined">group</span>Team document management</li>
+                <li><span class="material-symbols-outlined">history</span>Version control</li>
+                <li><span class="material-symbols-outlined">receipt_long</span>Document activity / audit logs</li>
+                <li><span class="material-symbols-outlined">auto_awesome</span>AI document assistance</li>
+              </ul>
             </div>
           </div>
 
