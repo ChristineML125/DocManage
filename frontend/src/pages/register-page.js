@@ -9,7 +9,6 @@ export class RegisterPage extends LitElement {
     message: { type: String },
     isError: { type: Boolean },
     isSaving: { type: Boolean },
-    _shotErrors: { state: true }
   };
 
   static styles = css`
@@ -21,7 +20,7 @@ export class RegisterPage extends LitElement {
       color: #071e27;
       justify-content: center;
       align-items: center;
-      padding: 16px;
+      padding: 32px;
     }
 
     .material-symbols-outlined {
@@ -29,38 +28,33 @@ export class RegisterPage extends LitElement {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
-    /* ===== Unified panel: left 60% / divider / right 40% ===== */
     .layout {
-      width: 100%; max-width: 1280px;
+      width: 100%; max-width: 1080px;
       display: flex; align-items: stretch;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border-radius: 16px;
-      box-shadow: 0px 4px 18px rgba(0,0,0,0.08);
-      overflow: hidden;
     }
 
-    /* ===== Left: workspace intro (60%) ===== */
-    .intro-panel {
-      flex: 0 0 60%;
-      min-width: 0;
-      padding: 44px 48px;
+    /* ===== Left: Welcome (50%) ===== */
+    .intro-side {
+      flex: 1 1 50%;
+      padding: 48px 52px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
-    .intro-header h2 {
+    .intro-side h2 {
       font-size: 28px; font-weight: 700; margin: 0 0 6px;
       color: #071e27;
     }
     .intro-tagline {
-      font-size: 16px; font-weight: 600; color: #00685f;
+      font-size: 15px; font-weight: 600; color: #00685f;
       margin: 0 0 22px;
     }
 
     .workspaces {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
+      gap: 16px;
     }
 
     .ws-card {
@@ -73,107 +67,90 @@ export class RegisterPage extends LitElement {
 
     .ws-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
     .ws-icon {
-      width: 40px; height: 40px; flex-shrink: 0;
+      width: 38px; height: 38px; flex-shrink: 0;
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
     }
     .ws-icon.personal { background: #e6f6ff; color: #00796b; }
     .ws-icon.company { background: #eef7ee; color: #2e7d32; }
-    .ws-head h3 { margin: 0; font-size: 17px; font-weight: 700; }
+    .ws-head h3 { margin: 0; font-size: 15px; font-weight: 700; }
 
     .ws-tagline {
-      font-size: 13.5px; font-weight: 600; color: #00685f;
-      margin: 8px 0 4px;
+      font-size: 13px; font-weight: 600; color: #00685f;
+      margin: 6px 0 4px;
     }
     .ws-desc {
-      font-size: 12.5px; line-height: 1.55; color: #3e4946;
-      margin: 0 0 12px;
-    }
-
-    .ws-shot {
-      border: 2px dashed #9db8b3;
-      border-radius: 10px;
-      background: #eef7fb;
-      min-height: 150px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 6px;
-      color: #5c7a74;
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-    .ws-shot.filled { border-style: solid; border-color: transparent; background: none; }
-    .ws-shot .material-symbols-outlined { font-size: 30px; color: #7fa39c; }
-    .ws-shot p { margin: 0; font-size: 12px; font-weight: 600; }
-    .ws-shot img {
-      width: 100%; height: 100%;
-      min-height: inherit;
-      object-fit: cover; object-position: top center;
-      display: block;
+      font-size: 12px; line-height: 1.5; color: #3e4946;
+      margin: 0 0 10px;
     }
 
     .ws-features {
       list-style: none;
       margin: 0; padding: 0;
-      display: flex; flex-direction: column; gap: 6px;
+      display: flex; flex-direction: column; gap: 5px;
     }
     .ws-features li {
-      display: flex; align-items: flex-start; gap: 7px;
-      font-size: 12.5px; line-height: 1.45; color: #071e27;
+      display: flex; align-items: flex-start; gap: 6px;
+      font-size: 12px; line-height: 1.4; color: #071e27;
     }
     .ws-features li .material-symbols-outlined {
       font-size: 15px; color: #00685f; flex-shrink: 0; margin-top: 1px;
     }
 
-    .cta-row { margin-top: 26px; }
+    .cta-row { margin-top: auto; padding-top: 24px; }
     .cta-btn {
       display: inline-flex; align-items: center; gap: 8px;
-      height: 46px; padding: 0 24px;
+      height: 42px; padding: 0 22px;
       border: none; border-radius: 8px;
       background: #e6f6ff; color: #00685f;
-      font-family: inherit; font-size: 14px; font-weight: 700;
+      font-family: inherit; font-size: 13.5px; font-weight: 700;
       text-decoration: none; cursor: pointer;
       transition: background 0.2s, transform 0.1s;
     }
     .cta-btn:hover { background: #d3edfa; }
     .cta-btn:active { transform: scale(0.98); }
-    .cta-btn .material-symbols-outlined { font-size: 19px; }
+    .cta-btn .material-symbols-outlined { font-size: 18px; }
 
     /* ===== Divider ===== */
     .divider {
-      flex: 0 0 1px;
-      background: #cfdedb;
+      width: 1px;
+      background: #c5d6d0;
     }
 
-    /* ===== Right: register form (40%) ===== */
+    /* ===== Right: Register Form (50%) ===== */
     .form-side {
-      flex: 1 1 40%;
-      display: flex; align-items: center; justify-content: center;
-      padding: 40px 36px;
+      flex: 1 1 50%;
+      padding: 48px 52px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
-    .form-card {
-      width: 100%; max-width: 430px;
+
+    .form-inner {
+      width: 100%; max-width: 400px;
+      display: flex; flex-direction: column;
     }
 
     .header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
     .header img { height: 56px; width: auto; object-fit: contain; margin-bottom: 10px; }
-    .header h1 { font-size: 23px; font-weight: 700; margin: 0 0 6px; color: #071e27; }
-    .header p { font-size: 13.5px; margin: 0; color: #3e4946; }
+    .header h1 { font-size: 22px; font-weight: 700; margin: 0 0 5px; color: #071e27; }
+    .header p { font-size: 13px; margin: 0; color: #3e4946; }
 
-    /* ===== Workspace selection (compact) ===== */
+    /* ===== Workspace selection ===== */
     .choose-label {
-      font-size: 13px; font-weight: 700; letter-spacing: 0.02em;
-      color: #071e27; margin-bottom: 10px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+      color: #071e27; margin-bottom: 8px;
     }
 
     .type-cards {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 8px;
+      margin-bottom: 8px;
     }
 
     .type-card {
@@ -182,7 +159,7 @@ export class RegisterPage extends LitElement {
       flex-direction: column;
       align-items: center;
       text-align: center;
-      padding: 14px 12px;
+      padding: 12px 10px;
       border: 2px solid #dce9e6;
       border-radius: 10px;
       background: #fff;
@@ -198,37 +175,37 @@ export class RegisterPage extends LitElement {
       box-shadow: 0 0 0 3px rgba(0,104,95,0.12);
     }
     .type-card .check {
-      position: absolute; top: 8px; right: 8px;
-      font-size: 18px; color: #00685f;
+      position: absolute; top: 6px; right: 6px;
+      font-size: 16px; color: #00685f;
       opacity: 0;
       transition: opacity 0.2s;
     }
     .type-card.selected .check { opacity: 1; }
-    .type-card .type-icon { font-size: 26px; color: #00685f; margin-bottom: 4px; }
-    .type-card h3 { margin: 0 0 3px; font-size: 14px; font-weight: 700; }
-    .type-card p { margin: 0; font-size: 11.5px; line-height: 1.45; color: #3e4946; }
+    .type-card .type-icon { font-size: 24px; color: #00685f; margin-bottom: 3px; }
+    .type-card h3 { margin: 0 0 2px; font-size: 13px; font-weight: 700; }
+    .type-card p { margin: 0; font-size: 11px; line-height: 1.4; color: #3e4946; }
 
     .type-note {
-      display: flex; align-items: flex-start; gap: 6px;
-      font-size: 11.5px; line-height: 1.5; color: #5c7a74;
-      margin-bottom: 18px;
+      display: flex; align-items: flex-start; gap: 5px;
+      font-size: 11px; line-height: 1.5; color: #5c7a74;
+      margin-bottom: 14px;
     }
-    .type-note .material-symbols-outlined { font-size: 15px; flex-shrink: 0; margin-top: 1px; color: #00796b; }
+    .type-note .material-symbols-outlined { font-size: 14px; flex-shrink: 0; margin-top: 1px; color: #00796b; }
 
     /* ===== FORM ===== */
     .section-heading {
-      font-size: 15px; font-weight: 600; color: #00685f;
+      font-size: 14px; font-weight: 600; color: #00685f;
       border-bottom: 1px solid #bdc9c5;
-      padding-bottom: 8px;
-      margin: 16px 0 12px;
+      padding-bottom: 7px;
+      margin: 14px 0 10px;
     }
     .section-heading:first-of-type { margin-top: 0; }
 
-    .field { margin-bottom: 12px; }
+    .field { margin-bottom: 10px; }
     .field label {
       display: block;
       font-size: 11px; line-height: 16px; letter-spacing: 0.05em;
-      font-weight: 600; color: #3e4946; margin-bottom: 4px;
+      font-weight: 600; color: #3e4946; margin-bottom: 3px;
     }
     .input-wrap {
       position: relative;
@@ -237,16 +214,16 @@ export class RegisterPage extends LitElement {
     }
     .input-wrap .icon {
       position: absolute; left: 12px;
-      font-size: 20px; color: #bdc9c5;
+      font-size: 18px; color: #bdc9c5;
       pointer-events: none;
     }
     .input-wrap input {
       width: 100%;
-      height: 46px;
-      padding: 0 12px 0 44px;
+      height: 42px;
+      padding: 0 12px 0 40px;
       border: 1px solid #bdc9c5;
       border-radius: 6px;
-      font-size: 14px; font-family: inherit;
+      font-size: 13px; font-family: inherit;
       color: #071e27;
       background: #fff;
       box-sizing: border-box;
@@ -259,7 +236,7 @@ export class RegisterPage extends LitElement {
       box-shadow: 0 0 0 3px rgba(0,121,107,0.12);
     }
     .pw-toggle {
-      position: absolute; right: 12px;
+      position: absolute; right: 10px;
       background: none; border: none; cursor: pointer;
       color: #bdc9c5; padding: 4px;
     }
@@ -268,15 +245,15 @@ export class RegisterPage extends LitElement {
     .field-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
     }
 
     /* ===== SUBMIT ===== */
     .submit-btn {
-      width: 100%; height: 48px;
-      margin-top: 16px;
+      width: 100%; height: 44px;
+      margin-top: 14px;
       border: none; border-radius: 6px;
-      font-size: 16px; font-weight: 600; font-family: inherit;
+      font-size: 15px; font-weight: 600; font-family: inherit;
       color: #fff; background: #00685f;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,94,83,0.15);
@@ -286,16 +263,16 @@ export class RegisterPage extends LitElement {
     .submit-btn:hover { background: #006b5e; }
     .submit-btn:active { transform: scale(0.98); }
     .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .submit-btn .arrow { font-size: 20px; }
+    .submit-btn .arrow { font-size: 18px; }
 
     .signin-link {
-      margin-top: 20px;
+      margin-top: 16px;
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
       color: #3e4946;
     }
     .signin-link a {
-      font-size: 15px; font-weight: 600;
+      font-size: 14px; font-weight: 600;
       color: #00685f; text-decoration: none;
       margin-left: 4px;
       transition: color 0.2s;
@@ -303,39 +280,38 @@ export class RegisterPage extends LitElement {
     .signin-link a:hover { color: #006b5e; }
 
     .message {
-      margin-top: 12px; padding: 12px;
-      border-radius: 8px; font-size: 14px; text-align: center;
+      margin-top: 10px; padding: 10px;
+      border-radius: 8px; font-size: 13px; text-align: center;
     }
     .message.error { background: #ffdad6; color: #93000a; }
     .message.success { background: #dcfce7; color: #166534; }
 
-    /* ===== Tablet & below: stacks vertically ===== */
-    @media (max-width: 1100px) {
-      .intro-panel { padding: 36px; }
-      .form-side { padding: 36px 28px; }
+    /* ===== Responsive ===== */
+    @media (max-width: 900px) {
+      .intro-side { padding: 36px 32px; }
+      .form-side { padding: 36px 32px; }
     }
 
-    @media (max-width: 960px) {
-      :host { align-items: flex-start; padding-top: 24px; }
-      .layout { flex-direction: column; max-width: 720px; }
-      .intro-panel { flex: none; padding: 30px 26px; }
-      .divider { flex: 0 0 1px; width: 100%; }
-      .form-side { flex: none; padding: 30px 26px; }
+    @media (max-width: 768px) {
+      :host { align-items: flex-start; padding-top: 20px; }
+      .layout { flex-direction: column; max-width: 520px; margin: 0 auto; }
+      .intro-side { flex: none; padding: 28px 24px; }
+      .divider { width: 100%; height: 1px; }
+      .form-side { flex: none; padding: 28px 24px; }
     }
 
     @media (max-width: 640px) {
-      .workspaces { grid-template-columns: 1fr; gap: 14px; }
-      .intro-header h2 { font-size: 23px; }
-      .intro-tagline { font-size: 15px; }
+      .workspaces { grid-template-columns: 1fr; gap: 12px; }
+      .intro-side h2 { font-size: 23px; }
     }
 
     @media (max-width: 480px) {
-      :host { padding: 12px; padding-top: 16px; }
-      .intro-panel { padding: 22px 18px; }
-      .form-card { max-width: none; }
-      .header img { height: 50px; }
-      .header h1 { font-size: 20px; }
-      .ws-shot { min-height: 130px; }
+      :host { padding: 12px; }
+      .intro-side { padding: 22px 18px; }
+      .form-side { padding: 22px 18px; }
+      .form-inner { max-width: none; }
+      .header img { height: 48px; }
+      .header h1 { font-size: 19px; }
       .type-cards { grid-template-columns: 1fr; }
       .field-row { grid-template-columns: 1fr; gap: 0; }
       .cta-btn { width: 100%; justify-content: center; }
@@ -348,11 +324,6 @@ export class RegisterPage extends LitElement {
     this.message = '';
     this.isError = false;
     this.isSaving = false;
-    this._shotErrors = { personal: false, company: false };
-  }
-
-  _markShot(key) {
-    this._shotErrors = { ...this._shotErrors, [key]: true };
   }
 
   switchType(type) {
@@ -525,96 +496,51 @@ export class RegisterPage extends LitElement {
     `;
   }
 
-  renderPersonalWorkspaceCard() {
-    return html`
-      <div class="ws-card">
-        <div class="ws-head">
-          <div class="ws-icon personal">
-            <span class="material-symbols-outlined">person</span>
-          </div>
-          <h3>Personal Workspace</h3>
-        </div>
-        <p class="ws-tagline">Manage your documents your way.</p>
-        <p class="ws-desc">For individuals who want to keep, organize and access their own documents.</p>
-
-        ${this._shotErrors.personal ? html`
-          <div class="ws-shot">
-            <span class="material-symbols-outlined">image</span>
-            <p>Personal Dashboard Screenshot</p>
-          </div>
-        ` : html`
-          <div class="ws-shot filled">
-            <img
-              src="/screenshots/personal-dashboard.png"
-              alt="DOCLY Personal Dashboard"
-              @error=${() => this._markShot('personal')}
-            >
-          </div>
-        `}
-
-        <ul class="ws-features">
-          <li><span class="material-symbols-outlined">folder</span>Personal document management</li>
-          <li><span class="material-symbols-outlined">star</span>Favorites</li>
-          <li><span class="material-symbols-outlined">sync_alt</span>File conversion</li>
-          <li><span class="material-symbols-outlined">history</span>Document versions</li>
-          <li><span class="material-symbols-outlined">auto_awesome</span>AI document summary</li>
-        </ul>
-      </div>
-    `;
-  }
-
-  renderCompanyWorkspaceCard() {
-    return html`
-      <div class="ws-card">
-        <div class="ws-head">
-          <div class="ws-icon company">
-            <span class="material-symbols-outlined">business</span>
-          </div>
-          <h3>Company Workspace</h3>
-        </div>
-        <p class="ws-tagline">Manage documents across your organization.</p>
-        <p class="ws-desc">For companies and teams that need one centralized place for shared documents.</p>
-
-        ${this._shotErrors.company ? html`
-          <div class="ws-shot">
-            <span class="material-symbols-outlined">image</span>
-            <p>Company Dashboard Screenshot</p>
-          </div>
-        ` : html`
-          <div class="ws-shot filled">
-            <img
-              src="/screenshots/company-dashboard.png"
-              alt="DOCLY Company Dashboard"
-              @error=${() => this._markShot('company')}
-            >
-          </div>
-        `}
-
-        <ul class="ws-features">
-          <li><span class="material-symbols-outlined">folder_shared</span>Centralized document management</li>
-          <li><span class="material-symbols-outlined">sell</span>Categories &amp; departments</li>
-          <li><span class="material-symbols-outlined">group</span>Team document management</li>
-          <li><span class="material-symbols-outlined">history</span>Version control</li>
-          <li><span class="material-symbols-outlined">receipt_long</span>Document activity / audit logs</li>
-          <li><span class="material-symbols-outlined">auto_awesome</span>AI document assistance</li>
-        </ul>
-      </div>
-    `;
-  }
-
   render() {
     return html`
       <div class="layout">
 
-        <aside class="intro-panel">
-          <div class="intro-header">
-            <h2>DOCLY — Document Management Made Simple</h2>
-            <p class="intro-tagline">Manage, organize and access your documents in one place.</p>
-          </div>
+        <div class="intro-side">
+          <h2>DOCLY — Document Management Made Simple</h2>
+          <p class="intro-tagline">Manage, organize and access your documents in one place.</p>
 
           <div class="workspaces">
-            ${this.renderPersonalWorkspaceCard()}
-            ${this.renderCompanyWorkspaceCard()}
+            <div class="ws-card">
+              <div class="ws-head">
+                <div class="ws-icon personal">
+                  <span class="material-symbols-outlined">person</span>
+                </div>
+                <h3>Personal Workspace</h3>
+              </div>
+              <p class="ws-tagline">Manage your documents your way.</p>
+              <p class="ws-desc">For individuals who want to keep, organize and access their own documents.</p>
+              <ul class="ws-features">
+                <li><span class="material-symbols-outlined">folder</span>Personal document management</li>
+                <li><span class="material-symbols-outlined">star</span>Favorites</li>
+                <li><span class="material-symbols-outlined">sync_alt</span>File conversion</li>
+                <li><span class="material-symbols-outlined">history</span>Document versions</li>
+                <li><span class="material-symbols-outlined">auto_awesome</span>AI document summary</li>
+              </ul>
+            </div>
+
+            <div class="ws-card">
+              <div class="ws-head">
+                <div class="ws-icon company">
+                  <span class="material-symbols-outlined">business</span>
+                </div>
+                <h3>Company Workspace</h3>
+              </div>
+              <p class="ws-tagline">Manage documents across your organization.</p>
+              <p class="ws-desc">For companies and teams that need one centralized place for shared documents.</p>
+              <ul class="ws-features">
+                <li><span class="material-symbols-outlined">folder_shared</span>Centralized document management</li>
+                <li><span class="material-symbols-outlined">sell</span>Categories &amp; departments</li>
+                <li><span class="material-symbols-outlined">group</span>Team document management</li>
+                <li><span class="material-symbols-outlined">history</span>Version control</li>
+                <li><span class="material-symbols-outlined">receipt_long</span>Document activity / audit logs</li>
+                <li><span class="material-symbols-outlined">auto_awesome</span>AI document assistance</li>
+              </ul>
+            </div>
           </div>
 
           <div class="cta-row">
@@ -623,12 +549,12 @@ export class RegisterPage extends LitElement {
               <span class="material-symbols-outlined">arrow_forward</span>
             </a>
           </div>
-        </aside>
+        </div>
 
         <div class="divider" role="presentation"></div>
 
         <div class="form-side">
-          <div class="form-card">
+          <div class="form-inner">
             <div class="header">
               <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
               <h1>Create your DOCLY account</h1>
@@ -642,7 +568,7 @@ export class RegisterPage extends LitElement {
                 @click=${() => this.switchType('personal')}>
                 <span class="check material-symbols-outlined">check_circle</span>
                 <span class="type-icon material-symbols-outlined">person</span>
-                <h3>Personal Workspace</h3>
+                <h3>Personal</h3>
                 <p>For managing your own documents.</p>
               </button>
               <button type="button"
@@ -650,13 +576,13 @@ export class RegisterPage extends LitElement {
                 @click=${() => this.switchType('company')}>
                 <span class="check material-symbols-outlined">check_circle</span>
                 <span class="type-icon material-symbols-outlined">business</span>
-                <h3>Company Workspace</h3>
-                <p>For managing documents within a team or organization.</p>
+                <h3>Company</h3>
+                <p>For teams and organizations.</p>
               </button>
             </div>
             <div class="type-note">
               <span class="material-symbols-outlined">info</span>
-              <span>Your account type determines the features and document environment available to you.</span>
+              <span>Your account type determines the features available to you.</span>
             </div>
 
             <form @submit=${this.handleSubmit}>
@@ -675,6 +601,7 @@ export class RegisterPage extends LitElement {
             </form>
           </div>
         </div>
+
       </div>
     `;
   }

@@ -23,50 +23,44 @@ export class LoginPage extends LitElement {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
-    .cards {
-      width: 100%; max-width: 1060px;
+    .layout {
+      width: 100%; max-width: 1080px;
       display: flex; align-items: stretch;
-      gap: 36px;
     }
 
-    .card {
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    /* ========== Welcome Card ========== */
-    .welcome-card {
-      flex: 1 1 48%;
-      padding: 44px 40px;
+    /* ---------- Left: Welcome (50%) ---------- */
+    .welcome-side {
+      flex: 1 1 50%;
+      padding: 48px 52px;
       display: flex;
       flex-direction: column;
+      justify-content: center;
     }
 
-    .welcome-card h2 {
-      font-size: 28px; font-weight: 700; margin: 0 0 6px;
+    .welcome-side h2 {
+      font-size: 30px; font-weight: 700; margin: 0 0 6px;
       color: #071e27;
     }
     .welcome-tagline {
-      font-size: 15px; font-weight: 600; color: #00685f;
-      margin: 0 0 14px;
+      font-size: 16px; font-weight: 600; color: #00685f;
+      margin: 0 0 16px;
     }
     .welcome-desc {
-      font-size: 13.5px; line-height: 1.6; color: #3e4946;
+      font-size: 14px; line-height: 1.65; color: #3e4946;
       margin: 0 0 8px;
     }
 
     .screenshots {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 20px;
+      gap: 14px;
+      margin-top: 24px;
     }
     .shot-slot {
       border: 2px dashed #9db8b3;
       border-radius: 10px;
       background: #eef7fb;
-      min-height: 140px;
+      min-height: 150px;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       gap: 6px;
@@ -74,11 +68,10 @@ export class LoginPage extends LitElement {
       overflow: hidden;
     }
     .shot-slot.filled { border-style: solid; border-color: transparent; background: none; }
-    .shot-slot .material-symbols-outlined { font-size: 28px; color: #7fa39c; }
-    .shot-slot p { margin: 0; font-size: 11px; font-weight: 600; }
+    .shot-slot .material-symbols-outlined { font-size: 30px; color: #7fa39c; }
+    .shot-slot p { margin: 0; font-size: 12px; font-weight: 600; }
     .shot-slot img {
-      width: 100%; height: 100%;
-      min-height: inherit;
+      width: 100%; height: 100%; min-height: inherit;
       object-fit: cover; object-position: top center;
       display: block;
     }
@@ -86,21 +79,21 @@ export class LoginPage extends LitElement {
     .features {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      margin-top: 20px;
+      gap: 16px;
+      margin-top: 24px;
     }
-    .feature { display: flex; gap: 10px; align-items: flex-start; }
+    .feature { display: flex; gap: 12px; align-items: flex-start; }
     .feature-icon {
-      width: 34px; height: 34px; flex-shrink: 0;
+      width: 36px; height: 36px; flex-shrink: 0;
       border-radius: 8px;
       background: #e6f6ff; color: #00685f;
       display: flex; align-items: center; justify-content: center;
     }
-    .feature-icon .material-symbols-outlined { font-size: 18px; }
-    .feature h3 { font-size: 13px; font-weight: 700; margin: 0 0 1px; color: #071e27; }
-    .feature p { font-size: 12px; line-height: 1.45; color: #3e4946; margin: 0; }
+    .feature-icon .material-symbols-outlined { font-size: 19px; }
+    .feature h3 { font-size: 13.5px; font-weight: 700; margin: 0 0 1px; color: #071e27; }
+    .feature p { font-size: 12.5px; line-height: 1.45; color: #3e4946; margin: 0; }
 
-    .cta-row { margin-top: auto; padding-top: 24px; }
+    .cta-row { margin-top: auto; padding-top: 28px; }
     .cta-btn {
       display: inline-flex; align-items: center; gap: 8px;
       height: 42px; padding: 0 22px;
@@ -115,10 +108,16 @@ export class LoginPage extends LitElement {
     .cta-btn:active { transform: scale(0.98); }
     .cta-btn .material-symbols-outlined { font-size: 18px; }
 
-    /* ========== Login Card ========== */
-    .login-card {
-      flex: 1 1 48%;
-      padding: 44px 36px;
+    /* ---------- Divider ---------- */
+    .divider {
+      width: 1px;
+      background: #c5d6d0;
+    }
+
+    /* ---------- Right: Login (50%) ---------- */
+    .login-side {
+      flex: 1 1 50%;
+      padding: 48px 52px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -126,31 +125,37 @@ export class LoginPage extends LitElement {
     }
 
     .login-inner {
-      width: 100%; max-width: 360px;
+      width: 100%; max-width: 380px;
       display: flex; flex-direction: column; gap: 24px;
     }
 
     .header {
       display: flex; flex-direction: column;
-      align-items: center; text-align: center; gap: 12px;
+      align-items: center; text-align: center; gap: 14px;
     }
-    .header img { height: 56px; width: auto; object-fit: contain; }
+    .header img { height: 58px; width: auto; object-fit: contain; }
     .header h1 { font-size: 22px; font-weight: 700; margin: 0; color: #071e27; }
     .header p { font-size: 13px; margin: 0; color: #3e4946; }
 
-    /* ========== Responsive ========== */
+    /* ---------- Responsive ---------- */
     @media (max-width: 900px) {
-      :host { align-items: flex-start; padding-top: 24px; }
-      .cards { flex-direction: column; max-width: 480px; margin: 0 auto; }
-      .welcome-card { padding: 32px 28px; }
-      .login-card { padding: 32px 28px; }
+      .welcome-side { padding: 36px 32px; }
+      .login-side { padding: 36px 32px; }
+    }
+
+    @media (max-width: 768px) {
+      :host { align-items: flex-start; padding-top: 20px; }
+      .layout { flex-direction: column; max-width: 520px; margin: 0 auto; }
+      .welcome-side { flex: none; padding: 28px 24px; }
+      .divider { width: 100%; height: 1px; }
+      .login-side { flex: none; padding: 28px 24px; }
     }
 
     @media (max-width: 480px) {
       :host { padding: 12px; }
-      .welcome-card { padding: 24px 18px; }
-      .login-card { padding: 24px 18px; }
-      .welcome-card h2 { font-size: 24px; }
+      .welcome-side { padding: 22px 18px; }
+      .login-side { padding: 22px 18px; }
+      .welcome-side h2 { font-size: 24px; }
       .screenshots { grid-template-columns: 1fr; }
       .shot-slot { min-height: 120px; }
       .features { grid-template-columns: 1fr; }
@@ -174,9 +179,9 @@ export class LoginPage extends LitElement {
 
   render() {
     return html`
-      <div class="cards">
+      <div class="layout">
 
-        <div class="card welcome-card">
+        <div class="welcome-side">
           <h2>Welcome to DOCLY</h2>
           <p class="welcome-tagline">Simple &amp; Organized Document Management</p>
           <p class="welcome-desc">
@@ -215,40 +220,20 @@ export class LoginPage extends LitElement {
 
           <div class="features">
             <div class="feature">
-              <div class="feature-icon">
-                <span class="material-symbols-outlined">folder</span>
-              </div>
-              <div>
-                <h3>Manage Documents</h3>
-                <p>Upload and organize your documents in one place.</p>
-              </div>
+              <div class="feature-icon"><span class="material-symbols-outlined">folder</span></div>
+              <div><h3>Manage Documents</h3><p>Upload and organize your documents in one place.</p></div>
             </div>
             <div class="feature">
-              <div class="feature-icon">
-                <span class="material-symbols-outlined">sync_alt</span>
-              </div>
-              <div>
-                <h3>Convert Files</h3>
-                <p>Convert between supported file formats.</p>
-              </div>
+              <div class="feature-icon"><span class="material-symbols-outlined">sync_alt</span></div>
+              <div><h3>Convert Files</h3><p>Convert between supported file formats.</p></div>
             </div>
             <div class="feature">
-              <div class="feature-icon">
-                <span class="material-symbols-outlined">history</span>
-              </div>
-              <div>
-                <h3>Version Control</h3>
-                <p>Keep track of different versions.</p>
-              </div>
+              <div class="feature-icon"><span class="material-symbols-outlined">history</span></div>
+              <div><h3>Version Control</h3><p>Keep track of different versions.</p></div>
             </div>
             <div class="feature">
-              <div class="feature-icon">
-                <span class="material-symbols-outlined">search</span>
-              </div>
-              <div>
-                <h3>Easy Access</h3>
-                <p>Preview, search and quickly find documents.</p>
-              </div>
+              <div class="feature-icon"><span class="material-symbols-outlined">search</span></div>
+              <div><h3>Easy Access</h3><p>Preview, search and quickly find documents.</p></div>
             </div>
           </div>
 
@@ -260,7 +245,9 @@ export class LoginPage extends LitElement {
           </div>
         </div>
 
-        <div class="card login-card">
+        <div class="divider" role="presentation"></div>
+
+        <div class="login-side">
           <div class="login-inner">
             <div class="header">
               <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
