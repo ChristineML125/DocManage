@@ -27,11 +27,10 @@ export class PersonalSettingPage extends LitElement {
     .scroll-area {
       flex: 1;
       overflow-y: auto;
-      padding: 0 32px 32px 32px;
     }
 
     @media (max-width: 767px) {
-      .scroll-area { padding-bottom: 84px; }
+      .scroll-area { padding: 0 0 84px 0; }
     }
   `;
 

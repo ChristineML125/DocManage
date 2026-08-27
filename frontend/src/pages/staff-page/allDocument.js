@@ -31,11 +31,12 @@ export class AllDocument extends LitElement {
     .scroll-area {
       flex: 1;
       overflow-y: auto;
-      padding: 0 0 0 32px;
+      padding: 0;
+      margin-top: 20px;
     }
 
     @media (max-width: 767px) {
-      .scroll-area { padding-bottom: 84px; }
+      .scroll-area { padding: 0 0 84px 0; }
     }
 
   `;

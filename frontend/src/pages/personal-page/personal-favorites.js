@@ -32,7 +32,7 @@ export class PersonalFavoritesPageWrapper extends LitElement {
     }
 
     @media (max-width: 767px) {
-      .scroll-area { padding-bottom: 84px; }
+      .scroll-area { padding: 0 0 84px 0; }
     }
   `;
 
