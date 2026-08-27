@@ -2867,18 +2867,15 @@ export class StaffAllDocument extends LitElement {
                              ${isCurrent ? html`<div class="current">Current</div>` : ''}
                            </div>
                            <div class="version-item-right">
-                             ${isCurrent ? '' : html`
-                               <div class="version-item-actions">
-                                 <button class="version-btn version-btn-view" @click=${(e) => { e.stopPropagation(); this.selectVersion(v); }}>
-                                   View
-                                 </button>
-                                 ${isSelected ? html`
-                                   <button class="version-btn version-btn-change" @click=${(e) => { e.stopPropagation(); this.selectedVer = v; this.makeCurrentVersion(); }}>
-                                     Change Current
-                                   </button>
-                                 ` : ''}
-                               </div>
-                             `}
+                            ${isCurrent ? '' : html`
+                              <div class="version-item-actions">
+                                ${isSelected ? html`
+                                  <button class="version-btn version-btn-change" @click=${(e) => { e.stopPropagation(); this.selectedVer = v; this.makeCurrentVersion(); }}>
+                                    Change Current
+                                  </button>
+                                ` : ''}
+                              </div>
+                            `}
                              <div class="upload-date">${this.formatDate(v.uploadDate)}</div>
                              <div class="upload-by">${v.UserName}</div>
                            </div>

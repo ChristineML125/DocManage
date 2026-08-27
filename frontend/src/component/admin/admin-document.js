@@ -2920,9 +2920,6 @@ static styles = css`
                           <div class="version-item-right">
                             ${isCurrent ? '' : html`
                               <div class="version-item-actions">
-                                <button class="version-btn version-btn-view" @click=${(e) => { e.stopPropagation(); this.selectVersion(v); }}>
-                                  View
-                                </button>
                                 ${isSelected ? html`
                                   <button class="version-btn version-btn-change" @click=${(e) => { e.stopPropagation(); this.selectedVer = v; this.makeCurrentVersion(); }}>
                                     Change Current
