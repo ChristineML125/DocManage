@@ -201,8 +201,6 @@ export class PersonalSidebar extends LitElement {
         transform: translateX(0);
         box-shadow: 8px 0 24px rgba(0, 0, 0, 0.2);
       }
-      nav:not(.bottom-nav) { display: none; }
-      .footer { display: none; }
 
       .bottom-nav {
         display: flex;
@@ -317,26 +315,6 @@ export class PersonalSidebar extends LitElement {
       </div>
 
       <nav class="bottom-nav">
-        <button
-          class="bnav-item ${this.isActive('/personal-dashboard') ? 'active' : ''}"
-          @click=${() => this.go('/personal-dashboard')}>
-          <span class="material-symbols-outlined">dashboard</span><span>Home</span>
-        </button>
-        <button
-          class="bnav-item ${this.isActive('/personal-documents') ? 'active' : ''}"
-          @click=${() => this.go('/personal-documents')}>
-          <span class="material-symbols-outlined">description</span><span>Docs</span>
-        </button>
-        <button
-          class="bnav-item ${this.isActive('/personal-favorites') ? 'active' : ''}"
-          @click=${() => this.go('/personal-favorites')}>
-          <span class="material-symbols-outlined">star</span><span>Favorites</span>
-        </button>
-        <button
-          class="bnav-item ${this.isActive('/personal-upload') ? 'active' : ''}"
-          @click=${() => this.go('/personal-upload')}>
-          <span class="material-symbols-outlined">upload_file</span><span>Upload</span>
-        </button>
         <button class="bnav-item" @click=${() => this.logout()}>
           <span class="material-symbols-outlined">logout</span><span>Logout</span>
         </button>

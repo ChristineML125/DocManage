@@ -356,9 +356,6 @@ export class AdminSidebar extends LitElement {
         transform: translateX(0);
         box-shadow: 8px 0 24px rgba(0, 0, 0, 0.2);
       }
-      nav:not(.bottom-nav) { display: none; }
-      .footer { display: none; }
-      .user-card { display: none; }
 
       .bottom-nav {
         display: flex;
@@ -464,21 +461,6 @@ export class AdminSidebar extends LitElement {
       </div>
 
       <nav class="bottom-nav">
-        <button
-          class="bnav-item ${this.isActive('/admin-dashboard') ? 'active' : ''}"
-          @click=${() => this.go('/admin-dashboard')}>
-          <span class="material-symbols-outlined">dashboard</span><span>Home</span>
-        </button>
-        <button
-          class="bnav-item ${this.isActive('/admin-allDocument') ? 'active' : ''}"
-          @click=${() => this.go('/admin-allDocument')}>
-          <span class="material-symbols-outlined">description</span><span>Docs</span>
-        </button>
-        <button
-          class="bnav-item ${this.isActive('/admin-upload') ? 'active' : ''}"
-          @click=${() => this.go('/admin-upload')}>
-          <span class="material-symbols-outlined">upload_file</span><span>Upload</span>
-        </button>
         <button class="bnav-item" @click=${() => this.logout()}>
           <span class="material-symbols-outlined">logout</span><span>Logout</span>
         </button>
