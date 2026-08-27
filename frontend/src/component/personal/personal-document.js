@@ -1834,6 +1834,8 @@ export class PersonalDocumentPage extends LitElement {
       .modal-box { padding: 20px 18px; width: 94vw; max-height: 88vh; overflow-y: auto; }
     }
 
+    .mobile-preview-btn { display: none; }
+
     /* ---- Mobile (≤767px): table becomes stacked cards, right-pane hidden ---- */
     @media (max-width: 767px) {
       .table-wrap { overflow-x: visible; }

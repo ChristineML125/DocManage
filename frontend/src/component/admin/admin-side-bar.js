@@ -110,7 +110,7 @@ export class AdminSidebar extends LitElement {
       box-sizing: border-box;
       position: sticky;
       top: 0;
-      overflow-y: auto;
+      overflow: hidden;
       color: #ffffff;
       font-family: 'Inter', sans-serif;
     }
@@ -213,7 +213,6 @@ export class AdminSidebar extends LitElement {
     .footer {
       margin-top: auto;
       padding-top: 16px;
-      border-top: 1px solid rgba(255,255,255,0.1);
     }
 
     .btn-new {

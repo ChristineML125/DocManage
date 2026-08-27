@@ -62,7 +62,7 @@ export class PersonalSidebar extends LitElement {
       flex-shrink: 0;
       position: sticky;
       top: 0;
-      overflow-y: auto;
+      overflow: hidden;
     }
 
     .brand {
@@ -134,7 +134,6 @@ export class PersonalSidebar extends LitElement {
     .footer {
       margin-top: auto;
       padding-top: 16px;
-      border-top: 1px solid #bcc9c6;
     }
 
     .btn-logout {
