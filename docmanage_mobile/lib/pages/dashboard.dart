@@ -361,7 +361,7 @@ class _DashboardState extends State<Dashboard> {
             const SizedBox(width: 2),
 
             const Text(
-              "Docly",
+              "Dovra",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),

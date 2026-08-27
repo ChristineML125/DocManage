@@ -25,7 +25,7 @@ export async function sendTemporaryPasswordEmail({ email, userName, temporaryPas
       'content-type': 'application/json'
     },
     body: JSON.stringify({
-      sender: { name: process.env.EMAIL_SENDER_NAME || 'Docly', email: from },
+      sender: { name: process.env.EMAIL_SENDER_NAME || 'Dovra', email: from },
       to: [{ email }],
       subject,
       textContent: text,

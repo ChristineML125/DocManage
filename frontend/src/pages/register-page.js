@@ -496,7 +496,7 @@ export class RegisterPage extends LitElement {
       <div class="layout">
 
         <div class="intro-side">
-          <h2>DOCLY — Document Management Made Simple</h2>
+          <h2>Dovra — Document Management &amp; AI</h2>
           <p class="intro-tagline">Manage, organize and access your documents in one place.</p>
 
           <div class="workspaces">
@@ -551,8 +551,8 @@ export class RegisterPage extends LitElement {
         <div class="form-side">
           <div class="form-card">
             <div class="header">
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
-              <h1>Create your DOCLY account</h1>
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Dovra Logo">
+              <h1>Create your Dovra account</h1>
               <p>Choose your workspace to get started.</p>
             </div>
 

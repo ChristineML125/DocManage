@@ -274,7 +274,7 @@ export class PersonalSidebar extends LitElement {
            <img src="/img/docly-logo.png">
         </div>
         <div class="brand-text">
-          <span class="brand-name">Docly</span>
+          <span class="brand-name">Dovra</span>
           <span class="mode-badge">Personal</span>
         </div>
       </div>

@@ -14,7 +14,8 @@ export class AdminCategories extends LitElement {
         newDepartmentName: {type: String},
         newDepartmentDescription: {type: String},
         modalType: {type: String},
-        catSearch: {type: String}
+        catSearch: {type: String},
+        deptSearch: {type: String}
     }
 
     constructor() {
@@ -29,6 +30,7 @@ export class AdminCategories extends LitElement {
         this.newDepartmentDescription = '';
         this.modalType = 'category';
         this.catSearch = '';
+        this.deptSearch = '';
     }
 
     connectedCallback() {
@@ -65,6 +67,16 @@ export class AdminCategories extends LitElement {
         if (!this.catSearch.trim()) return this.categories;
         const kw = this.catSearch.toLowerCase();
         return this.categories.filter(c => c.name?.toLowerCase().includes(kw) || c.description?.toLowerCase().includes(kw));
+    }
+
+    openDepartment(deptId) {
+        Router.go(`/admin-allDocument?departmentId=${deptId}`);
+    }
+
+    get filteredDepartments() {
+        if (!this.deptSearch.trim()) return this.departments;
+        const kw = this.deptSearch.toLowerCase();
+        return this.departments.filter(d => d.departmentName?.toLowerCase().includes(kw) || d.description?.toLowerCase().includes(kw));
     }
 
     async handleCategoryCreate() {
@@ -531,27 +543,38 @@ export class AdminCategories extends LitElement {
         </div>
       </div>
 
-      <div>
-          <h2>Departments</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <h2 style="margin:0;">Departments</h2>
+          <div class="cat-search">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#7a8a9a;">search</span>
+            <input type="text" placeholder="Search departments..."
+              .value=${this.deptSearch}
+              @input=${(e) => this.deptSearch = e.target.value}
+            />
+            ${this.deptSearch ? html`
+              <button class="cat-search-clear" @click=${() => this.deptSearch = ''}>
+                <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+              </button>
+            ` : ''}
+          </div>
       </div>
         <div class="bento-grid">
-        ${this.departments.length === 0
+        ${this.filteredDepartments.length === 0
           ? html`
-            <div class="empty-placeholder">
-              <div class="material-symbols-outlined icon">inbox</div>
-              <p>No Department available</p>
+            <div class="empty-placeholder" style="grid-column:1/-1;">
+              <div class="material-symbols-outlined icon">search_off</div>
+              <p>${this.deptSearch ? 'No departments match your search.' : 'No Department available'}</p>
             </div>
           `
-        : this.departments.map(dept => html`
-          <buttom>
-          <div class="department-card">
+        : this.filteredDepartments.map(dept => html`
+          <div class="department-card" @click=${() => this.openDepartment(dept.id)}>
             <div class="card-header">
               <div class="icon-circle">
                 <span class="material-symbols-outlined">folder</span>
               </div>
-                <buttom class="icon-btn" @click=${() => this.handleDepartmentDelete(dept.id)}>
+                <button class="icon-btn" @click=${(e) => { e.stopPropagation(); this.handleDepartmentDelete(dept.id); }}>
                   <span class="material-symbols-outlined">delete</span>
-                </buttom>
+                </button>
             </div>
             <h3 class="department-name">${dept.departmentName}</h3>
             <p class="department-desc">${dept.description || 'No description'}</p>
@@ -562,7 +585,6 @@ export class AdminCategories extends LitElement {
               </span>
             </div>
           </div>
-          </buttom>
         `)}
 
         <div class="empty-card" @click=${()=>this.openModal('department')}>

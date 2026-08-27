@@ -58,7 +58,7 @@ class LoginPage extends StatelessWidget {
                     ),
 
                     const Text(
-                        "Docly",
+                        "Dovra",
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,

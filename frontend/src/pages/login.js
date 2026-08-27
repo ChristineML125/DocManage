@@ -135,15 +135,15 @@ export class LoginPage extends LitElement {
       <div class="layout">
 
         <div class="welcome-side">
-          <h2>Welcome to DOCLY</h2>
+          <h2>Welcome to Dovra</h2>
           <p class="welcome-tagline">Simple &amp; Organized Document Management</p>
           <p class="welcome-desc">
-            DOCLY is a document management platform that helps you upload, organize,
+            Dovra is a document management platform that helps you upload, organize,
             preview, convert, manage versions, and keep track of your documents — all in one place.
           </p>
           <p class="welcome-desc">
             Whether you're managing documents for yourself or for a company,
-            DOCLY helps make document management simpler and more organized.
+            Dovra helps make document management simpler and more organized.
           </p>
 
           <div class="features">
@@ -178,7 +178,7 @@ export class LoginPage extends LitElement {
         <div class="login-side">
           <div class="login-form-card">
             <div class="header">
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly Logo">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Dovra Logo">
               <div>
                 <h1>Welcome Back</h1>
                 <p>Sign in to access your medical document dashboard</p>

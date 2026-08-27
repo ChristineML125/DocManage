@@ -1,6 +1,6 @@
 {
   "appId": "com.christine.docmanage",
-  "appName": "Docly",
+  "appName": "Dovra",
   "webDir": "dist",
   "server": {
     "cleartext": true,

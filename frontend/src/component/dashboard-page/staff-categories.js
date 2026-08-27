@@ -11,7 +11,8 @@ export class StaffCategories extends LitElement {
         newCategoryName: {type: String},
         newCategoryDecription: {type: String},
         departments: {type: Array},
-        catSearch: {type: String}
+        catSearch: {type: String},
+        deptSearch: {type: String}
     }
 
     constructor() {
@@ -23,6 +24,7 @@ export class StaffCategories extends LitElement {
         this.newCategoryDescription = '';
         this.departments = [];
         this.catSearch = '';
+        this.deptSearch = '';
     }
 
     connectedCallback() {
@@ -59,6 +61,16 @@ export class StaffCategories extends LitElement {
         if (!this.catSearch.trim()) return this.categories;
         const kw = this.catSearch.toLowerCase();
         return this.categories.filter(c => c.name?.toLowerCase().includes(kw) || c.description?.toLowerCase().includes(kw));
+    }
+
+    openDepartment(deptId) {
+        Router.go(`/allDocument?departmentId=${deptId}`);
+    }
+
+    get filteredDepartments() {
+        if (!this.deptSearch.trim()) return this.departments;
+        const kw = this.deptSearch.toLowerCase();
+        return this.departments.filter(d => d.departmentName?.toLowerCase().includes(kw) || d.description?.toLowerCase().includes(kw));
     }
 
     async handleCreateCategory() {
@@ -490,20 +502,31 @@ export class StaffCategories extends LitElement {
         </div>
       ` : ''}
 
-        <div>
-          <h2>Department Categories</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <h2 style="margin:0;">Department Categories</h2>
+          <div class="cat-search">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#7a8a9a;">search</span>
+            <input type="text" placeholder="Search departments..."
+              .value=${this.deptSearch}
+              @input=${(e) => this.deptSearch = e.target.value}
+            />
+            ${this.deptSearch ? html`
+              <button class="cat-search-clear" @click=${() => this.deptSearch = ''}>
+                <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+              </button>
+            ` : ''}
+          </div>
         </div>
         <div class="bento-grid">
-        ${this.departments.length === 0
+        ${this.filteredDepartments.length === 0
           ? html`
-            <div class="empty-placeholder">
-              <div class="material-symbols-outlined icon">inbox</div>
-              <p>No Category available</p>
+            <div class="empty-placeholder" style="grid-column:1/-1;">
+              <div class="material-symbols-outlined icon">search_off</div>
+              <p>${this.deptSearch ? 'No departments match your search.' : 'No Department available'}</p>
             </div>
           `
-        : this.departments.map(dept => html`
-          <buttom>
-          <div class="department-card">
+        : this.filteredDepartments.map(dept => html`
+          <div class="department-card" @click=${() => this.openDepartment(dept.id)}>
             <div class="card-header">
               <div class="icon-circle">
                 <span class="material-symbols-outlined">folder</span>
@@ -518,7 +541,6 @@ export class StaffCategories extends LitElement {
               </span>
             </div>
           </div>
-          </buttom>
         `)}
         </div>
     `;

@@ -1643,7 +1643,9 @@ export class StaffAllDocument extends LitElement {
        pdfBlobUrl: {type: String},
        mobilePreviewID: {type: Number},
        activeCategoryId: {type: Number},
-       activeCategoryName: {type: String}
+       activeCategoryName: {type: String},
+       activeDepartmentId: {type: Number},
+       activeDepartmentName: {type: String}
    };
  
    constructor() {
@@ -1688,6 +1690,8 @@ this.pdfBlobUrl = null;
       this.mobilePreviewID = null;
       this.activeCategoryId = null;
       this.activeCategoryName = '';
+      this.activeDepartmentId = null;
+      this.activeDepartmentName = '';
   }
  
    connectedCallback() {
@@ -1699,9 +1703,12 @@ this.pdfBlobUrl = null;
 const params = new URLSearchParams(window.location.search);
     const keyword = params.get('keyword') || '';
     const categoryId = params.get('categoryId') || '';
-    console.log('URL Keyword: ', keyword, 'URL CategoryId: ', categoryId);
+    const departmentId = params.get('departmentId') || '';
+    console.log('URL Keyword: ', keyword, 'URL CategoryId: ', categoryId, 'URL DepartmentId: ', departmentId);
     if (categoryId) {
         this.fetchDocumentsByCategory(categoryId);
+    } else if (departmentId) {
+        this.fetchDocumentsByDepartment(departmentId);
     } else if (keyword) {
         console.log('📥 Calling fetchDocumentsByKeyword with:', keyword); 
         this.fetchDocumentsByKeyword(keyword);
@@ -1919,6 +1926,43 @@ const params = new URLSearchParams(window.location.search);
   async clearCategoryFilter() {
     this.activeCategoryId = null;
     this.activeCategoryName = '';
+    try {
+        const data = await getDocumentsList();
+        if (data.success) {
+            this.documents = data.documents || [];
+            this.filteredDocs = [...this.documents];
+            this.selectedDoc = this.documents.length > 0 ? this.documents[0] : null;
+            this.currentPage = 1;
+        }
+    } catch (err) {
+        console.error('Failed to load documents', err);
+    }
+  }
+
+  async fetchDocumentsByDepartment(departmentId) {
+    this.activeDepartmentId = parseInt(departmentId, 10);
+    this.activeDepartmentName = '';
+    try {
+        const data = await getDocumentsList({ departmentId });
+        if (data.success) {
+            this.documents = data.documents || [];
+            this.filteredDocs = [...this.documents];
+            if (this.documents.length > 0) {
+                this.activeDepartmentName = this.documents[0].departmentName || '';
+            }
+            this.selectedDoc = this.documents.length > 0 ? this.documents[0] : null;
+            this.currentPage = 1;
+        }
+    } catch (err) {
+        console.error('Department filter failed:', err);
+    } finally {
+        this.loading = false;
+    }
+  }
+
+  async clearDepartmentFilter() {
+    this.activeDepartmentId = null;
+    this.activeDepartmentName = '';
     try {
         const data = await getDocumentsList();
         if (data.success) {
@@ -2728,6 +2772,16 @@ const params = new URLSearchParams(window.location.search);
                <span class="material-symbols-outlined" style="font-size:18px;">folder</span>
                <span class="category-filter-name">${this.activeCategoryName || 'Category'} (${this.documents.length || 0})</span>
                <button class="category-filter-clear" @click=${this.clearCategoryFilter}>
+                 <span class="material-symbols-outlined" style="font-size:16px;">close</span>
+                 Clear filter
+               </button>
+             </div>
+           ` : ''}
+           ${this.activeDepartmentId ? html`
+             <div class="category-filter-banner">
+               <span class="material-symbols-outlined" style="font-size:18px;">business</span>
+               <span class="category-filter-name">${this.activeDepartmentName || 'Department'} (${this.documents.length || 0})</span>
+               <button class="category-filter-clear" @click=${this.clearDepartmentFilter}>
                  <span class="material-symbols-outlined" style="font-size:16px;">close</span>
                  Clear filter
                </button>

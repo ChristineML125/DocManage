@@ -8,9 +8,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
 
       manifest: {
-        name: 'Docly',
-        short_name: 'Docly',
-        description: 'Smart Document Management with AI Summary',
+        name: 'Dovra',
+        short_name: 'Dovra',
+        description: 'Dovra — Document Management & AI',
 
         theme_color: '#ffffff',
         background_color: '#ffffff',

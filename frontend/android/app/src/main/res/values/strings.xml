@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Docly</string>
-    <string name="title_activity_main">Docly</string>
+    <string name="app_name">Dovra</string>
+    <string name="title_activity_main">Dovra</string>
     <string name="package_name">com.christine.docmanage</string>
     <string name="custom_url_scheme">com.christine.docmanage</string>
 </resources>

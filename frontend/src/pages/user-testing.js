@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-const WEB_APP_URL = 'https://docmanage-1.onrender.com';
-const APK_URL = '#';
+const WEB_APP_URL = 'https://docmanage-1.onrender.com/';
+const APK_URL = 'https://docmanage-1.onrender.com/Dovra-v1.0.0.apk';
 const FEEDBACK_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd0DA5J7-rNHUH13-Dyvl4eQaenOt4zB9-Tfh1LgH_FNVYcHQ/viewform?usp=publish-editor';
 
 @customElement('user-testing-page')
@@ -179,7 +179,7 @@ export class UserTestingPage extends LitElement {
       font-size: 14px; line-height: 1.6; color: #5a6b65; margin: 0;
     }
 
-    /* ===== TRY DOCLY ===== */
+    /* ===== TRY DOVRA ===== */
     .try-grid {
       display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
       margin-top: 40px;
@@ -305,8 +305,8 @@ export class UserTestingPage extends LitElement {
       <!-- NAV -->
       <nav class="nav">
         <a class="nav-brand" href="/">
-          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly">
-          <span>Docly</span>
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Dovra">
+          <span>Dovra</span>
         </a>
         <div class="nav-links">
           <a class="nav-outline" href="/login">Sign In</a>
@@ -316,7 +316,7 @@ export class UserTestingPage extends LitElement {
 
       <!-- HERO -->
       <section class="hero">
-        <img class="hero-logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Docly">
+        <img class="hero-logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAyGyDga-rQyBFfH9X_WgWBO5cp-YZudDaN5XRWOcnivlP-Pc_vUiR3d6sjBr8WhzBsfnAAxj0nAYocyOHrCKVyrzvdCSm8XxrU7H5PmUiydC6UlrqbjjUCUfxiW4qSHeb3C1JLyen6RgeU9NR-zwhEoSIOK_NbxkaW02zL4L6JIZeLaJjzqQvlkv2c5N4BTAJ5J21lx8ZFPWyIc0OHg5tmFTdTOtzENIEzPZBSZMZ0LS0W4rSucdQZdAzxj285Iw0w" alt="Dovra">
         <h1>Public Beta Testing</h1>
         <p class="hero-sub">
           A simple way to organize, manage,<br>and understand your documents.
@@ -337,12 +337,12 @@ export class UserTestingPage extends LitElement {
         </div>
       </section>
 
-      <!-- WHAT IS DOCLY -->
+      <!-- WHAT IS DOVRA -->
       <section class="section">
         <p class="section-label">About</p>
-        <h2 class="section-title">What is Docly?</h2>
+        <h2 class="section-title">What is Dovra?</h2>
         <p class="section-desc">
-          Docly is a document management platform designed to help individuals and
+          Dovra is a document management platform designed to help individuals and
           organizations organize, access, and manage their documents in one place.
         </p>
 
@@ -378,12 +378,12 @@ export class UserTestingPage extends LitElement {
         </div>
       </section>
 
-      <!-- WHO IS DOCLY FOR -->
+      <!-- WHO IS DOVRA FOR -->
       <section class="section" style="padding-top: 0;">
         <p class="section-label">Audience</p>
-        <h2 class="section-title">Who is Docly for?</h2>
+        <h2 class="section-title">Who is Dovra for?</h2>
         <p class="section-desc">
-          Whether you work alone or with a team, Docly adapts to how you manage documents.
+          Whether you work alone or with a team, Dovra adapts to how you manage documents.
         </p>
 
         <div class="audience-grid">
@@ -411,10 +411,10 @@ export class UserTestingPage extends LitElement {
         </div>
       </section>
 
-      <!-- TRY DOCLY -->
+      <!-- TRY DOVRA -->
       <section class="section" style="padding-top: 0;">
         <p class="section-label">Get Started</p>
-        <h2 class="section-title">Try Docly</h2>
+        <h2 class="section-title">Try Dovra</h2>
         <p class="section-desc">
           Choose a platform to start testing.
         </p>
@@ -425,7 +425,7 @@ export class UserTestingPage extends LitElement {
               <span class="material-symbols-outlined">language</span>
             </div>
             <h3>Web Application</h3>
-            <p>Test Docly directly in your browser.</p>
+            <p>Test Dovra directly in your browser.</p>
             <a class="try-card-btn web" href="${WEB_APP_URL}" target="_blank" rel="noopener">
               <span class="material-symbols-outlined">open_in_new</span>
               Try Web App
@@ -497,7 +497,7 @@ export class UserTestingPage extends LitElement {
             <span class="material-symbols-outlined">warning</span>
             Testing Notice
           </div>
-          <p>Docly is currently a public beta version.</p>
+          <p>Dovra is currently a public beta version.</p>
           <p>Please use sample or non-sensitive documents when testing the application.</p>
           <p>Do not upload confidential, medical, financial, or sensitive personal information.</p>
         </div>
@@ -507,7 +507,7 @@ export class UserTestingPage extends LitElement {
       <section class="feedback-section">
         <h2>Your Feedback Matters</h2>
         <p>Have you found a bug? Was anything confusing?<br>Do you have an idea for improvement?</p>
-        <p class="sub">Your feedback will help us improve Docly.</p>
+        <p class="sub">Your feedback will help us improve Dovra.</p>
         <a class="feedback-btn" href="${FEEDBACK_URL}" target="_blank" rel="noopener">
           <span class="material-symbols-outlined">edit_note</span>
           Give Feedback
@@ -516,7 +516,7 @@ export class UserTestingPage extends LitElement {
 
       <!-- FOOTER -->
       <div class="footer">
-        Docly Public Beta &mdash; &copy; ${new Date().getFullYear()} Docly
+        Dovra Public Beta &mdash; &copy; ${new Date().getFullYear()} Dovra
       </div>
 
     `;

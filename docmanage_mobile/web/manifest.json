@@ -1,11 +1,11 @@
 {
-    "name": "Docly",
-    "short_name": "Docly",
+    "name": "Dovra",
+    "short_name": "Dovra",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Docly - Smart Document Management",
+    "description": "Dovra - Document Management & AI",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

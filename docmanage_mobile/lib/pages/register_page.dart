@@ -150,7 +150,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   const Text(
-                    "Docly",
+                    "Dovra",
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,

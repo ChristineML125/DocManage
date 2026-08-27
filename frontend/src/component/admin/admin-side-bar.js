@@ -393,7 +393,7 @@ export class AdminSidebar extends LitElement {
           <img src="/img/docly-logo.png">
         </div>
         <div class="brand-text">
-          <span class="brand-name">Docly</span>
+          <span class="brand-name">Dovra</span>
           <span class="brand-sub">Admin</span>
         </div>
       </div>

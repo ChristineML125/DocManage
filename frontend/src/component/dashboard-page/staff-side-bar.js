@@ -328,7 +328,7 @@ export class Sidebar extends LitElement {
            <img src="/img/docly-logo.png">
         </div>
         <div class="brand-text">
-          <span class="brand-name">Docly</span>
+          <span class="brand-name">Dovra</span>
         </div>
       </div>
 
