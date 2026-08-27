@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { getDocumentsList, getDocument, getVersionList, generateAISummary, exportPDF, exportDocx, exportXlsx, uploadNewVersion, toggleFavorite, getFavorites, updateDocumentStatus } from '../../api/documentAPI.js';
+import { getDocumentsList, getDocument, getVersionList, generateAISummary, exportPDF, exportDocx, exportXlsx, uploadNewVersion, toggleFavorite, getFavorites, updateDocumentStatus, updateDocumentVersion } from '../../api/documentAPI.js';
 import { getFileUrl, fetchFile, http } from '../../api/http.js';
 import { getFolders, createFolder, renameFolder, deleteFolder, assignDocumentToFolder, unassignDocumentFromFolder, getNotes, createNote, updateNote, deleteNote, getNoteCounts } from '../../api/folderNoteAPI.js';
 import { renderAsync } from 'docx-preview';
@@ -731,15 +731,15 @@ export class PersonalDocumentPage extends LitElement {
       border-radius: 6px;
     }
 
-    .preview-content iframe, .preview-content embed,
-    .document-side iframe, .document-side embed {
+    .preview-content iframe,
+    .document-side iframe {
       width: 100%;
       height: 100%;
       border: none;
       min-height: 0;
     }
 
-    .preview-content iframe, .preview-content embed {
+    .preview-content iframe {
       padding: 10px 15px;
     }
 
@@ -1512,6 +1512,61 @@ export class PersonalDocumentPage extends LitElement {
       background: #eef2f6;
     }
 
+    .version-item.selected {
+      background: #e8f0f6;
+      border-left: 3px solid #00685f;
+    }
+
+    .version-item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .version-item-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .version-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .version-btn {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .version-btn-view {
+      background: #f0f4f8;
+      color: #00685f;
+      border-color: #d1d5db;
+    }
+
+    .version-btn-view:hover {
+      background: #e0e8f0;
+    }
+
+    .version-btn-change {
+      background: #00685f;
+      color: #ffffff;
+      border-color: #00685f;
+    }
+
+    .version-btn-change:hover {
+      background: #00554d;
+    }
+
     .version-item .version-num {
       font-weight: 600;
       color: #0b1c30;
@@ -1538,7 +1593,6 @@ export class PersonalDocumentPage extends LitElement {
       letter-spacing: 0.5px;
       border-radius: 12px;
       flex-shrink: 0;
-      margin-left: auto;
       vertical-align: middle;
     }
 
@@ -1940,7 +1994,7 @@ export class PersonalDocumentPage extends LitElement {
         justify-content: center;
         align-items: flex-start;
       }
-      .mobile-preview-content iframe, .mobile-preview-content embed { width: 100%; height: 400px; border: none; }
+      .mobile-preview-content iframe { width: 100%; height: 400px; border: none; }
       .mobile-preview-content img { max-width: 100%; height: auto; }
       .mobile-preview-btn {
         display: inline-flex;
@@ -1977,6 +2031,7 @@ export class PersonalDocumentPage extends LitElement {
     showAISummary: { type: Boolean },
     versions: { type: Array },
     selectedVer: { type: Object },
+    selectedVersionNum: { type: Number },
     aiSummary: { type: String },
     loadingSummary: { type: Boolean },
     converting: { type: Boolean },
@@ -2025,6 +2080,7 @@ export class PersonalDocumentPage extends LitElement {
     this.showAISummary = false;
     this.versions = [];
     this.selectedVer = null;
+    this.selectedVersionNum = null;
     this.aiSummary = '';
     this.loadingSummary = false;
     this.converting = false;
@@ -2646,9 +2702,9 @@ export class PersonalDocumentPage extends LitElement {
   renderPreview(type, url, containerId = 'docx-container', excelContainer = 'excel-container') {
     if (type === 'pdf') {
       if (this.pdfBlobUrl) {
-        return html`<embed src="${this.pdfBlobUrl}" type="application/pdf" style="width:100%;min-height:400px;height:100%;">`;
+        return html`<iframe src="${this.pdfBlobUrl}"></iframe>`;
       }
-      return html`<div style="padding:20px;text-align:center;">Loading PDF...</div>`;
+      return html`<iframe></iframe>`;
     }
 
     if (['png', 'jpg', 'jpeg', 'webp'].includes(type)) {
@@ -2720,6 +2776,7 @@ export class PersonalDocumentPage extends LitElement {
     const res = await getVersionList(this.selectedDoc.documentID);
     if (res.success) {
       this.versions = res.versions || [];
+      this.selectedVersionNum = null;
       this.showHistoryVersion = true;
     }
   }
@@ -2730,6 +2787,7 @@ export class PersonalDocumentPage extends LitElement {
       fileUrl: getFileUrl(version.filePath),
       fileType: version.filePath.split('.').pop().toLowerCase()
     };
+    this.selectedVersionNum = version.versionNum;
 
     if (this.selectedVer.fileType === 'docx') {
       await this.updateComplete;
@@ -2754,6 +2812,33 @@ export class PersonalDocumentPage extends LitElement {
     }
   }
 
+  async makeCurrentVersion() {
+    if (this.selectedVersionNum == null || !this.selectedDoc) {
+      return;
+    }
+    try {
+      const res = await updateDocumentVersion(
+        this.selectedDoc.documentID,
+        this.selectedVersionNum
+      );
+      if (res.success) {
+        await this.fetchDocuments();
+        const updatedDoc = this.documents.find(
+          d => d.documentID === this.selectedDoc.documentID
+        );
+        if (updatedDoc) {
+          await this.selectDoc(updatedDoc);
+        }
+        await this.openHistoryVersion();
+      } else {
+        alert(res.message || "Failed to update current version");
+      }
+    } catch (err) {
+      console.error("Failed to change current version:", err);
+      alert("Failed to change current version");
+    }
+  }
+
   async openUploadModal() {
     this.showUploadVersion = true;
   }
@@ -2764,6 +2849,7 @@ export class PersonalDocumentPage extends LitElement {
     }
     this.showPreviewModal = false;
     this.showHistoryVersion = false;
+    this.selectedVersionNum = null;
     if (this.pdfBlobUrl) {
       URL.revokeObjectURL(this.pdfBlobUrl);
       this.pdfBlobUrl = null;
@@ -3439,16 +3525,34 @@ export class PersonalDocumentPage extends LitElement {
                         <p>No History Version available</p>
                       </div>
                     `
-                    : this.versions.map(v => html`
-                        <div class="version-item" @click=${() => this.selectVersion(v)}>
-                          <div class="version-num">V ${v.versionNum}.0</div>
-                          ${Number(v.isLatest) === 1
-                            ? html`<div class="current">Current</div>`
-                            : ''}
-                          <div class="upload-date">${this.formatDate(v.uploadDate)}</div>
-                          <div class="upload-by">${v.UserName}</div>
-                        </div>
-                      `)}
+                    : this.versions.map(v => {
+                        const isCurrent = Number(v.isLatest) === 1;
+                        const isSelected = this.selectedVersionNum === v.versionNum;
+                        return html`
+                          <div class="version-item ${isSelected ? 'selected' : ''}" @click=${() => this.selectVersion(v)}>
+                            <div class="version-item-left">
+                              <div class="version-num">V ${v.versionNum}.0</div>
+                              ${isCurrent ? html`<div class="current">Current</div>` : ''}
+                            </div>
+                            <div class="version-item-right">
+                              ${isCurrent ? '' : html`
+                                <div class="version-item-actions">
+                                  <button class="version-btn version-btn-view" @click=${(e) => { e.stopPropagation(); this.selectVersion(v); }}>
+                                    View
+                                  </button>
+                                  ${isSelected ? html`
+                                    <button class="version-btn version-btn-change" @click=${(e) => { e.stopPropagation(); this.selectedVer = v; this.makeCurrentVersion(); }}>
+                                      Change Current
+                                    </button>
+                                  ` : ''}
+                                </div>
+                              `}
+                              <div class="upload-date">${this.formatDate(v.uploadDate)}</div>
+                              <div class="upload-by">${v.UserName}</div>
+                            </div>
+                          </div>
+                        `;
+                      })}
                 </div>
                 <div class="right-version-preview">
                   ${this.selectedVer

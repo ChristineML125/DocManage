@@ -325,15 +325,15 @@ static styles = css`
         border-radius: 6px;
     }
 
-    .preview-content iframe, .preview-content embed,
-    .document-side iframe, .document-side embed {
+    .preview-content iframe,
+    .document-side iframe {
         width: 100%;
         height: 100%;
         border: none;
         min-height: 0;
     }
 
-    .preview-content iframe, .preview-content embed {
+    .preview-content iframe {
         padding: 10px 15px;
     }
 
@@ -1110,6 +1110,61 @@ static styles = css`
         background: #eef2f6;
     }
 
+    .version-item.selected {
+        background: #e8f0f6;
+        border-left: 3px solid #00685f;
+    }
+
+    .version-item-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .version-item-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+    }
+
+    .version-item-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .version-btn {
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.15s;
+    }
+
+    .version-btn-view {
+        background: #f0f4f8;
+        color: #00685f;
+        border-color: #d1d5db;
+    }
+
+    .version-btn-view:hover {
+        background: #e0e8f0;
+    }
+
+    .version-btn-change {
+        background: #00685f;
+        color: #ffffff;
+        border-color: #00685f;
+    }
+
+    .version-btn-change:hover {
+        background: #00554d;
+    }
+
     .version-item .version-num {
         font-weight: 600;
         color: #0b1c30;
@@ -1136,7 +1191,6 @@ static styles = css`
         letter-spacing: 0.5px;
         border-radius: 12px;
         flex-shrink: 0;
-        margin-left: auto;
         vertical-align: middle;
     }
 
@@ -1509,7 +1563,7 @@ static styles = css`
             justify-content: center;
             align-items: flex-start;
         }
-        .mobile-preview-content iframe, .mobile-preview-content embed { width: 100%; height: 400px; border: none; }
+        .mobile-preview-content iframe { width: 100%; height: 400px; border: none; }
         .mobile-preview-content img { max-width: 100%; height: auto; }
         .mobile-preview-btn {
             display: inline-flex;
@@ -1544,6 +1598,7 @@ static styles = css`
 
     versions: { type: Array},
     selectedVer: { type: Object },
+    selectedVersionNum: { type: Number },
     selectedFile: {type: Object},
     uploading: {type: Boolean},
     showHistoryVersion: {type: Boolean},
@@ -1576,6 +1631,7 @@ static styles = css`
 
     this.versions = [];
     this.selectedVer = null;
+    this.selectedVersionNum = null;
     this.selectedFile = null;
     this.showHistoryVersion = false;
     this.showUploadVersion = false;
@@ -1929,6 +1985,7 @@ static styles = css`
 
       if(res.success){
           this.versions = res.versions || [];
+          this.selectedVersionNum = null;
           this.showHistoryVersion = true;
       }
   }
@@ -1978,6 +2035,7 @@ static styles = css`
     }
     this.showPreviewModal = false;
     this.showHistoryVersion = false;
+    this.selectedVersionNum = null;
     if(this.pdfBlobUrl){
       URL.revokeObjectURL(this.pdfBlobUrl);
       this.pdfBlobUrl = null;
@@ -2252,20 +2310,17 @@ static styles = css`
   }
 
   async makeCurrentVersion() {
-    if (!this.selectedVer || !this.selectedDoc) {
+    if (this.selectedVersionNum == null || !this.selectedDoc) {
         return;
     }
 
       try {
           const res = await updateDocumentVersion(
               this.selectedDoc.documentID,
-              this.selectedVer.versionNum
+              this.selectedVersionNum
           );
 
           if (res.success) {
-              alert(`V${this.selectedVer.versionNum}.0 is now the current version`);
-
-              // 重新加载 document
               await this.fetchDocuments();
 
               const updatedDoc = this.documents.find(
@@ -2276,7 +2331,6 @@ static styles = css`
                   await this.selectDoc(updatedDoc);
               }
 
-              // 重新加载 Version History
               await this.openHistoryVersion();
 
           } else {
@@ -2393,9 +2447,9 @@ static styles = css`
   renderPreview(type, url, containerId = "docx-container", excelContainer="excel-container") {
     if (type === "pdf") {
         if (this.pdfBlobUrl) {
-            return html`<embed src="${this.pdfBlobUrl}" type="application/pdf" style="width:100%;min-height:400px;height:100%;">`;
+            return html`<iframe src="${this.pdfBlobUrl}"></iframe>`;
         }
-        return html`<div style="padding:20px;text-align:center;">Loading PDF...</div>`;
+        return html`<iframe></iframe>`;
     }
 
     if (["png","jpg","jpeg","webp"].includes(type)) {
@@ -2532,6 +2586,7 @@ static styles = css`
           fileUrl: getFileUrl(version.filePath),
           fileType: version.filePath.split('.').pop().toLowerCase()
       };
+      this.selectedVersionNum = version.versionNum;
 
       console.log("Selected version ", this.selectedVer);
 
@@ -2845,11 +2900,6 @@ static styles = css`
               </div>
 
               <div class="version-content">
-                <button
-                    @click=${this.makeCurrentVersion}
-                >
-                    Make Current
-                </button>
                 <div class="version-list">
                   ${this.versions.length === 0 
                     ? html`
@@ -2858,17 +2908,34 @@ static styles = css`
                           <p>No History Version available</p>
                       </div>
                     `
-                  : this.versions.map(v => html`
-                      <div class="version-item" @click=${()=>this.selectVersion(v)}>
-                        <div class="version-num">V ${v.versionNum}.0</div>
-                          ${Number(v.isLatest) === 1 ? html `
-                            <div class="current">Current</div>  
-                          `:''}
-                        <div class="upload-date">${this.formatDate(v.uploadDate)}</div>
-                        <div class="upload-by">${v.UserName}</div>
-                      </div>
-                    `
-                  )
+                  : this.versions.map(v => {
+                      const isCurrent = Number(v.isLatest) === 1;
+                      const isSelected = this.selectedVersionNum === v.versionNum;
+                      return html`
+                        <div class="version-item ${isSelected ? 'selected' : ''}" @click=${() => this.selectVersion(v)}>
+                          <div class="version-item-left">
+                            <div class="version-num">V ${v.versionNum}.0</div>
+                            ${isCurrent ? html`<div class="current">Current</div>` : ''}
+                          </div>
+                          <div class="version-item-right">
+                            ${isCurrent ? '' : html`
+                              <div class="version-item-actions">
+                                <button class="version-btn version-btn-view" @click=${(e) => { e.stopPropagation(); this.selectVersion(v); }}>
+                                  View
+                                </button>
+                                ${isSelected ? html`
+                                  <button class="version-btn version-btn-change" @click=${(e) => { e.stopPropagation(); this.selectedVer = v; this.makeCurrentVersion(); }}>
+                                    Change Current
+                                  </button>
+                                ` : ''}
+                              </div>
+                            `}
+                            <div class="upload-date">${this.formatDate(v.uploadDate)}</div>
+                            <div class="upload-by">${v.UserName}</div>
+                          </div>
+                        </div>
+                      `;
+                    })
                   }
                 </div>
                 <div class="right-version-preview">
