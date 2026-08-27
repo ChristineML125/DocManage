@@ -52,10 +52,6 @@ export class StaffCategories extends LitElement {
     }
 
     openCategory(catId) {
-        Router.go(`/category/${catId}`);
-    }
-
-    openCategory(catId) {
         Router.go(`/allDocument?categoryId=${catId}`);
     }
 
