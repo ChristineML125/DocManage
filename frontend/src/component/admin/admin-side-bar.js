@@ -476,8 +476,8 @@ export class AdminSidebar extends LitElement {
           @click=${() => this.go('/admin-upload')}>
           <span class="material-symbols-outlined">upload_file</span><span>Upload</span>
         </button>
-        <button class="bnav-item" @click=${() => window.dispatchEvent(new CustomEvent('toggle-sidebar'))}>
-          <span class="material-symbols-outlined">menu</span><span>Menu</span>
+        <button class="bnav-item" @click=${() => this.logout()}>
+          <span class="material-symbols-outlined">logout</span><span>Logout</span>
         </button>
       </nav>
     `;
