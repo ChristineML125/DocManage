@@ -356,6 +356,9 @@ export class AdminSidebar extends LitElement {
         transform: translateX(0);
         box-shadow: 8px 0 24px rgba(0, 0, 0, 0.2);
       }
+      nav:not(.bottom-nav) { display: none; }
+      .footer { display: none; }
+      .user-card { display: none; }
 
       .bottom-nav {
         display: flex;
