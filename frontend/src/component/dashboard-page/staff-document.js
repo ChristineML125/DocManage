@@ -61,6 +61,39 @@ export class StaffAllDocument extends LitElement {
          text-transform: uppercase;
          color: #45474c;
      }
+
+     .category-filter-banner {
+         display: flex;
+         align-items: center;
+         gap: 8px;
+         padding: 8px 16px;
+         background: #e8f6f4;
+         border-bottom: 1px solid #cdeae6;
+         font-size: 13px;
+         color: #00685f;
+         flex-wrap: wrap;
+     }
+     .category-filter-name {
+         font-weight: 600;
+         flex: 1;
+     }
+     .category-filter-clear {
+         display: flex;
+         align-items: center;
+         gap: 4px;
+         background: #d4eee9;
+         border: 1px solid #b4ddd6;
+         color: #00685f;
+         font-size: 12px;
+         font-weight: 600;
+         padding: 4px 10px;
+         border-radius: 6px;
+         cursor: pointer;
+         font-family: inherit;
+     }
+     .category-filter-clear:hover {
+         background: #b4ddd6;
+     }
  
      /* ========== Table ========== */
      .table-wrap {
@@ -1608,7 +1641,9 @@ export class StaffAllDocument extends LitElement {
       loadingSummary: {type: Boolean},
       aiSummary: {type: String},
        pdfBlobUrl: {type: String},
-       mobilePreviewID: {type: Number}
+       mobilePreviewID: {type: Number},
+       activeCategoryId: {type: Number},
+       activeCategoryName: {type: String}
    };
  
    constructor() {
@@ -1649,9 +1684,11 @@ export class StaffAllDocument extends LitElement {
        this.showSummary = false;
        this.loadingSummary= false;
        this.aiSummary= "";
-       this.pdfBlobUrl = null;
-       this.mobilePreviewID = null;
-   }
+this.pdfBlobUrl = null;
+      this.mobilePreviewID = null;
+      this.activeCategoryId = null;
+      this.activeCategoryName = '';
+  }
  
    connectedCallback() {
      super.connectedCallback();
@@ -1659,15 +1696,18 @@ export class StaffAllDocument extends LitElement {
      window.addEventListener('mousemove', this._onMouseMove);
      window.addEventListener('mouseup', this._onMouseUp);
  
-     const params = new URLSearchParams(window.location.search);
-     const keyword = params.get('keyword') || '';
-     console.log('URL Keyword: ', keyword);
-     if (keyword) {
-         console.log('📥 Calling fetchDocumentsByKeyword with:', keyword); 
-         this.fetchDocumentsByKeyword(keyword);
-     } else {
-         this.fetchDocuments();
-     }
+const params = new URLSearchParams(window.location.search);
+    const keyword = params.get('keyword') || '';
+    const categoryId = params.get('categoryId') || '';
+    console.log('URL Keyword: ', keyword, 'URL CategoryId: ', categoryId);
+    if (categoryId) {
+        this.fetchDocumentsByCategory(categoryId);
+    } else if (keyword) {
+        console.log('📥 Calling fetchDocumentsByKeyword with:', keyword); 
+        this.fetchDocumentsByKeyword(keyword);
+    } else {
+        this.fetchDocuments();
+    }
      // detect the size changing
      this.resizeObserver = new ResizeObserver(() => {
        this.recalculateScale();
@@ -1854,6 +1894,43 @@ export class StaffAllDocument extends LitElement {
          console.error('Search failed:', err);
      }
    }
+
+   async fetchDocumentsByCategory(categoryId) {
+    this.activeCategoryId = parseInt(categoryId, 10);
+    this.activeCategoryName = '';
+    try {
+        const data = await getDocumentsList({ categoryId });
+        if (data.success) {
+            this.documents = data.documents || [];
+            this.filteredDocs = [...this.documents];
+            if (this.documents.length > 0) {
+                this.activeCategoryName = this.documents[0].categoriesName || '';
+            }
+            this.selectedDoc = this.documents.length > 0 ? this.documents[0] : null;
+            this.currentPage = 1;
+        }
+    } catch (err) {
+        console.error('Category filter failed:', err);
+    } finally {
+        this.loading = false;
+    }
+  }
+
+  async clearCategoryFilter() {
+    this.activeCategoryId = null;
+    this.activeCategoryName = '';
+    try {
+        const data = await getDocumentsList();
+        if (data.success) {
+            this.documents = data.documents || [];
+            this.filteredDocs = [...this.documents];
+            this.selectedDoc = this.documents.length > 0 ? this.documents[0] : null;
+            this.currentPage = 1;
+        }
+    } catch (err) {
+        console.error('Failed to load documents', err);
+    }
+  }
  
     async renderDoc(url) {
      //Get doc in backend
@@ -2646,6 +2723,16 @@ export class StaffAllDocument extends LitElement {
            <div class="filter-bar">
              <span>${this.documents.length || 0} documents</span>
            </div>
+           ${this.activeCategoryId ? html`
+             <div class="category-filter-banner">
+               <span class="material-symbols-outlined" style="font-size:18px;">folder</span>
+               <span class="category-filter-name">${this.activeCategoryName || 'Category'} (${this.documents.length || 0})</span>
+               <button class="category-filter-clear" @click=${this.clearCategoryFilter}>
+                 <span class="material-symbols-outlined" style="font-size:16px;">close</span>
+                 Clear filter
+               </button>
+             </div>
+           ` : ''}
            <div class="table-wrap">
              <table>
                <thead>

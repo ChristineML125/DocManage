@@ -10,13 +10,11 @@ import './pages/staff-page/dashboard.js'
 import './pages/staff-page/allDocument.js'
 import './pages/staff-page/upload.js'
 import './pages/staff-page/categories.js'
-import './pages/staff-page/category-detail.js'
 
 import './pages/admin-page/admin-dashboard.js'
 import './pages/admin-page/admin-allDocument.js'
 import './pages/admin-page/admin-upload.js'
 import './pages/admin-page/admin-category.js'
-import './pages/admin-page/admin-category-detail.js'
 import './pages/admin-page/UserManagement.js'
 import './pages/admin-page/AuditLogs.js'
 import './pages/admin-page/admin-setting.js'
@@ -47,13 +45,11 @@ class AppRoot extends LitElement {
             { path: '/dashboard', component: 'dashboard-page' },
             { path: '/allDocument', component: 'document-page' },
             { path: '/upload', component: 'upload-page' },
-            { path: '/category/:id', component: 'staff-category-detail-wrapper'},
             { path: '/categories', component: 'categories-page' },
 
             { path: '/admin-dashboard', component: 'admin-dashboard-page'},
             { path: '/admin-allDocument', component: 'admin-alldocument-page'},
             { path: '/admin-upload', component: 'admin-upload-page'},
-            { path: '/admin-category/:id', component: 'admin-category-detail-wrapper'},
             { path: '/admin-category', component: 'admin-category-page'},
             { path: '/UserManagement', component: 'user-management-page'},
             { path: '/AuditLogs', component: 'audit-logs-page'},

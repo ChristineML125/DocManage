@@ -13,7 +13,8 @@ export class AdminCategories extends LitElement {
         departments: {type: Array},
         newDepartmentName: {type: String},
         newDepartmentDescription: {type: String},
-        modalType: {type: String}
+        modalType: {type: String},
+        catSearch: {type: String}
     }
 
     constructor() {
@@ -27,6 +28,7 @@ export class AdminCategories extends LitElement {
         this.newDepartmentName = '';
         this.newDepartmentDescription = '';
         this.modalType = 'category';
+        this.catSearch = '';
     }
 
     connectedCallback() {
@@ -56,7 +58,13 @@ export class AdminCategories extends LitElement {
     }
 
     openCategory(catId) {
-        Router.go(`/admin-category/${catId}`);
+        Router.go(`/admin-allDocument?categoryId=${catId}`);
+    }
+
+    get filteredCategories() {
+        if (!this.catSearch.trim()) return this.categories;
+        const kw = this.catSearch.toLowerCase();
+        return this.categories.filter(c => c.name?.toLowerCase().includes(kw) || c.description?.toLowerCase().includes(kw));
     }
 
     async handleCategoryCreate() {
@@ -189,6 +197,27 @@ export class AdminCategories extends LitElement {
     .btn-primary:hover {
         background: #008378;
     }
+
+    .cat-search {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border: 1px solid #d3e4fe;
+        border-radius: 10px;
+        background: white;
+        transition: border-color 0.15s;
+    }
+    .cat-search:focus-within { border-color: #00685f; box-shadow: 0 0 0 2px rgba(0,104,95,0.12); }
+    .cat-search input {
+        border: none; outline: none; font-size: 14px; font-family: inherit;
+        width: 200px; background: transparent; color: #0b1c30;
+    }
+    .cat-search-clear {
+        background: none; border: none; cursor: pointer; padding: 2px;
+        display: flex; color: #7a8a9a; border-radius: 50%;
+    }
+    .cat-search-clear:hover { background: #f2f4f6; color: #0b1c30; }
 
     .bento-grid {
         display: grid;
@@ -444,22 +473,36 @@ export class AdminCategories extends LitElement {
           <h2>Document Categories</h2>
           <p>Organize and manage document classifications for your health records.</p>
         </div>
-        <button class="btn-primary" @click=${()=>this.openModal('category')}>
-          <span class="material-symbols-outlined">add_circle</span>
-          Create New Category
-        </button>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="cat-search">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#7a8a9a;">search</span>
+            <input type="text" placeholder="Search categories..."
+              .value=${this.catSearch}
+              @input=${(e) => this.catSearch = e.target.value}
+            />
+            ${this.catSearch ? html`
+              <button class="cat-search-clear" @click=${() => this.catSearch = ''}>
+                <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+              </button>
+            ` : ''}
+          </div>
+          <button class="btn-primary" @click=${()=>this.openModal('category')}>
+            <span class="material-symbols-outlined">add_circle</span>
+            Create New Category
+          </button>
+        </div>
       </div>
       
       <!-- Bento Grid -->
       <div class="bento-grid">
-        ${this.categories.length === 0
+        ${this.filteredCategories.length === 0
           ? html`
-            <div class="empty-placeholder">
-              <div class="material-symbols-outlined icon">inbox</div>
-              <p>No Category available</p>
+            <div class="empty-placeholder" style="grid-column:1/-1;">
+              <div class="material-symbols-outlined icon">search_off</div>
+              <p>${this.catSearch ? 'No categories match your search.' : 'No Category available'}</p>
             </div>
           `
-        : this.categories.map(cat => html`
+        : this.filteredCategories.map(cat => html`
           <div class="category-card" @click=${() => this.openCategory(cat.id)}>
             <div class="card-header">
               <div class="icon-circle">
