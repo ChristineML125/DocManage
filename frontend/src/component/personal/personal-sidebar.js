@@ -206,24 +206,29 @@ export class PersonalSidebar extends LitElement {
         display: flex;
         position: fixed;
         left: 0; right: 0; bottom: 0;
-        height: calc(60px + env(safe-area-inset-bottom));
+        height: calc(56px + env(safe-area-inset-bottom));
+        padding: 0 16px;
         padding-bottom: env(safe-area-inset-bottom);
         background: #ffffff;
         border-top: 1px solid #bcc9c6;
         z-index: 1100;
+        align-items: center;
       }
       .bnav-item {
-        flex: 1;
-        display: flex; flex-direction: column;
+        display: flex; flex-direction: row;
         align-items: center; justify-content: center;
-        gap: 2px;
-        background: none; border: none; cursor: pointer;
-        color: #3d4947;
-        font-family: inherit; font-size: 10px; font-weight: 600;
-        padding: 6px 0;
+        gap: 8px;
+        background: #dc2626;
+        border: none; border-radius: 10px;
+        cursor: pointer;
+        color: #ffffff;
+        font-family: inherit; font-size: 13px; font-weight: 600;
+        padding: 10px 0;
+        width: 100%;
+        transition: background 0.15s;
       }
-      .bnav-item .material-symbols-outlined { font-size: 22px; }
-      .bnav-item.active { color: #008d3f; }
+      .bnav-item:active { background: #b91c1c; }
+      .bnav-item .material-symbols-outlined { font-size: 20px; color: #ffffff; }
     }
   `;
 
