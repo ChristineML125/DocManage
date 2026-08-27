@@ -325,15 +325,15 @@ static styles = css`
         border-radius: 6px;
     }
 
-    .preview-content iframe,
-    .document-side iframe {
+    .preview-content iframe, .preview-content embed,
+    .document-side iframe, .document-side embed {
         width: 100%;
         height: 100%;
         border: none;
         min-height: 0;
     }
 
-    .preview-content iframe {
+    .preview-content iframe, .preview-content embed {
         padding: 10px 15px;
     }
 
@@ -1509,7 +1509,7 @@ static styles = css`
             justify-content: center;
             align-items: flex-start;
         }
-        .mobile-preview-content iframe { width: 100%; height: 400px; border: none; }
+        .mobile-preview-content iframe, .mobile-preview-content embed { width: 100%; height: 400px; border: none; }
         .mobile-preview-content img { max-width: 100%; height: auto; }
         .mobile-preview-btn {
             display: inline-flex;
@@ -2393,9 +2393,9 @@ static styles = css`
   renderPreview(type, url, containerId = "docx-container", excelContainer="excel-container") {
     if (type === "pdf") {
         if (this.pdfBlobUrl) {
-            return html`<iframe src="${this.pdfBlobUrl}"></iframe>`;
+            return html`<embed src="${this.pdfBlobUrl}" type="application/pdf" style="width:100%;min-height:400px;height:100%;">`;
         }
-        return html`<iframe></iframe>`;
+        return html`<div style="padding:20px;text-align:center;">Loading PDF...</div>`;
     }
 
     if (["png","jpg","jpeg","webp"].includes(type)) {

@@ -322,7 +322,7 @@ export class PersonalFavoritesPage extends LitElement {
       border-radius: 6px;
     }
 
-    .preview-content iframe {
+    .preview-content iframe, .preview-content embed {
       width: 100%;
       height: 100%;
       border: none;
@@ -903,7 +903,7 @@ export class PersonalFavoritesPage extends LitElement {
         justify-content: center;
         align-items: flex-start;
       }
-      .mobile-preview-content iframe { width: 100%; height: 400px; border: none; }
+      .mobile-preview-content iframe, .mobile-preview-content embed { width: 100%; height: 400px; border: none; }
       .mobile-preview-content img { max-width: 100%; height: auto; }
       .mobile-preview-btn {
         display: inline-flex;
@@ -1229,7 +1229,7 @@ export class PersonalFavoritesPage extends LitElement {
 
   renderPreview(type, url, containerId = 'docx-container', excelContainer = 'excel-container') {
     if (type === 'pdf') {
-      return this.pdfBlobUrl ? html`<iframe src="${this.pdfBlobUrl}"></iframe>` : html`<iframe></iframe>`;
+      return this.pdfBlobUrl ? html`<embed src="${this.pdfBlobUrl}" type="application/pdf" style="width:100%;min-height:400px;height:100%;">` : html`<div style="padding:20px;text-align:center;">Loading PDF...</div>`;
     }
     if (['png', 'jpg', 'jpeg', 'webp'].includes(type)) return html`<img src="${url}" style="max-width:100%;height:auto;">`;
     if (type === 'docx') return html`<div class="docx-wrapper"><div id="${containerId}"></div></div>`;
