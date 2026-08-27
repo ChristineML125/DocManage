@@ -16,7 +16,8 @@ export class StaffCategoryDetail extends LitElement {
         currentPage: { type: Number },
         pageSize: { type: Number },
         selectedDoc: { type: Object },
-        showPreviewModal: { type: Boolean }
+        showPreviewModal: { type: Boolean },
+        pdfBlobUrl: { type: String }
     }
 
     constructor() {
@@ -30,6 +31,7 @@ export class StaffCategoryDetail extends LitElement {
         this.pageSize = 8;
         this.selectedDoc = null;
         this.showPreviewModal = false;
+        this.pdfBlobUrl = null;
     }
 
     connectedCallback() {
@@ -92,20 +94,48 @@ export class StaffCategoryDetail extends LitElement {
                 const fileUrl = filePath ? getFileUrl(filePath) : null;
                 const fileType = filePath ? filePath.split('.').pop().toLowerCase() : '';
                 this.selectedDoc = { ...doc, ...res.document, fileUrl, fileType };
+
+                if (fileType === 'pdf' && fileUrl) {
+                    try {
+                        const fileRes = await fetchFile(fileUrl);
+                        const blob = await fileRes.blob();
+                        if (this.pdfBlobUrl) URL.revokeObjectURL(this.pdfBlobUrl);
+                        this.pdfBlobUrl = URL.createObjectURL(blob);
+                    } catch(err) {
+                        console.error('PDF load error:', err);
+                    }
+                }
+
                 this.showPreviewModal = true;
                 await this.updateComplete;
+                await new Promise(resolve => requestAnimationFrame(resolve));
+
                 if (fileType === 'docx' && fileUrl) {
-                    const el = this.renderRoot.querySelector('#docx-container');
-                    if (el) await renderAsync(await (await fetchFile(fileUrl)).arrayBuffer(), el, undefined, { ignoreHeight: true, breakPages: false });
+                    const el = this.renderRoot.querySelector('#docx-modal-container');
+                    if (el) {
+                        const res2 = await fetchFile(fileUrl);
+                        const buffer = await res2.arrayBuffer();
+                        el.innerHTML = '';
+                        await renderAsync(buffer, el, null, { ignoreWidth: true, ignoreHeight: true, breakPages: false });
+                    }
                 }
                 if ((fileType === 'xlsx' || fileType === 'xls') && fileUrl) {
-                    const res2 = await fetchFile(fileUrl);
-                    const buffer = await res2.arrayBuffer();
-                    const workbook = XLSX.read(buffer, { type: 'array' });
-                    const ws = workbook.Sheets[workbook.SheetNames[0]];
-                    const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
-                    const c = this.renderRoot.querySelector('#excel-container');
-                    if (c) c.innerHTML = htmlStr;
+                    const el = this.renderRoot.querySelector('#excel-modal-container');
+                    if (el) {
+                        const res2 = await fetchFile(fileUrl);
+                        const buffer = await res2.arrayBuffer();
+                        const workbook = XLSX.read(buffer, { type: 'array' });
+                        el.innerHTML = '';
+                        workbook.SheetNames.forEach(sheetName => {
+                            const sheet = workbook.Sheets[sheetName];
+                            const title = document.createElement('h3');
+                            title.textContent = sheetName;
+                            el.appendChild(title);
+                            const div = document.createElement('div');
+                            div.innerHTML = XLSX.utils.sheet_to_html(sheet);
+                            el.appendChild(div);
+                        });
+                    }
                 }
             }
         } catch (err) { console.error('Preview error:', err); }
@@ -114,6 +144,7 @@ export class StaffCategoryDetail extends LitElement {
     closePreview() {
         this.showPreviewModal = false;
         this.selectedDoc = null;
+        if (this.pdfBlobUrl) { URL.revokeObjectURL(this.pdfBlobUrl); this.pdfBlobUrl = null; }
     }
 
     downloadFile(doc) {
@@ -250,8 +281,10 @@ export class StaffCategoryDetail extends LitElement {
         }
         .modal-close:hover { background: #f2f4f6; color: #0b1c30; }
         .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
-        .preview-content .docx-container,
-        .preview-content .excel-container { height: 500px; overflow: auto; }
+        .preview-content { min-height: 200px; }
+        .preview-content .docx-wrapper,
+        .preview-content .docx-container { overflow: auto; }
+        .preview-content .exl-wrapper { overflow: auto; }
 
         .material-symbols-outlined {
             font-family: 'Material Symbols Outlined';
@@ -349,10 +382,28 @@ export class StaffCategoryDetail extends LitElement {
                         </div>
                         <div class="modal-body">
                             <div class="preview-content">
-                                ${this.selectedDoc.fileType === 'docx' ? html`<div id="docx-container" class="docx-container"></div>` : ''}
-                                ${(this.selectedDoc.fileType === 'xlsx' || this.selectedDoc.fileType === 'xls') ? html`<div id="excel-container" class="excel-container"></div>` : ''}
-                                ${this.selectedDoc.fileType === 'pdf' ? html`<iframe src="${this.selectedDoc.fileUrl}" style="width:100%;height:500px;border:none;"></iframe>` : ''}
-                                ${!['docx', 'xlsx', 'xls', 'pdf'].includes(this.selectedDoc.fileType) ? html`<p style="text-align:center;padding:32px;color:#7a8a9a;">Preview not available for this file type.</p>` : ''}
+                                ${this.selectedDoc.fileType === 'docx' ? html`
+                                    <div class="docx-wrapper">
+                                        <div id="docx-modal-container"></div>
+                                    </div>
+                                ` : ''}
+                                ${(this.selectedDoc.fileType === 'xlsx' || this.selectedDoc.fileType === 'xls') ? html`
+                                    <div class="exl-wrapper">
+                                        <div id="excel-modal-container"></div>
+                                    </div>
+                                ` : ''}
+                                ${this.selectedDoc.fileType === 'pdf' ? html`
+                                    ${this.pdfBlobUrl ? html`<iframe src="${this.pdfBlobUrl}" style="width:100%;height:500px;border:none;"></iframe>` : html`<p style="text-align:center;padding:32px;color:#7a8a9a;">Loading PDF...</p>`}
+                                ` : ''}
+                                ${['png','jpg','jpeg','webp'].includes(this.selectedDoc.fileType) ? html`
+                                    <img src="${this.selectedDoc.fileUrl}" style="max-width:100%;height:auto;">
+                                ` : ''}
+                                ${this.selectedDoc.fileType === 'txt' ? html`
+                                    <iframe src="${this.selectedDoc.fileUrl}" style="width:100%;height:500px;border:none;"></iframe>
+                                ` : ''}
+                                ${!['docx', 'xlsx', 'xls', 'pdf', 'png', 'jpg', 'jpeg', 'webp', 'txt'].includes(this.selectedDoc.fileType) ? html`
+                                    <p style="text-align:center;padding:32px;color:#7a8a9a;">Preview not available for this file type.</p>
+                                ` : ''}
                             </div>
                         </div>
                     </div>

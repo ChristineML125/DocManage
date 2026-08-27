@@ -4,6 +4,7 @@ import { Router } from '@vaadin/router';
 
 import './pages/login.js'
 import './pages/register-page.js'
+import './pages/user-testing.js'
 import './pages/staff-page/setting.js'
 import './pages/staff-page/dashboard.js'
 import './pages/staff-page/allDocument.js'
@@ -40,6 +41,7 @@ class AppRoot extends LitElement {
             { path: '/', redirect: '/login' },
             { path: '/login', component: 'login-page' },
             { path: '/register', component: 'register-page' },
+            { path: '/testing', component: 'user-testing-page' },
 
             { path: '/setting', component: 'setting-page'},
             { path: '/dashboard', component: 'dashboard-page' },
