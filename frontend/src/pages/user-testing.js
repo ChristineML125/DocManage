@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 const WEB_APP_URL = 'https://docmanage-1.onrender.com/';
-const APK_URL = 'https://docmanage-1.onrender.com/Dovra-v1.0.0.apk';
+const APK_URL = 'https://github.com/ChristineML125/DocManage/releases/download/v1.0.0/Dovra-v1.0.0.apk';
 const FEEDBACK_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd0DA5J7-rNHUH13-Dyvl4eQaenOt4zB9-Tfh1LgH_FNVYcHQ/viewform?usp=publish-editor';
 
 @customElement('user-testing-page')
