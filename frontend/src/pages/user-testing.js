@@ -383,7 +383,7 @@ export class UserTestingPage extends LitElement {
         <p class="section-label">Audience</p>
         <h2 class="section-title">Who is Dovra for?</h2>
         <p class="section-desc">
-          Whether you work alone or with a team, Dovra adapts to how you manage documents.
+          Built for people and teams who need to keep important documents organised, current and easy to share.
         </p>
 
         <div class="audience-grid">
@@ -391,22 +391,22 @@ export class UserTestingPage extends LitElement {
             <div class="audience-icon">
               <span class="material-symbols-outlined">person</span>
             </div>
-            <h3>Personal Users</h3>
-            <p>Manage study, work, project and personal documents.</p>
+            <h3>Independent Professionals</h3>
+            <p>Keep client files, contracts and project documents organised, then share them easily with clients and companies.</p>
           </div>
           <div class="audience-card">
             <div class="audience-icon">
               <span class="material-symbols-outlined">apartment</span>
             </div>
-            <h3>Organizations</h3>
-            <p>Manage company documents, departments, users and document versions.</p>
+            <h3>Collaborative Teams</h3>
+            <p>Give project teams one place to share briefs, approvals and the latest version of every document.</p>
           </div>
           <div class="audience-card">
             <div class="audience-icon">
               <span class="material-symbols-outlined">palette</span>
             </div>
-            <h3>Freelancers & Creatives</h3>
-            <p>Keep project briefs, guidelines and project documents organized.</p>
+            <h3>Growing Businesses</h3>
+            <p>Organise documents across departments with clear access, reliable version control and simple sharing.</p>
           </div>
         </div>
       </section>
