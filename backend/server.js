@@ -16,6 +16,7 @@ import departmentRoutes from './routes/departmentRoutes.js';
 import auditLogsRoutes from './routes/auditLogsRoutes.js';
 import folderRoutes from './routes/folderRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
+import billingRoutes from './routes/billingRoutes.js';
 import { authenticate } from './middleware/auth.js';
 import { isConfigured as supabaseConfigured, getPublicUrl, getSupabase } from './config/storage.js';
 import migrateCompanies from './migrate-companies.js';
@@ -23,6 +24,7 @@ import migrateMultitenant from './migrate-multitenant.js';
 import migrateFavorites from './migrate-favorites.js';
 import migrateFolders from './migrate-folders.js';
 import migrateNotes from './migrate-notes.js';
+import migrateBilling from './migrate-billing.js';
 
 dotenv.config();
 
@@ -111,6 +113,7 @@ app.use("/api/departments", departmentRoutes);
 app.use("/api/auditlogs", auditLogsRoutes);
 app.use("/api/folders", folderRoutes);
 app.use("/api/notes", noteRoutes);
+app.use("/api/billing", billingRoutes);
 
 // Return upload and API errors as JSON so the frontend can display the actual
 // reason instead of treating them as a generic network failure.
@@ -135,6 +138,7 @@ try{
     migrateFavorites().catch(err => console.error('Favorites migration failed:', err));
     migrateFolders().catch(err => console.error('Folders migration failed:', err));
     migrateNotes().catch(err => console.error('Notes migration failed:', err));
+    migrateBilling().catch(err => console.error('Billing migration failed:', err));
     app.listen(PORT, "0.0.0.0", ()=>{
         console.log(`Server running on http://0.0.0.0:${PORT}`);
     }).on('error', (err)=>{

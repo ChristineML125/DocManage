@@ -3,6 +3,7 @@ import { Router } from '@vaadin/router';
 import '../../component/personal/personal-sidebar.js';
 import '../../component/personal/personal-top-bar.js';
 import '../../component/personal/personal-document.js';
+import '../../component/personal/personal-ad-slot.js';
 
 export class PersonalDocumentsPage extends LitElement {
 
@@ -50,6 +51,7 @@ export class PersonalDocumentsPage extends LitElement {
           <personal-top-bar pageTitle="My Documents"></personal-top-bar>
           <div class="scroll-area">
             <personal-document-page></personal-document-page>
+            <personal-ad-slot></personal-ad-slot>
           </div>
         </div>
       </div>

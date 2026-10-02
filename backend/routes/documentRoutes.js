@@ -31,6 +31,7 @@ import { authenticate } from '../middleware/auth.js';
 import { getPool } from '../config/db.js';
 import { addAuditLog } from '../services/auditLogsService.js';
 import { resolveCompanyScope } from '../services/tenantService.js';
+import { assertCanUpload, QuotaExceededError } from '../services/billingService.js';
 
 import { isConfigured, uploadFile, deleteFile, getPublicUrl } from '../config/storage.js';
 import { generateUniqueFilename } from '../middleware/upload.js';
@@ -270,6 +271,8 @@ router.post('/personal/upload', authenticate, upload.single('file'), async (req,
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
+    await assertCanUpload(req.user, file.size);
+
     let filename;
     if (isConfigured()) {
       filename = generateUniqueFilename(file.originalname);
@@ -289,7 +292,8 @@ router.post('/personal/upload', authenticate, upload.single('file'), async (req,
       departmentId: null,
       branchId: 1,
       uploadedById: req.user.UserID,
-      statusId: 1
+      statusId: 1,
+      fileSizeBytes: file.size || 0
     });
 
     return res.status(201).json({
@@ -299,6 +303,14 @@ router.post('/personal/upload', authenticate, upload.single('file'), async (req,
       filePath: result.filePath
     });
   } catch (err) {
+    if (err instanceof QuotaExceededError) {
+      return res.status(402).json({
+        success: false,
+        code: err.code,
+        message: err.message,
+        usage: err.usage,
+      });
+    }
     console.error('Personal upload failed:', err);
     return res.status(500).json({ success: false, message: err.message });
   }
@@ -342,6 +354,8 @@ router.post("/:id/version", authenticate, upload.single("file"), async (req, res
       return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
+    await assertCanUpload(req.user, req.file.size);
+
     let filename;
     if (isConfigured()) {
       filename = generateUniqueFilename(req.file.originalname);
@@ -357,7 +371,8 @@ router.post("/:id/version", authenticate, upload.single("file"), async (req, res
     const result = await addNewVersion({
       documentID,
       filePath: filename,
-      uploadedBy: req.user.UserID
+      uploadedBy: req.user.UserID,
+      fileSizeBytes: req.file.size || 0
     });
 
     return res.status(201).json({
@@ -368,6 +383,14 @@ router.post("/:id/version", authenticate, upload.single("file"), async (req, res
     });
 
   } catch (err) {
+    if (err instanceof QuotaExceededError) {
+      return res.status(402).json({
+        success: false,
+        code: err.code,
+        message: err.message,
+        usage: err.usage,
+      });
+    }
     console.error("Upload new version failed:", err);
     return res.status(500).json({ success: false, message: err.message });
   }
@@ -649,7 +672,8 @@ router.post("/upload", authenticate, upload.single('file'), async (req, res) => 
       departmentId: parsedDepartmentId,
       branchId: parsedBranchId,
       uploadedById: req.user.UserID,
-      statusId
+      statusId,
+      fileSizeBytes: file.size || 0
     });
 
     return res.status(201).json({

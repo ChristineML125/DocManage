@@ -101,7 +101,8 @@ export async function uploadDocument({
   branchId,
   uploadedById,
   statusId,
-  companyID = null
+  companyID = null,
+  fileSizeBytes = 0
 }) {
   const ext = path.extname(filename).toLowerCase();
   const documentName = path.parse(originalname).name;
@@ -155,11 +156,12 @@ export async function uploadDocument({
         "statusID",
         "filePath",
         "pdfPath",
+        "fileSizeBytes",
         "uploadDate"
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
       RETURNING "documentID" AS id
     `,
-    [documentName, categoryId, departmentId, branchId, uploadedById, statusId, filename, pdfPath]);
+    [documentName, categoryId, departmentId, branchId, uploadedById, statusId, filename, pdfPath, fileSizeBytes]);
 
     const newDocId = docResult.rows[0].id;
 
@@ -169,11 +171,12 @@ export async function uploadDocument({
         "VersionNum",
         "uploadedBy",
         "filePath",
+        "fileSizeBytes",
         "uploadDate",
         "isLatest"
-      ) VALUES ($1, 1, $2, $3, NOW(), true)
+      ) VALUES ($1, 1, $2, $3, $4, NOW(), true)
     `,
-    [newDocId, uploadedById, filename]);
+    [newDocId, uploadedById, filename, fileSizeBytes]);
 
     await client.query('COMMIT');
 
@@ -200,7 +203,8 @@ export async function uploadDocument({
 export async function addNewVersion({
   documentID,
   filePath,
-  uploadedBy
+  uploadedBy,
+  fileSizeBytes = 0
 }) {
 
   const ext = path.extname(filePath).toLowerCase();
@@ -241,10 +245,11 @@ export async function addNewVersion({
         "uploadDate",
         "filePath",
         "uploadedBy",
+        "fileSizeBytes",
         "isLatest"
-      ) VALUES ($1, $2, NOW(), $3, $4, true)
+      ) VALUES ($1, $2, NOW(), $3, $4, $5, true)
     `,
-    [documentID, versionNum, filePath, uploadedBy]);
+    [documentID, versionNum, filePath, uploadedBy, fileSizeBytes]);
 
     await client.query(`
       UPDATE "Document"

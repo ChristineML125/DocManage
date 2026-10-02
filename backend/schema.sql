@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS "Document" (
     "filePath" VARCHAR(500),
     "pdfPath" VARCHAR(500),
     "previewPath" VARCHAR(500),
+    "fileSizeBytes" BIGINT DEFAULT 0,
     "uploadDate" TIMESTAMP DEFAULT NOW()
 );
 
@@ -75,6 +76,7 @@ CREATE TABLE IF NOT EXISTS "DocumentVersion" (
     "DocumentID" INT REFERENCES "Document"("documentID") ON DELETE CASCADE,
     "VersionNum" INT NOT NULL,
     "filePath" VARCHAR(500),
+    "fileSizeBytes" BIGINT DEFAULT 0,
     "uploadDate" TIMESTAMP DEFAULT NOW(),
     "isLatest" BOOLEAN DEFAULT false,
     "uploadedBy" INT REFERENCES "Users"("UserID"),

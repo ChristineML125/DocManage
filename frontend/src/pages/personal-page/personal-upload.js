@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { Router } from '@vaadin/router';
 import { http } from '../../api/http.js';
+import { getBilling } from '../../api/billingAPI.js';
 import '../../component/personal/personal-sidebar.js';
 import '../../component/personal/personal-top-bar.js';
 
@@ -79,6 +80,11 @@ export class PersonalUploadPage extends LitElement {
       width: 100%;
     }
 
+    .usage-chip {
+      font-size: 12px;
+      color: #3d4947;
+      margin: 0 0 16px;
+    }
     .btn-primary { background: #00685f; color: white; }
     .btn-primary:hover { background: #005047; }
     .btn-primary:disabled { background: #bdc9c5; cursor: not-allowed; }
@@ -146,7 +152,8 @@ export class PersonalUploadPage extends LitElement {
     uploading: { type: Boolean },
     success: { type: String },
     error: { type: String },
-    recentDocs: { type: Array }
+    recentDocs: { type: Array },
+    usage: { type: Object }
   };
 
   constructor() {
@@ -156,6 +163,7 @@ export class PersonalUploadPage extends LitElement {
     this.success = '';
     this.error = '';
     this.recentDocs = [];
+    this.usage = null;
   }
 
   connectedCallback() {
@@ -163,6 +171,16 @@ export class PersonalUploadPage extends LitElement {
     const user = sessionStorage.getItem('personalUser');
     if (!user) Router.go('/login');
     this.loadRecentDocs();
+    this.loadUsage();
+  }
+
+  async loadUsage() {
+    try {
+      const res = await getBilling();
+      this.usage = res.usage || null;
+    } catch {
+      this.usage = null;
+    }
   }
 
   async loadRecentDocs() {
@@ -206,11 +224,12 @@ export class PersonalUploadPage extends LitElement {
         this.success = 'Document uploaded successfully!';
         this.file = null;
         this.loadRecentDocs();
+        this.loadUsage();
       } else {
         this.error = res.message || 'Upload failed.';
       }
     } catch (err) {
-      this.error = 'Upload failed. Please try again.';
+      this.error = err.message || 'Upload failed. Please try again.';
     } finally {
       this.uploading = false;
     }
@@ -261,6 +280,9 @@ export class PersonalUploadPage extends LitElement {
           <div class="scroll-area">
             <div class="upload-card">
               <h2>Upload a Document</h2>
+              ${this.usage ? html`
+                <p class="usage-chip">Storage used: ${this.usage.usedLabel} / ${this.usage.limitLabel}</p>
+              ` : ''}
 
               ${this.success ? html`<div class="success-msg">${this.success}</div>` : ''}
               ${this.error ? html`<div class="error-msg">${this.error}</div>` : ''}

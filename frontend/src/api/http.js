@@ -101,20 +101,32 @@ export async function http(url, options = {}) {
             );
 
             if (!res.ok) {
-                const error = await res
+                const payload = await res
                     .json()
                     .catch(() => ({
                         message: res.statusText
                     }));
 
-                throw new Error(
-                    error.message || `HTTP ${res.status}`
+                const error = new Error(
+                    payload.message || `HTTP ${res.status}`
                 );
+                error.status = res.status;
+                error.payload = payload;
+
+                if (res.status >= 400 && res.status < 500) {
+                    throw error;
+                }
+
+                lastError = error;
+                continue;
             }
 
             return await res.json();
 
         } catch (error) {
+            if (error?.status >= 400 && error.status < 500) {
+                throw error;
+            }
             console.error(
                 `Request failed: ${baseURL}${url}`,
                 error
