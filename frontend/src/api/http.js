@@ -117,7 +117,9 @@ export async function http(url, options = {}) {
                     throw error;
                 }
 
-                lastError = error;
+                // Keep the server response: a later unreachable fallback URL
+                // must not hide the useful message from the primary API.
+                if (!lastError || !lastError.status) lastError = error;
                 continue;
             }
 
@@ -132,7 +134,7 @@ export async function http(url, options = {}) {
                 error
             );
 
-            lastError = error;
+            if (!lastError || !lastError.status) lastError = error;
         }
     }
 

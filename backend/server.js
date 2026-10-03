@@ -131,19 +131,26 @@ app.get('/{*splat}', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-// server start
-try{
-    migrateCompanies().catch(err => console.error('Companies migration failed:', err));
-    migrateMultitenant().catch(err => console.error('Multi-tenancy migration failed:', err));
-    migrateFavorites().catch(err => console.error('Favorites migration failed:', err));
-    migrateFolders().catch(err => console.error('Folders migration failed:', err));
-    migrateNotes().catch(err => console.error('Notes migration failed:', err));
-    migrateBilling().catch(err => console.error('Billing migration failed:', err));
+// Finish schema migrations before accepting requests that depend on them.
+async function startServer() {
+  try {
+    await migrateCompanies();
+    await migrateMultitenant();
+    await migrateFavorites();
+    await migrateFolders();
+    await migrateNotes();
+    await migrateBilling();
+
     app.listen(PORT, "0.0.0.0", ()=>{
         console.log(`Server running on http://0.0.0.0:${PORT}`);
     }).on('error', (err)=>{
         console.error('Server listen error:', err);
     });
-} catch (err) {
-    console.error('Failed to start server:', err)
 }
+  catch (err) {
+    console.error('Database migration failed; server was not started:', err);
+    process.exitCode = 1;
+  }
+}
+
+startServer();
